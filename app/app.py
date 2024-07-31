@@ -98,7 +98,6 @@ def read_from_sqlite(table_name, db_path="data.db"):
 
 
 def process_inventory_data(days=7):
-
     inventory_df = read_from_sqlite("inventory")
 
     # Convert timestamp to datetime
@@ -120,6 +119,7 @@ def process_inventory_data(days=7):
         end_stock=("stock_calculation", "last"),
         start_date=("timestamp", "first"),
         end_date=("timestamp", "last"),
+        custom_label=("custom_label", "first"),  # Add this line to include custom_label
     ).reset_index()
 
     # Calculate the delta
@@ -139,6 +139,7 @@ def process_inventory_data(days=7):
         ]
     ]
 
+    # Uncomment the following line if you want to filter out rows with no change
     # final_df = final_df[final_df["change"] != 0]
 
     return final_df
@@ -159,6 +160,42 @@ def process_dataframe(config_key, file):
         }
     )
     return df_output
+
+
+def create_ebay_dataframe(inventory_df, item_ids):
+    # Create a new dataframe with renamed columns
+    ebay_df = inventory_df.rename(
+        columns={"custom_label": "CustomLabel", "end_stock": "Quantity"}
+    )
+
+    ebay_df["Action"] = "Revise"
+    ebay_df["SiteID"] = "UK"
+    ebay_df["Currency"] = "GBP"
+
+    ebay_df = ebay_df[
+        [
+            "Action",
+            "CustomLabel",
+            "SiteID",
+            "Currency",
+            "Quantity",
+        ]
+    ]
+
+    # Remove rows with null values in the Quantity column
+    ebay_df = ebay_df.dropna(subset=["Quantity"])
+
+    # Convert Quantity to integer type
+    ebay_df["Quantity"] = ebay_df["Quantity"].astype(int)
+
+    # Join ebay_df with item_ids on the "custom_label" column
+    ebay_df = ebay_df.merge(
+        item_ids, left_on="CustomLabel", right_on="custom_label", how="left"
+    )
+    ebay_df = ebay_df.drop(columns=["custom_label"])
+    ebay_df = ebay_df.rename(columns={"item_id": "ItemID"})
+
+    return ebay_df
 
 
 st.title("Excel File Processor")
@@ -206,34 +243,7 @@ if st.button("Generate eBay Upload File"):
     upload_to_sqlite(inventory_df, "inventory_changes", "replace")
 
     # Create a new dataframe with renamed columns
-    ebay_df = inventory_df.rename(
-        columns={"code": "CustomLabel", "end_stock": "Quantity"}
-    )
-
-    ebay_df["Action"] = "Revise"
-    ebay_df["SiteID"] = "UK"
-    ebay_df["Currency"] = "GBP"
-
-    ebay_df = ebay_df[
-        [
-            "Action",
-            "CustomLabel",
-            "SiteID",
-            "Currency",
-            "Quantity",
-        ]
-    ]
-
-    # Remove rows with null values in the Quantity column
-    ebay_df = ebay_df.dropna(subset=["Quantity"])
-
-    # Convert Quantity to integer type
-    ebay_df["Quantity"] = ebay_df["Quantity"].astype(int)
-
-    # Join ebay_df with item_ids on the "custom_label" column
-    ebay_df = ebay_df.merge(
-        item_ids, left_on="CustomLabel", right_on="custom_label", how="left"
-    )
+    ebay_df = create_ebay_dataframe(inventory_df, item_ids)
 
     st.dataframe(ebay_df)
 
