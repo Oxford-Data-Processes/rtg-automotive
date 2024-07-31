@@ -1,0 +1,267 @@
+import os
+import pandas as pd
+import streamlit as st
+import zipfile
+import io
+import sqlite3
+
+
+config = {
+    "APE": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "process_func": lambda x: 0 if x == "No" else (10 if x == "YES" else 0),
+    },
+    "BET": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "process_func": lambda x: 10 if x > 10 else x,
+    },
+    "BGA": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "process_func": lambda x: 10 if x > 10 else x,
+    },
+    "COM": {
+        "code_column_number": 1,
+        "stock_column_number": 3,
+        "process_func": lambda x: 10 if x > 10 else x,
+    },
+    "FAI": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "process_func": lambda x: 10 if x > 10 else x,
+    },
+    "FEB": {
+        "code_column_number": 1,
+        "stock_column_number": 3,
+        "process_func": lambda x: 10 if x > 10 else x,
+    },
+    "FIR": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "process_func": lambda x: 10 if x == "Y" else 0,
+    },
+    "FPS": {
+        "code_column_number": 1,
+        "stock_column_number": 4,
+        "process_func": lambda x: 10 if x > 10 else x,
+    },
+    "JUR": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "process_func": lambda x: 10 if x > 10 else x,
+    },
+    "KLA": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "process_func": lambda x: x,
+    },
+    "KYB": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "process_func": lambda x: 0 if x == "N" else (10 if x == "Y" else 0),
+    },
+    "MOT": {
+        "code_column_number": 1,
+        "stock_column_number": 3,
+        "process_func": lambda x: 10 if x > 10 else x,
+    },
+    "ROL": {
+        "code_column_number": 1,
+        "stock_column_number": 3,
+        "process_func": lambda x: 10 if x == "In Stock" else 0,
+    },
+    "RTG": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "process_func": lambda x: 0 if str(x) == "B152381" else 20,
+    },
+    "SMP": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "process_func": lambda x: 10 if x == 0 else 0,
+    },
+}
+
+
+def upload_to_sqlite(df, table_name, if_exists, db_path="data.db"):
+    """
+    Upload a pandas DataFrame to a SQLite database, appending new data.
+
+    Args:
+    df (pandas.DataFrame): The DataFrame to upload.
+    table_name (str): The name of the table to create/update in the database.
+    db_path (str): The path to the SQLite database file. Defaults to 'data.db'.
+
+    Returns:
+    None
+    """
+    conn = sqlite3.connect(db_path)
+    try:
+        # Check if the table exists
+        cursor = conn.cursor()
+        cursor.execute(
+            f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'"
+        )
+        table_exists = cursor.fetchone() is not None
+
+        if table_exists:
+            # If the table exists, append the new data
+            df.to_sql(table_name, conn, if_exists="append", index=False)
+            print(f"Successfully appended data to {table_name} in {db_path}")
+        else:
+            # If the table doesn't exist, create it with the new data
+            df.to_sql(table_name, conn, if_exists=if_exists, index=False)
+            print(
+                f"Successfully created table {table_name} and uploaded data in {db_path}"
+            )
+    except Exception as e:
+        print(f"Error uploading data to SQLite: {str(e)}")
+    finally:
+        conn.close()
+
+
+def read_from_sqlite(table_name, db_path="data.db"):
+    conn = sqlite3.connect(db_path)
+    df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
+    conn.close()
+    return df
+
+
+def process_inventory_data(days=7):
+
+    inventory_df = read_from_sqlite("inventory")
+
+    # Convert timestamp to datetime
+    inventory_df["timestamp"] = pd.to_datetime(inventory_df["timestamp"])
+
+    # Filter for dates in the past week
+    one_week_ago = pd.Timestamp.now() - pd.Timedelta(days=days)
+    inventory_df = inventory_df[inventory_df["timestamp"] >= one_week_ago]
+
+    # Sort the filtered data
+    inventory_df.sort_values(by=["supplier", "code", "timestamp"], inplace=True)
+
+    # Group by supplier and code
+    grouped_df = inventory_df.groupby(["supplier", "code"])
+
+    # Calculate the net delta
+    net_delta_df = grouped_df.agg(
+        start_stock=("stock_calculation", "first"),
+        end_stock=("stock_calculation", "last"),
+        start_date=("timestamp", "first"),
+        end_date=("timestamp", "last"),
+    ).reset_index()
+
+    # Calculate the delta
+    net_delta_df["change"] = net_delta_df["end_stock"] - net_delta_df["start_stock"]
+
+    # Select relevant columns for the final table
+    final_df = net_delta_df[
+        [
+            "supplier",
+            "code",
+            "start_date",
+            "end_date",
+            "start_stock",
+            "end_stock",
+            "change",
+        ]
+    ]
+
+    # Filter for lines where change is not zero
+    final_df = final_df[final_df["change"] != 0]
+
+    return final_df
+
+
+def process_dataframe(config_key, file):
+    df = pd.read_excel(file)
+    code_column = df.iloc[:, config[config_key]["code_column_number"] - 1]
+    stock_column = df.iloc[:, config[config_key]["stock_column_number"] - 1]
+    df_output = pd.DataFrame(
+        {
+            "supplier": config_key,
+            "code": code_column,
+            "stock": stock_column,
+            "stock_calculation": stock_column.apply(config[config_key]["process_func"]),
+            "timestamp": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
+        }
+    )
+    return df_output
+
+
+st.title("Excel File Processor")
+
+uploaded_folder = st.file_uploader(
+    "Upload folder containing Excel files", type="xlsx", accept_multiple_files=True
+)
+
+if uploaded_folder:
+    st.write("Processing files...")
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        for file in uploaded_folder:
+            supplier = file.name.split()[0]
+            if supplier in config:
+                df_output = process_dataframe(supplier, file)
+
+                upload_to_sqlite(df_output, "inventory", "append")
+
+                csv_buffer = io.StringIO()
+
+                df_output.to_csv(csv_buffer, index=False)
+                zip_file.writestr(f"{supplier}.csv", csv_buffer.getvalue())
+            else:
+                st.warning(
+                    f"No configuration found for {supplier}. Skipping this file."
+                )
+
+    st.success("All files processed!")
+    st.download_button(
+        label="Download All CSVs",
+        data=zip_buffer.getvalue(),
+        file_name="processed_files.zip",
+        mime="application/zip",
+    )
+
+
+if st.button("Generate eBay Upload File"):
+
+    final_df = process_inventory_data()
+
+    upload_to_sqlite(final_df, "inventory_changes", "replace")
+
+    # Create a new dataframe with renamed columns
+    ebay_df = final_df.rename(columns={"code": "ItemID", "end_stock": "Quantity"})
+
+    ebay_df["Action"] = "Revise"
+    ebay_df["SiteID"] = "UK"
+    ebay_df["Currency"] = "GBP"
+
+    ebay_df = ebay_df[
+        [
+            "Action",
+            "ItemID",
+            "SiteID",
+            "Currency",
+            "Quantity",
+        ]
+    ]
+
+    # Remove rows with null values in the Quantity column
+    ebay_df = ebay_df.dropna(subset=["Quantity"])
+
+    # Convert Quantity to integer type
+    ebay_df["Quantity"] = ebay_df["Quantity"].astype(int)
+
+    st.dataframe(ebay_df)
+
+    csv = ebay_df.to_csv(index=False)
+    st.download_button(
+        label="Download eBay Data",
+        data=csv,
+        file_name="ebay_data.csv",
+        mime="text/csv",
+    )
