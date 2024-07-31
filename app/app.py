@@ -86,40 +86,8 @@ config = {
 
 
 def upload_to_sqlite(df, table_name, if_exists, db_path="data.db"):
-    """
-    Upload a pandas DataFrame to a SQLite database, appending new data.
-
-    Args:
-    df (pandas.DataFrame): The DataFrame to upload.
-    table_name (str): The name of the table to create/update in the database.
-    db_path (str): The path to the SQLite database file. Defaults to 'data.db'.
-
-    Returns:
-    None
-    """
     conn = sqlite3.connect(db_path)
-    try:
-        # Check if the table exists
-        cursor = conn.cursor()
-        cursor.execute(
-            f"SELECT name FROM sqlite_master WHERE type='table' AND name='{table_name}'"
-        )
-        table_exists = cursor.fetchone() is not None
-
-        if table_exists:
-            # If the table exists, append the new data
-            df.to_sql(table_name, conn, if_exists="append", index=False)
-            print(f"Successfully appended data to {table_name} in {db_path}")
-        else:
-            # If the table doesn't exist, create it with the new data
-            df.to_sql(table_name, conn, if_exists=if_exists, index=False)
-            print(
-                f"Successfully created table {table_name} and uploaded data in {db_path}"
-            )
-    except Exception as e:
-        print(f"Error uploading data to SQLite: {str(e)}")
-    finally:
-        conn.close()
+    df.to_sql(table_name, conn, if_exists=if_exists, index=False)
 
 
 def read_from_sqlite(table_name, db_path="data.db"):
@@ -170,8 +138,7 @@ def process_inventory_data(days=7):
         ]
     ]
 
-    # Filter for lines where change is not zero
-    final_df = final_df[final_df["change"] != 0]
+    # final_df = final_df[final_df["change"] != 0]
 
     return final_df
 
@@ -184,6 +151,7 @@ def process_dataframe(config_key, file):
         {
             "supplier": config_key,
             "code": code_column,
+            "custom_label": code_column.apply(lambda code: f"UKD-{config_key}-{code}"),
             "stock": stock_column,
             "stock_calculation": stock_column.apply(config[config_key]["process_func"]),
             "timestamp": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -197,6 +165,9 @@ st.title("Excel File Processor")
 uploaded_folder = st.file_uploader(
     "Upload folder containing Excel files", type="xlsx", accept_multiple_files=True
 )
+
+item_ids = pd.read_csv("item_ids.csv")
+upload_to_sqlite(item_ids, "item_ids", "replace")
 
 if uploaded_folder:
     st.write("Processing files...")
@@ -229,12 +200,14 @@ if uploaded_folder:
 
 if st.button("Generate eBay Upload File"):
 
-    final_df = process_inventory_data()
+    inventory_df = process_inventory_data()
 
-    upload_to_sqlite(final_df, "inventory_changes", "replace")
+    upload_to_sqlite(inventory_df, "inventory_changes", "replace")
 
     # Create a new dataframe with renamed columns
-    ebay_df = final_df.rename(columns={"code": "ItemID", "end_stock": "Quantity"})
+    ebay_df = inventory_df.rename(
+        columns={"code": "CustomLabel", "end_stock": "Quantity"}
+    )
 
     ebay_df["Action"] = "Revise"
     ebay_df["SiteID"] = "UK"
@@ -243,7 +216,7 @@ if st.button("Generate eBay Upload File"):
     ebay_df = ebay_df[
         [
             "Action",
-            "ItemID",
+            "CustomLabel",
             "SiteID",
             "Currency",
             "Quantity",
@@ -255,6 +228,11 @@ if st.button("Generate eBay Upload File"):
 
     # Convert Quantity to integer type
     ebay_df["Quantity"] = ebay_df["Quantity"].astype(int)
+
+    # Join ebay_df with item_ids on the "custom_label" column
+    ebay_df = ebay_df.merge(
+        item_ids, left_on="CustomLabel", right_on="custom_label", how="left"
+    )
 
     st.dataframe(ebay_df)
 
