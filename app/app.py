@@ -130,6 +130,7 @@ def process_inventory_data(days=7):
         [
             "supplier",
             "code",
+            "custom_label",
             "start_date",
             "end_date",
             "start_stock",
