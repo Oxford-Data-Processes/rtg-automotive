@@ -108,10 +108,10 @@ def process_inventory_data(days=7):
     inventory_df = inventory_df[inventory_df["timestamp"] >= one_week_ago]
 
     # Sort the filtered data
-    inventory_df.sort_values(by=["supplier", "code", "timestamp"], inplace=True)
+    inventory_df.sort_values(by=["supplier", "part_number", "timestamp"], inplace=True)
 
-    # Group by supplier and code
-    grouped_df = inventory_df.groupby(["supplier", "code"])
+    # Group by supplier and part_number
+    grouped_df = inventory_df.groupby(["supplier", "part_number"])
 
     # Calculate the net delta
     net_delta_df = grouped_df.agg(
@@ -129,7 +129,7 @@ def process_inventory_data(days=7):
     final_df = net_delta_df[
         [
             "supplier",
-            "code",
+            "part_number",
             "custom_label",
             "start_date",
             "end_date",
@@ -152,7 +152,7 @@ def process_dataframe(config_key, file):
     df_output = pd.DataFrame(
         {
             "supplier": config_key,
-            "code": code_column,
+            "part_number": code_column,
             "stock": stock_column,
             "stock_calculation": stock_column.apply(config[config_key]["process_func"]),
             "timestamp": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
@@ -160,7 +160,7 @@ def process_dataframe(config_key, file):
     )
 
     df_output["custom_label"] = (
-        "UKD-" + config_key + "-" + df_output["code"].astype(str)
+        "UKD-" + config_key + "-" + df_output["part_number"].astype(str)
     )
 
     return df_output
@@ -196,7 +196,6 @@ def create_ebay_dataframe(inventory_df, item_ids):
     ebay_df = ebay_df.merge(
         item_ids, left_on="CustomLabel", right_on="custom_label", how="left"
     )
-    ebay_df = ebay_df.drop(columns=["custom_label", "CustomLabel"])
     ebay_df = ebay_df.rename(columns={"item_id": "ItemID"})
 
     ebay_df = ebay_df[["Action", "ItemID", "SiteID", "Currency", "Quantity"]]
@@ -209,10 +208,15 @@ uploaded_folder = st.file_uploader(
     "Upload folder containing Excel files", type="xlsx", accept_multiple_files=True
 )
 
-item_ids = pd.read_csv("item_ids.csv")
-upload_to_sqlite(item_ids, "item_ids", "replace")
-# pm_codes = pd.read_csv("pm_codes.csv")
-# upload_to_sqlite(pm_codes, "pm_codes", "replace")
+
+ast_df = pd.read_csv("AST.csv")
+ast_df["store"] = "AST"
+ast_df["timestamp"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+ams_df = pd.read_csv("AMS.csv")
+ams_df["store"] = "AMS"
+upload_to_sqlite(ast_df, "store_database", "replace")
+upload_to_sqlite(ams_df, "store_database", "append")
+
 
 if uploaded_folder:
     st.write("Processing files...")
@@ -249,12 +253,24 @@ if st.button("Generate eBay Upload File"):
 
     upload_to_sqlite(inventory_df, "inventory_changes", "replace")
 
+    store_database = read_from_sqlite("store_database")
+
     # Create a new dataframe with renamed columns
-    ebay_df = create_ebay_dataframe(inventory_df, item_ids)
+    ebay_df = create_ebay_dataframe(
+        inventory_df, store_database[["item_id", "custom_label"]]
+    )
 
     st.dataframe(ebay_df)
 
     csv = ebay_df.to_csv(index=False)
+    # Create a download button for the CSV file
+    st.download_button(
+        label="Download eBay Upload CSV",
+        data=csv,
+        file_name="ebay_upload.csv",
+        mime="text/csv",
+    )
+
 
 if st.button("Download All Database Tables"):
     st.write("Preparing database tables for download...")
