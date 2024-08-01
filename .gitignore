@@ -152,6 +152,9 @@ celerybeat.pid
 # Database
 data.db
 
+# file store
+file_store/
+
 # Environments
 .env
 .venv

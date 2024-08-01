@@ -153,12 +153,16 @@ def process_dataframe(config_key, file):
         {
             "supplier": config_key,
             "code": code_column,
-            "custom_label": code_column.apply(lambda code: f"UKD-{config_key}-{code}"),
             "stock": stock_column,
             "stock_calculation": stock_column.apply(config[config_key]["process_func"]),
             "timestamp": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
         }
     )
+
+    df_output["custom_label"] = (
+        "UKD-" + config_key + "-" + df_output["code"].astype(str)
+    )
+
     return df_output
 
 
@@ -192,9 +196,10 @@ def create_ebay_dataframe(inventory_df, item_ids):
     ebay_df = ebay_df.merge(
         item_ids, left_on="CustomLabel", right_on="custom_label", how="left"
     )
-    ebay_df = ebay_df.drop(columns=["custom_label"])
+    ebay_df = ebay_df.drop(columns=["custom_label", "CustomLabel"])
     ebay_df = ebay_df.rename(columns={"item_id": "ItemID"})
 
+    ebay_df = ebay_df[["Action", "ItemID", "SiteID", "Currency", "Quantity"]]
     return ebay_df
 
 
@@ -206,6 +211,8 @@ uploaded_folder = st.file_uploader(
 
 item_ids = pd.read_csv("item_ids.csv")
 upload_to_sqlite(item_ids, "item_ids", "replace")
+# pm_codes = pd.read_csv("pm_codes.csv")
+# upload_to_sqlite(pm_codes, "pm_codes", "replace")
 
 if uploaded_folder:
     st.write("Processing files...")
@@ -248,9 +255,32 @@ if st.button("Generate eBay Upload File"):
     st.dataframe(ebay_df)
 
     csv = ebay_df.to_csv(index=False)
+
+if st.button("Download All Database Tables"):
+    st.write("Preparing database tables for download...")
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        conn = sqlite3.connect("data.db")
+        cursor = conn.cursor()
+
+        # Get all table names
+        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
+        tables = cursor.fetchall()
+
+        for table in tables:
+            table_name = table[0]
+            df = pd.read_sql_query(f"SELECT * FROM {table_name}", conn)
+
+            csv_buffer = io.StringIO()
+            df.to_csv(csv_buffer, index=False)
+            zip_file.writestr(f"{table_name}.csv", csv_buffer.getvalue())
+
+        conn.close()
+
+    st.success("All database tables prepared!")
     st.download_button(
-        label="Download eBay Data",
-        data=csv,
-        file_name="ebay_data.csv",
-        mime="text/csv",
+        label="Download All Database Tables",
+        data=zip_buffer.getvalue(),
+        file_name="database_tables.zip",
+        mime="application/zip",
     )
