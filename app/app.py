@@ -169,7 +169,10 @@ def process_dataframe(config_key, file):
 def create_ebay_dataframe(inventory_df, item_ids):
     # Create a new dataframe with renamed columns
     ebay_df = inventory_df.rename(
-        columns={"custom_label": "CustomLabel", "end_stock": "Quantity"}
+        columns={
+            "custom_label": "CustomLabel",
+            "end_stock": "Quantity",
+        }
     )
 
     ebay_df["Action"] = "Revise"
@@ -196,9 +199,9 @@ def create_ebay_dataframe(inventory_df, item_ids):
     ebay_df = ebay_df.merge(
         item_ids, left_on="CustomLabel", right_on="custom_label", how="left"
     )
-    ebay_df = ebay_df.rename(columns={"item_id": "ItemID"})
+    ebay_df = ebay_df.rename(columns={"item_id": "ItemID", "store": "Store"})
 
-    ebay_df = ebay_df[["Action", "ItemID", "SiteID", "Currency", "Quantity"]]
+    ebay_df = ebay_df[["Action", "ItemID", "SiteID", "Currency", "Quantity", "Store"]]
     return ebay_df
 
 
@@ -257,18 +260,27 @@ if st.button("Generate eBay Upload File"):
 
     # Create a new dataframe with renamed columns
     ebay_df = create_ebay_dataframe(
-        inventory_df, store_database[["item_id", "custom_label"]]
+        inventory_df, store_database[["item_id", "custom_label", "store"]]
     )
 
     st.dataframe(ebay_df)
 
-    csv = ebay_df.to_csv(index=False)
-    # Create a download button for the CSV file
+    # Split ebay_df by Store and create a zip folder with separate CSVs
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        for store, store_df in ebay_df.groupby("Store"):
+            csv_buffer = io.StringIO()
+            store_df.drop(columns=["Store"]).to_csv(csv_buffer, index=False)
+            zip_file.writestr(
+                f"ebay_upload_files/{store}_ebay_upload.csv", csv_buffer.getvalue()
+            )
+
+    # Create a download button for the zip folder containing CSVs
     st.download_button(
-        label="Download eBay Upload CSV",
-        data=csv,
-        file_name="ebay_upload.csv",
-        mime="text/csv",
+        label="Download eBay Upload CSVs",
+        data=zip_buffer.getvalue(),
+        file_name="ebay_upload_files.zip",
+        mime="application/zip",
     )
 
 
