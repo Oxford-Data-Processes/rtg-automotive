@@ -15,27 +15,27 @@ config = {
     "BET": {
         "code_column_number": 1,
         "stock_column_number": 2,
-        "process_func": lambda x: 10 if x > 10 else x,
+        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
     },
     "BGA": {
         "code_column_number": 1,
         "stock_column_number": 2,
-        "process_func": lambda x: 10 if x > 10 else x,
+        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
     },
     "COM": {
         "code_column_number": 1,
         "stock_column_number": 3,
-        "process_func": lambda x: 10 if x > 10 else x,
+        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
     },
     "FAI": {
         "code_column_number": 1,
         "stock_column_number": 2,
-        "process_func": lambda x: 10 if x > 10 else x,
+        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
     },
     "FEB": {
         "code_column_number": 1,
         "stock_column_number": 3,
-        "process_func": lambda x: 10 if x > 10 else x,
+        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
     },
     "FIR": {
         "code_column_number": 1,
@@ -45,12 +45,12 @@ config = {
     "FPS": {
         "code_column_number": 1,
         "stock_column_number": 4,
-        "process_func": lambda x: 10 if x > 10 else x,
+        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
     },
     "JUR": {
         "code_column_number": 1,
         "stock_column_number": 2,
-        "process_func": lambda x: 10 if x > 10 else x,
+        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
     },
     "KLA": {
         "code_column_number": 1,
@@ -65,7 +65,7 @@ config = {
     "MOT": {
         "code_column_number": 1,
         "stock_column_number": 3,
-        "process_func": lambda x: 10 if x > 10 else x,
+        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
     },
     "ROL": {
         "code_column_number": 1,
@@ -80,7 +80,7 @@ config = {
     "SMP": {
         "code_column_number": 1,
         "stock_column_number": 2,
-        "process_func": lambda x: 10 if x == 0 else 0,
+        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
     },
 }
 
@@ -140,15 +140,24 @@ def process_inventory_data(days=7):
     ]
 
     # Uncomment the following line if you want to filter out rows with no change
-    # final_df = final_df[final_df["change"] != 0]
+    final_df = final_df[final_df["change"] != 0]
 
     return final_df
 
 
 def process_dataframe(config_key, file):
+    st.write(f"Processing {file.name}...")
     df = pd.read_excel(file)
     code_column = df.iloc[:, config[config_key]["code_column_number"] - 1]
     stock_column = df.iloc[:, config[config_key]["stock_column_number"] - 1]
+    # Ensure stock_column is numerical
+    stock_column = pd.to_numeric(stock_column, errors="coerce")
+
+    # Replace any NaN values with 0
+    stock_column = stock_column.fillna(0)
+
+    # Convert to integer type
+    stock_column = stock_column.astype(int)
     df_output = pd.DataFrame(
         {
             "supplier": config_key,
