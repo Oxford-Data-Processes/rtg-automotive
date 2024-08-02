@@ -6,6 +6,17 @@ import io
 import sqlite3
 
 
+def process_numerical(x):
+    if not isinstance(x, (int, float)):
+        return 0
+    elif x <= 0:
+        return 0
+    elif x > 10:
+        return 10
+    else:
+        return x
+
+
 config = {
     "APE": {
         "code_column_number": 1,
@@ -15,27 +26,27 @@ config = {
     "BET": {
         "code_column_number": 1,
         "stock_column_number": 2,
-        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
+        "process_func": process_numerical,
     },
     "BGA": {
         "code_column_number": 1,
         "stock_column_number": 2,
-        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
+        "process_func": process_numerical,
     },
     "COM": {
         "code_column_number": 1,
         "stock_column_number": 3,
-        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
+        "process_func": process_numerical,
     },
     "FAI": {
         "code_column_number": 1,
         "stock_column_number": 2,
-        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
+        "process_func": process_numerical,
     },
     "FEB": {
         "code_column_number": 1,
         "stock_column_number": 3,
-        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
+        "process_func": process_numerical,
     },
     "FIR": {
         "code_column_number": 1,
@@ -45,12 +56,12 @@ config = {
     "FPS": {
         "code_column_number": 1,
         "stock_column_number": 4,
-        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
+        "process_func": process_numerical,
     },
     "JUR": {
         "code_column_number": 1,
         "stock_column_number": 2,
-        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
+        "process_func": process_numerical,
     },
     "KLA": {
         "code_column_number": 1,
@@ -65,7 +76,7 @@ config = {
     "MOT": {
         "code_column_number": 1,
         "stock_column_number": 3,
-        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
+        "process_func": process_numerical,
     },
     "ROL": {
         "code_column_number": 1,
@@ -80,7 +91,7 @@ config = {
     "SMP": {
         "code_column_number": 1,
         "stock_column_number": 2,
-        "process_func": lambda x: 0 if x <= 0 else (10 if x > 10 else x),
+        "process_func": process_numerical,
     },
 }
 
@@ -97,21 +108,21 @@ def read_from_sqlite(table_name, db_path="data.db"):
     return df
 
 
-def process_inventory_data(days=7):
-    inventory_df = read_from_sqlite("inventory")
+def process_stock_data(days=7):
+    stock_df = read_from_sqlite("supplier_stock")
 
     # Convert timestamp to datetime
-    inventory_df["timestamp"] = pd.to_datetime(inventory_df["timestamp"])
+    stock_df["last_updated"] = pd.to_datetime(stock_df["last_updated"])
 
     # Filter for dates in the past week
     one_week_ago = pd.Timestamp.now() - pd.Timedelta(days=days)
-    inventory_df = inventory_df[inventory_df["timestamp"] >= one_week_ago]
+    stock_df = stock_df[stock_df["timestamp"] >= one_week_ago]
 
     # Sort the filtered data
-    inventory_df.sort_values(by=["supplier", "part_number", "timestamp"], inplace=True)
+    stock_df.sort_values(by=["supplier", "part_number", "timestamp"], inplace=True)
 
     # Group by supplier and part_number
-    grouped_df = inventory_df.groupby(["supplier", "part_number"])
+    grouped_df = stock_df.groupby(["supplier", "part_number"])
 
     # Calculate the net delta
     net_delta_df = grouped_df.agg(
@@ -148,36 +159,30 @@ def process_inventory_data(days=7):
 def process_dataframe(config_key, file):
     st.write(f"Processing {file.name}...")
     df = pd.read_excel(file)
-    code_column = df.iloc[:, config[config_key]["code_column_number"] - 1]
-    stock_column = df.iloc[:, config[config_key]["stock_column_number"] - 1]
-    # Ensure stock_column is numerical
-    stock_column = pd.to_numeric(stock_column, errors="coerce")
 
-    # Replace any NaN values with 0
-    stock_column = stock_column.fillna(0)
+    config_data = config[config_key]
+    code_column = df.iloc[:, config_data["code_column_number"] - 1]
+    stock_column = df.iloc[:, config_data["stock_column_number"] - 1]
 
-    # Convert to integer type
-    stock_column = stock_column.astype(int)
+    last_updated = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
+    date_prefix = last_updated[:10]
+
     df_output = pd.DataFrame(
         {
-            "supplier": config_key,
-            "part_number": code_column,
-            "stock": stock_column,
-            "stock_calculation": stock_column.apply(config[config_key]["process_func"]),
-            "timestamp": pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S"),
+            "stock_id": code_column.apply(lambda x: f"{date_prefix}-{config_key}-{x}"),
+            "product_id": code_column.apply(lambda x: f"{config_key}-{x}"),
+            "quantity_raw": stock_column,
+            "quantity": stock_column.apply(config_data["process_func"]),
+            "last_updated": pd.Series([last_updated] * len(code_column)),
         }
-    )
-
-    df_output["custom_label"] = (
-        "UKD-" + config_key + "-" + df_output["part_number"].astype(str)
     )
 
     return df_output
 
 
-def create_ebay_dataframe(inventory_df, item_ids):
+def create_ebay_dataframe(stock_df, item_ids):
     # Create a new dataframe with renamed columns
-    ebay_df = inventory_df.rename(
+    ebay_df = stock_df.rename(
         columns={
             "custom_label": "CustomLabel",
             "end_stock": "Quantity",
@@ -220,15 +225,8 @@ uploaded_folder = st.file_uploader(
     "Upload folder containing Excel files", type="xlsx", accept_multiple_files=True
 )
 
-
-ast_df = pd.read_csv("AST.csv")
-ast_df["store"] = "AST"
-ast_df["timestamp"] = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
-ams_df = pd.read_csv("AMS.csv")
-ams_df["store"] = "AMS"
-upload_to_sqlite(ast_df, "store_database", "replace")
-upload_to_sqlite(ams_df, "store_database", "append")
-
+product = pd.read_csv("product.csv")
+upload_to_sqlite(product, "product", "replace")
 
 if uploaded_folder:
     st.write("Processing files...")
@@ -239,7 +237,7 @@ if uploaded_folder:
             if supplier in config:
                 df_output = process_dataframe(supplier, file)
 
-                upload_to_sqlite(df_output, "inventory", "append")
+                upload_to_sqlite(df_output, "supplier_stock", "append")
 
                 csv_buffer = io.StringIO()
 
@@ -261,15 +259,13 @@ if uploaded_folder:
 
 if st.button("Generate eBay Upload File"):
 
-    inventory_df = process_inventory_data()
+    stock_df = process_stock_data()
 
-    upload_to_sqlite(inventory_df, "inventory_changes", "replace")
-
-    store_database = read_from_sqlite("store_database")
+    upload_to_sqlite(stock_df, "stock_changes", "replace")
 
     # Create a new dataframe with renamed columns
     ebay_df = create_ebay_dataframe(
-        inventory_df, store_database[["item_id", "custom_label", "store"]]
+        stock_df, store_database[["item_id", "custom_label", "store"]]
     )
 
     st.dataframe(ebay_df)
