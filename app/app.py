@@ -108,52 +108,52 @@ def read_from_sqlite(table_name, db_path="data.db"):
     return df
 
 
-def process_stock_data(days=7):
-    stock_df = read_from_sqlite("supplier_stock")
+# def process_stock_data(days=7):
+#     stock_df = read_from_sqlite("supplier_stock")
 
-    # Convert timestamp to datetime
-    stock_df["last_updated"] = pd.to_datetime(stock_df["last_updated"])
+#     # Convert timestamp to datetime
+#     stock_df["last_updated"] = pd.to_datetime(stock_df["last_updated"])
 
-    # Filter for dates in the past week
-    one_week_ago = pd.Timestamp.now() - pd.Timedelta(days=days)
-    stock_df = stock_df[stock_df["timestamp"] >= one_week_ago]
+#     # Filter for dates in the past week
+#     one_week_ago = pd.Timestamp.now() - pd.Timedelta(days=days)
+#     stock_df = stock_df[stock_df["timestamp"] >= one_week_ago]
 
-    # Sort the filtered data
-    stock_df.sort_values(by=["supplier", "part_number", "timestamp"], inplace=True)
+#     # Sort the filtered data
+#     stock_df.sort_values(by=["supplier", "part_number", "timestamp"], inplace=True)
 
-    # Group by supplier and part_number
-    grouped_df = stock_df.groupby(["supplier", "part_number"])
+#     # Group by supplier and part_number
+#     grouped_df = stock_df.groupby(["supplier", "part_number"])
 
-    # Calculate the net delta
-    net_delta_df = grouped_df.agg(
-        start_stock=("stock_calculation", "first"),
-        end_stock=("stock_calculation", "last"),
-        start_date=("timestamp", "first"),
-        end_date=("timestamp", "last"),
-        custom_label=("custom_label", "first"),  # Add this line to include custom_label
-    ).reset_index()
+#     # Calculate the net delta
+#     net_delta_df = grouped_df.agg(
+#         start_stock=("stock_calculation", "first"),
+#         end_stock=("stock_calculation", "last"),
+#         start_date=("timestamp", "first"),
+#         end_date=("timestamp", "last"),
+#         custom_label=("custom_label", "first"),  # Add this line to include custom_label
+#     ).reset_index()
 
-    # Calculate the delta
-    net_delta_df["change"] = net_delta_df["end_stock"] - net_delta_df["start_stock"]
+#     # Calculate the delta
+#     net_delta_df["change"] = net_delta_df["end_stock"] - net_delta_df["start_stock"]
 
-    # Select relevant columns for the final table
-    final_df = net_delta_df[
-        [
-            "supplier",
-            "part_number",
-            "custom_label",
-            "start_date",
-            "end_date",
-            "start_stock",
-            "end_stock",
-            "change",
-        ]
-    ]
+#     # Select relevant columns for the final table
+#     final_df = net_delta_df[
+#         [
+#             "supplier",
+#             "part_number",
+#             "custom_label",
+#             "start_date",
+#             "end_date",
+#             "start_stock",
+#             "end_stock",
+#             "change",
+#         ]
+#     ]
 
-    # Uncomment the following line if you want to filter out rows with no change
-    final_df = final_df[final_df["change"] != 0]
+#     # Uncomment the following line if you want to filter out rows with no change
+#     final_df = final_df[final_df["change"] != 0]
 
-    return final_df
+#     return final_df
 
 
 def process_dataframe(config_key, file):
@@ -219,6 +219,13 @@ def create_ebay_dataframe(stock_df, item_ids):
     return ebay_df
 
 
+def process_stock_history_data(df):
+    df_copy = df.copy()[["product_id", "quantity", "last_updated"]]
+    df_copy["updated_date"] = df_copy["last_updated"].apply(lambda x: x[:10])
+    df_copy.drop(columns=["last_updated"], inplace=True)
+    return df_copy
+
+
 st.title("Excel File Processor")
 
 uploaded_folder = st.file_uploader(
@@ -236,8 +243,10 @@ if uploaded_folder:
             supplier = file.name.split()[0]
             if supplier in config:
                 df_output = process_dataframe(supplier, file)
+                df_stock_history = process_stock_history_data(df_output)
 
                 upload_to_sqlite(df_output, "supplier_stock", "append")
+                upload_to_sqlite(df_stock_history, "supplier_stock_history", "append")
 
                 csv_buffer = io.StringIO()
 
