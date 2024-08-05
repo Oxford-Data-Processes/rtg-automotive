@@ -108,52 +108,45 @@ def read_from_sqlite(table_name, db_path="data.db"):
     return df
 
 
-# def process_stock_data(days=7):
-#     stock_df = read_from_sqlite("supplier_stock")
+def process_stock_data():
+    # Read the supplier_stock_history table from the database
+    df = read_from_sqlite("supplier_stock_history")
 
-#     # Convert timestamp to datetime
-#     stock_df["last_updated"] = pd.to_datetime(stock_df["last_updated"])
+    # Remove duplicates based on product_id and updated_date
+    df = df.drop_duplicates(subset=["product_id", "updated_date"], keep="first")
 
-#     # Filter for dates in the past week
-#     one_week_ago = pd.Timestamp.now() - pd.Timedelta(days=days)
-#     stock_df = stock_df[stock_df["timestamp"] >= one_week_ago]
+    # Sort the dataframe by product_id and updated_date
+    df = df.sort_values(["product_id", "updated_date"], ascending=[True, False])
 
-#     # Sort the filtered data
-#     stock_df.sort_values(by=["supplier", "part_number", "timestamp"], inplace=True)
+    # Group by product_id and get the two most recent entries for each
+    df_grouped = df.groupby("product_id").head(2)
 
-#     # Group by supplier and part_number
-#     grouped_df = stock_df.groupby(["supplier", "part_number"])
+    # Calculate the quantity delta and get the most recent quantity
+    df_delta = (
+        df_grouped.groupby("product_id")
+        .agg(
+            {
+                "quantity": lambda x: (
+                    x.iloc[0] - x.iloc[1] if len(x) > 1 else x.iloc[0]
+                ),
+                "updated_date": "first",
+            }
+        )
+        .reset_index()
+    )
 
-#     # Calculate the net delta
-#     net_delta_df = grouped_df.agg(
-#         start_stock=("stock_calculation", "first"),
-#         end_stock=("stock_calculation", "last"),
-#         start_date=("timestamp", "first"),
-#         end_date=("timestamp", "last"),
-#         custom_label=("custom_label", "first"),  # Add this line to include custom_label
-#     ).reset_index()
+    # Rename the quantity column to quantity_delta
+    df_delta = df_delta.rename(columns={"quantity": "quantity_delta"})
 
-#     # Calculate the delta
-#     net_delta_df["change"] = net_delta_df["end_stock"] - net_delta_df["start_stock"]
+    # Add the most recent quantity
+    df_delta["Quantity"] = df_grouped.groupby("product_id")["quantity"].first().values
 
-#     # Select relevant columns for the final table
-#     final_df = net_delta_df[
-#         [
-#             "supplier",
-#             "part_number",
-#             "custom_label",
-#             "start_date",
-#             "end_date",
-#             "start_stock",
-#             "end_stock",
-#             "change",
-#         ]
-#     ]
+    # Filter for values with non-zero delta
+    df_delta = df_delta[
+        (df_delta["quantity_delta"] != 0) & (df_delta["quantity_delta"].notnull())
+    ]
 
-#     # Uncomment the following line if you want to filter out rows with no change
-#     final_df = final_df[final_df["change"] != 0]
-
-#     return final_df
+    return df_delta
 
 
 def process_dataframe(config_key, file):
@@ -180,14 +173,25 @@ def process_dataframe(config_key, file):
     return df_output
 
 
-def create_ebay_dataframe(stock_df, item_ids):
-    # Create a new dataframe with renamed columns
-    ebay_df = stock_df.rename(
-        columns={
-            "custom_label": "CustomLabel",
-            "end_stock": "Quantity",
-        }
+def create_ebay_dataframe(stock_df):
+
+    # Read the product table from the database
+    product_df = read_from_sqlite("product")
+
+    # Merge stock_df with product_df
+    ebay_df = pd.merge(
+        stock_df.copy(),
+        product_df[["product_id", "custom_label"]],
+        on="product_id",
+        how="inner",
     )
+
+    # Select and rename the required columns
+    ebay_df = ebay_df[["product_id", "Quantity", "custom_label"]]
+    ebay_df = ebay_df.rename(
+        columns={"product_id": "ProductID", "custom_label": "CustomLabel"}
+    )
+    # Create a new dataframe with renamed columns
 
     ebay_df["Action"] = "Revise"
     ebay_df["SiteID"] = "UK"
@@ -203,19 +207,9 @@ def create_ebay_dataframe(stock_df, item_ids):
         ]
     ]
 
-    # Remove rows with null values in the Quantity column
-    ebay_df = ebay_df.dropna(subset=["Quantity"])
-
     # Convert Quantity to integer type
     ebay_df["Quantity"] = ebay_df["Quantity"].astype(int)
 
-    # Join ebay_df with item_ids on the "custom_label" column
-    ebay_df = ebay_df.merge(
-        item_ids, left_on="CustomLabel", right_on="custom_label", how="left"
-    )
-    ebay_df = ebay_df.rename(columns={"item_id": "ItemID", "store": "Store"})
-
-    ebay_df = ebay_df[["Action", "ItemID", "SiteID", "Currency", "Quantity", "Store"]]
     return ebay_df
 
 
@@ -235,27 +229,38 @@ uploaded_folder = st.file_uploader(
 product = pd.read_csv("product.csv")
 upload_to_sqlite(product, "product", "replace")
 
-if uploaded_folder:
-    st.write("Processing files...")
+
+def process_and_upload_files(uploaded_folder):
+    processed_dataframes = []
+    for file in uploaded_folder:
+        supplier = file.name.split()[0]
+        if supplier in config:
+            df_output = process_dataframe(supplier, file)
+            df_stock_history = process_stock_history_data(df_output)
+
+            upload_to_sqlite(df_output, "supplier_stock", "append")
+            upload_to_sqlite(df_stock_history, "supplier_stock_history", "append")
+
+            processed_dataframes.append((df_output, supplier))
+        else:
+            st.warning(f"No configuration found for {supplier}. Skipping this file.")
+    return processed_dataframes
+
+
+def zip_dataframes(dataframes):
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-        for file in uploaded_folder:
-            supplier = file.name.split()[0]
-            if supplier in config:
-                df_output = process_dataframe(supplier, file)
-                df_stock_history = process_stock_history_data(df_output)
+        for df, name in dataframes:
+            csv_buffer = io.StringIO()
+            df.to_csv(csv_buffer, index=False)
+            zip_file.writestr(f"{name}.csv", csv_buffer.getvalue())
+    return zip_buffer
 
-                upload_to_sqlite(df_output, "supplier_stock", "append")
-                upload_to_sqlite(df_stock_history, "supplier_stock_history", "append")
 
-                csv_buffer = io.StringIO()
-
-                df_output.to_csv(csv_buffer, index=False)
-                zip_file.writestr(f"{supplier}.csv", csv_buffer.getvalue())
-            else:
-                st.warning(
-                    f"No configuration found for {supplier}. Skipping this file."
-                )
+if uploaded_folder:
+    st.write("Processing files...")
+    processed_dataframes = process_and_upload_files(uploaded_folder)
+    zip_buffer = zip_dataframes(processed_dataframes)
 
     st.success("All files processed!")
     st.download_button(
@@ -269,33 +274,8 @@ if uploaded_folder:
 if st.button("Generate eBay Upload File"):
 
     stock_df = process_stock_data()
-
-    upload_to_sqlite(stock_df, "stock_changes", "replace")
-
-    # Create a new dataframe with renamed columns
-    ebay_df = create_ebay_dataframe(
-        stock_df, store_database[["item_id", "custom_label", "store"]]
-    )
-
+    ebay_df = create_ebay_dataframe(stock_df)
     st.dataframe(ebay_df)
-
-    # Split ebay_df by Store and create a zip folder with separate CSVs
-    zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-        for store, store_df in ebay_df.groupby("Store"):
-            csv_buffer = io.StringIO()
-            store_df.drop(columns=["Store"]).to_csv(csv_buffer, index=False)
-            zip_file.writestr(
-                f"ebay_upload_files/{store}_ebay_upload.csv", csv_buffer.getvalue()
-            )
-
-    # Create a download button for the zip folder containing CSVs
-    st.download_button(
-        label="Download eBay Upload CSVs",
-        data=zip_buffer.getvalue(),
-        file_name="ebay_upload_files.zip",
-        mime="application/zip",
-    )
 
 
 if st.button("Download All Database Tables"):
