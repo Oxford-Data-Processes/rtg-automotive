@@ -239,6 +239,8 @@ uploaded_folder = st.file_uploader(
 
 product = pd.read_csv("product.csv")
 upload_to_sqlite(product, "product", "replace")
+store_df = pd.read_csv("store_df.csv")
+upload_to_sqlite(store_df, "store", "replace")
 
 
 def process_and_upload_files(uploaded_folder):
@@ -287,33 +289,3 @@ if st.button("Generate eBay Upload File"):
     stock_df = process_stock_data()
     ebay_df = create_ebay_dataframe(stock_df)
     st.dataframe(ebay_df)
-
-
-if st.button("Download All Database Tables"):
-    st.write("Preparing database tables for download...")
-    zip_buffer = io.BytesIO()
-    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
-        conn = sqlite3.connect("data.db")
-        cursor = conn.cursor()
-
-        # Get all table names
-        cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
-        tables = cursor.fetchall()
-
-        for table in tables:
-            table_name = table[0]
-            df = pd.read_sql_query(f"SELECT * FROM {table_name}", conn)
-
-            csv_buffer = io.StringIO()
-            df.to_csv(csv_buffer, index=False)
-            zip_file.writestr(f"{table_name}.csv", csv_buffer.getvalue())
-
-        conn.close()
-
-    st.success("All database tables prepared!")
-    st.download_button(
-        label="Download All Database Tables",
-        data=zip_buffer.getvalue(),
-        file_name="database_tables.zip",
-        mime="application/zip",
-    )
