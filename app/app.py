@@ -186,12 +186,23 @@ def create_ebay_dataframe(stock_df):
         how="inner",
     )
 
-    # Select and rename the required columns
-    ebay_df = ebay_df[["product_id", "Quantity", "custom_label"]]
-    ebay_df = ebay_df.rename(
-        columns={"product_id": "ProductID", "custom_label": "CustomLabel"}
+    # Read the store table from the database
+    store_df = read_from_sqlite("store")
+
+    # Merge ebay_df with store_df to get item_id
+    ebay_df = pd.merge(
+        ebay_df, store_df[["custom_label", "item_id"]], on="custom_label", how="inner"
     )
-    # Create a new dataframe with renamed columns
+
+    # Select and rename the required columns
+    ebay_df = ebay_df[["product_id", "item_id", "Quantity", "custom_label"]]
+    ebay_df = ebay_df.rename(
+        columns={
+            "product_id": "ProductID",
+            "custom_label": "CustomLabel",
+            "item_id": "ItemID",
+        }
+    )
 
     ebay_df["Action"] = "Revise"
     ebay_df["SiteID"] = "UK"
@@ -200,7 +211,7 @@ def create_ebay_dataframe(stock_df):
     ebay_df = ebay_df[
         [
             "Action",
-            "CustomLabel",
+            "ItemID",
             "SiteID",
             "Currency",
             "Quantity",
