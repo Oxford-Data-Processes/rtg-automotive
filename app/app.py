@@ -4,6 +4,7 @@ import streamlit as st
 import zipfile
 import io
 import sqlite3
+from typing import List, Tuple
 
 
 def process_numerical(x):
@@ -191,16 +192,20 @@ def create_ebay_dataframe(stock_df):
 
     # Merge ebay_df with store_df to get item_id
     ebay_df = pd.merge(
-        ebay_df, store_df[["custom_label", "item_id"]], on="custom_label", how="inner"
+        ebay_df,
+        store_df[["custom_label", "item_id", "store"]],
+        on="custom_label",
+        how="inner",
     )
 
     # Select and rename the required columns
-    ebay_df = ebay_df[["product_id", "item_id", "Quantity", "custom_label"]]
+    ebay_df = ebay_df[["product_id", "item_id", "Quantity", "custom_label", "store"]]
     ebay_df = ebay_df.rename(
         columns={
             "product_id": "ProductID",
             "custom_label": "CustomLabel",
             "item_id": "ItemID",
+            "store": "Store",
         }
     )
 
@@ -215,6 +220,7 @@ def create_ebay_dataframe(stock_df):
             "SiteID",
             "Currency",
             "Quantity",
+            "Store",
         ]
     ]
 
@@ -229,18 +235,6 @@ def process_stock_history_data(df):
     df_copy["updated_date"] = df_copy["last_updated"].apply(lambda x: x[:10])
     df_copy.drop(columns=["last_updated"], inplace=True)
     return df_copy
-
-
-st.title("Excel File Processor")
-
-uploaded_folder = st.file_uploader(
-    "Upload folder containing Excel files", type="xlsx", accept_multiple_files=True
-)
-
-product = pd.read_csv("product.csv")
-upload_to_sqlite(product, "product", "replace")
-store_df = pd.read_csv("store_df.csv")
-upload_to_sqlite(store_df, "store", "replace")
 
 
 def process_and_upload_files(uploaded_folder):
@@ -260,7 +254,7 @@ def process_and_upload_files(uploaded_folder):
     return processed_dataframes
 
 
-def zip_dataframes(dataframes):
+def zip_dataframes(dataframes: List[Tuple[pd.DataFrame, str]]) -> io.BytesIO:
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
         for df, name in dataframes:
@@ -270,7 +264,20 @@ def zip_dataframes(dataframes):
     return zip_buffer
 
 
-if uploaded_folder:
+st.title("Excel File Processor")
+
+uploaded_folder = st.file_uploader(
+    "Upload folder containing Excel files", type="xlsx", accept_multiple_files=True
+)
+
+product = pd.read_csv("product.csv")
+upload_to_sqlite(product, "product", "replace")
+store_df = pd.read_csv("store_df.csv")
+upload_to_sqlite(store_df, "store", "replace")
+
+process_files_button = st.button("Process Files")
+
+if process_files_button:
     st.write("Processing files...")
     processed_dataframes = process_and_upload_files(uploaded_folder)
     zip_buffer = zip_dataframes(processed_dataframes)
@@ -284,8 +291,21 @@ if uploaded_folder:
     )
 
 
-if st.button("Generate eBay Upload File"):
+if st.button("Generate eBay Upload Files"):
 
     stock_df = process_stock_data()
     ebay_df = create_ebay_dataframe(stock_df)
-    st.dataframe(ebay_df)
+    stores = list(ebay_df["Store"].unique())
+    ebay_dfs = [
+        (ebay_df[ebay_df["Store"] == store].drop(columns=["Store"]), store)
+        for store in stores
+    ]
+
+    zip_buffer = zip_dataframes(ebay_dfs)
+
+    st.download_button(
+        label="Download eBay Upload Files",
+        data=zip_buffer.getvalue(),
+        file_name="ebay_upload_files.zip",
+        mime="application/zip",
+    )
