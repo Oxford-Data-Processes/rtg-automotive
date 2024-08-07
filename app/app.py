@@ -150,7 +150,7 @@ def process_stock_data():
     return df_delta
 
 
-def process_dataframe(config_key, file):
+def process_dataframe(config_key, file, processed_date):
     st.write(f"Processing {file.name}...")
     df = pd.read_excel(file)
 
@@ -158,16 +158,15 @@ def process_dataframe(config_key, file):
     code_column = df.iloc[:, config_data["code_column_number"] - 1]
     stock_column = df.iloc[:, config_data["stock_column_number"] - 1]
 
-    last_updated = pd.Timestamp.now().strftime("%Y-%m-%d %H:%M:%S")
-    date_prefix = last_updated[:10]
-
     df_output = pd.DataFrame(
         {
-            "stock_id": code_column.apply(lambda x: f"{date_prefix}-{config_key}-{x}"),
+            "stock_id": code_column.apply(
+                lambda x: f"{processed_date}-{config_key}-{x}"
+            ),
             "product_id": code_column.apply(lambda x: f"{config_key}-{x}"),
             "quantity_raw": stock_column,
             "quantity": stock_column.apply(config_data["process_func"]),
-            "last_updated": pd.Series([last_updated] * len(code_column)),
+            "last_updated": processed_date,
         }
     )
 
@@ -232,17 +231,17 @@ def create_ebay_dataframe(stock_df):
 
 def process_stock_history_data(df):
     df_copy = df.copy()[["product_id", "quantity", "last_updated"]]
-    df_copy["updated_date"] = df_copy["last_updated"].apply(lambda x: x[:10])
+    df_copy["updated_date"] = df_copy["last_updated"]
     df_copy.drop(columns=["last_updated"], inplace=True)
     return df_copy
 
 
-def process_and_upload_files(uploaded_folder):
+def process_and_upload_files(uploaded_folder, processed_date):
     processed_dataframes = []
     for file in uploaded_folder:
         supplier = file.name.split()[0]
         if supplier in config:
-            df_output = process_dataframe(supplier, file)
+            df_output = process_dataframe(supplier, file, processed_date)
             df_stock_history = process_stock_history_data(df_output)
 
             upload_to_sqlite(df_output, "supplier_stock", "append")
@@ -275,11 +274,12 @@ upload_to_sqlite(product, "product", "replace")
 store_df = pd.read_csv("store_df.csv")
 upload_to_sqlite(store_df, "store", "replace")
 
+processed_date = st.date_input("Date", value=pd.Timestamp.now().date())
 process_files_button = st.button("Process Files")
 
 if process_files_button:
     st.write("Processing files...")
-    processed_dataframes = process_and_upload_files(uploaded_folder)
+    processed_dataframes = process_and_upload_files(uploaded_folder, processed_date)
     zip_buffer = zip_dataframes(processed_dataframes)
 
     st.success("All files processed!")
