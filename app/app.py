@@ -225,6 +225,7 @@ def create_ebay_dataframe(stock_df):
 
     # Convert Quantity to integer type
     ebay_df["Quantity"] = ebay_df["Quantity"].astype(int)
+    ebay_df["ItemID"] = ebay_df["ItemID"].astype(int)
 
     return ebay_df
 
