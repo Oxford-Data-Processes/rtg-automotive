@@ -173,6 +173,26 @@ def process_dataframe(config_key, file, processed_date):
     return df_output
 
 
+def get_store_data():
+    # Get all CSV files from store_data folder
+    csv_files = [f for f in os.listdir("store_data") if f.endswith(".csv")]
+
+    # Initialize an empty list to store dataframes
+    dfs = []
+
+    # Read each CSV file and add a 'store' column
+    for file in csv_files:
+        store_name = file.split(".")[0]  # Get store name from file name
+        df = pd.read_csv(os.path.join("store_data", file))
+        df["store"] = store_name
+        dfs.append(df)
+
+    # Concatenate all dataframes
+    store_df = pd.concat(dfs, ignore_index=True)
+
+    return store_df
+
+
 def create_ebay_dataframe(stock_df):
 
     # Read the product table from the database
@@ -272,8 +292,8 @@ uploaded_folder = st.file_uploader(
 
 product = pd.read_csv("product.csv")
 upload_to_sqlite(product, "product", "replace")
-store_df = pd.read_csv("store_df.csv")
-upload_to_sqlite(store_df, "store", "replace")
+# store_df = get_store_data()
+# upload_to_sqlite(store_df, "store", "replace")
 
 processed_date = st.date_input("Date", value=pd.Timestamp.now().date())
 process_files_button = st.button("Process Files")
