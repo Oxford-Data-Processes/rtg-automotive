@@ -23,9 +23,8 @@ resource "aws_db_instance" "rtg_automotive_db" {
   instance_class       = "db.t3.micro"
   allocated_storage    = 20
   storage_type         = "gp2"
-  db_name              = "rtg_automotive"
-  username             = "rtg_admin"
-  password             = "password" # Note: Use a more secure password in production
+  username             = "admin"
+  password             = "password"
   parameter_group_name = "default.mysql8.0"
   skip_final_snapshot  = true
 
