@@ -5,96 +5,7 @@ import zipfile
 import io
 import sqlite3
 from typing import List, Tuple
-
-
-def process_numerical(x):
-    if not isinstance(x, (int, float)):
-        return 0
-    elif x <= 0:
-        return 0
-    elif x > 10:
-        return 10
-    else:
-        return x
-
-
-config = {
-    "APE": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "process_func": lambda x: 0 if x == "No" else (10 if x == "YES" else 0),
-    },
-    "BET": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "process_func": process_numerical,
-    },
-    "BGA": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "process_func": process_numerical,
-    },
-    "COM": {
-        "code_column_number": 1,
-        "stock_column_number": 3,
-        "process_func": process_numerical,
-    },
-    "FAI": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "process_func": process_numerical,
-    },
-    "FEB": {
-        "code_column_number": 1,
-        "stock_column_number": 3,
-        "process_func": process_numerical,
-    },
-    "FIR": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "process_func": lambda x: 10 if x == "Y" else 0,
-    },
-    "FPS": {
-        "code_column_number": 1,
-        "stock_column_number": 4,
-        "process_func": process_numerical,
-    },
-    "JUR": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "process_func": process_numerical,
-    },
-    "KLA": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "process_func": lambda x: x,
-    },
-    "KYB": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "process_func": lambda x: 0 if x == "N" else (10 if x == "Y" else 0),
-    },
-    "MOT": {
-        "code_column_number": 1,
-        "stock_column_number": 3,
-        "process_func": process_numerical,
-    },
-    "ROL": {
-        "code_column_number": 1,
-        "stock_column_number": 3,
-        "process_func": lambda x: 10 if x == "In Stock" else 0,
-    },
-    "RTG": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "process_func": lambda x: 0 if str(x) == "B152381" else 20,
-    },
-    "SMP": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "process_func": process_numerical,
-    },
-}
+from config import CONFIG
 
 
 def upload_to_sqlite(df, table_name, if_exists, db_path="data.db"):
@@ -109,20 +20,17 @@ def read_from_sqlite(table_name, db_path="data.db"):
     return df
 
 
-def process_stock_data():
-    # Read the supplier_stock_history table from the database
+def prepare_stock_data():
     df = read_from_sqlite("supplier_stock_history")
-
-    # Remove duplicates based on product_id and updated_date
     df = df.drop_duplicates(subset=["product_id", "updated_date"], keep="first")
-
-    # Sort the dataframe by product_id and updated_date
     df = df.sort_values(["product_id", "updated_date"], ascending=[True, False])
-
-    # Group by product_id and get the two most recent entries for each
     df_grouped = df.groupby("product_id").head(2)
 
-    # Calculate the quantity delta and get the most recent quantity
+    return df_grouped
+
+
+def process_stock_data():
+    df_grouped = prepare_stock_data()
     df_delta = (
         df_grouped.groupby("product_id")
         .agg(
@@ -136,13 +44,8 @@ def process_stock_data():
         .reset_index()
     )
 
-    # Rename the quantity column to quantity_delta
     df_delta = df_delta.rename(columns={"quantity": "quantity_delta"})
-
-    # Add the most recent quantity
     df_delta["Quantity"] = df_grouped.groupby("product_id")["quantity"].first().values
-
-    # Filter for values with non-zero delta
     df_delta = df_delta[
         (df_delta["quantity_delta"] != 0) & (df_delta["quantity_delta"].notnull())
     ]
@@ -151,10 +54,9 @@ def process_stock_data():
 
 
 def process_dataframe(config_key, file, processed_date):
-    st.write(f"Processing {file.name}...")
     df = pd.read_excel(file)
 
-    config_data = config[config_key]
+    config_data = CONFIG[config_key]
     code_column = df.iloc[:, config_data["code_column_number"] - 1]
     stock_column = df.iloc[:, config_data["stock_column_number"] - 1]
 
@@ -174,31 +76,24 @@ def process_dataframe(config_key, file, processed_date):
 
 
 def get_store_data():
-    # Get all CSV files from store_data folder
     csv_files = [f for f in os.listdir("store_data") if f.endswith(".csv")]
 
-    # Initialize an empty list to store dataframes
     dfs = []
 
-    # Read each CSV file and add a 'store' column
     for file in csv_files:
         store_name = file.split(".")[0]  # Get store name from file name
         df = pd.read_csv(os.path.join("store_data", file))
         df["store"] = store_name
         dfs.append(df)
 
-    # Concatenate all dataframes
     store_df = pd.concat(dfs, ignore_index=True)
-
     return store_df
 
 
-def create_ebay_dataframe(stock_df):
-
-    # Read the product table from the database
+def merge_stock_with_product_and_store(stock_df):
     product_df = read_from_sqlite("product")
+    store_df = read_from_sqlite("store")
 
-    # Merge stock_df with product_df
     ebay_df = pd.merge(
         stock_df.copy(),
         product_df[["product_id", "custom_label"]],
@@ -206,10 +101,6 @@ def create_ebay_dataframe(stock_df):
         how="inner",
     )
 
-    # Read the store table from the database
-    store_df = read_from_sqlite("store")
-
-    # Merge ebay_df with store_df to get item_id
     ebay_df = pd.merge(
         ebay_df,
         store_df[["custom_label", "item_id", "store"]],
@@ -217,8 +108,11 @@ def create_ebay_dataframe(stock_df):
         how="inner",
     )
 
-    # Select and rename the required columns
-    ebay_df = ebay_df[["product_id", "item_id", "Quantity", "custom_label", "store"]]
+    return ebay_df[["product_id", "item_id", "Quantity", "custom_label", "store"]]
+
+
+def create_ebay_dataframe(stock_df):
+    ebay_df = merge_stock_with_product_and_store(stock_df)
     ebay_df = ebay_df.rename(
         columns={
             "product_id": "ProductID",
@@ -227,11 +121,9 @@ def create_ebay_dataframe(stock_df):
             "store": "Store",
         }
     )
-
     ebay_df["Action"] = "Revise"
     ebay_df["SiteID"] = "UK"
     ebay_df["Currency"] = "GBP"
-
     ebay_df = ebay_df[
         [
             "Action",
@@ -242,11 +134,8 @@ def create_ebay_dataframe(stock_df):
             "Store",
         ]
     ]
-
-    # Convert Quantity to integer type
     ebay_df["Quantity"] = ebay_df["Quantity"].astype(int)
     ebay_df["ItemID"] = ebay_df["ItemID"].astype(int)
-
     return ebay_df
 
 
@@ -261,7 +150,7 @@ def process_and_upload_files(uploaded_folder, processed_date):
     processed_dataframes = []
     for file in uploaded_folder:
         supplier = file.name.split()[0]
-        if supplier in config:
+        if supplier in CONFIG:
             df_output = process_dataframe(supplier, file, processed_date)
             df_stock_history = process_stock_history_data(df_output)
 
@@ -290,7 +179,7 @@ uploaded_folder = st.file_uploader(
     "Upload folder containing Excel files", type="xlsx", accept_multiple_files=True
 )
 
-product = pd.read_csv("product.csv")
+product = pd.read_csv("product_df.csv")
 upload_to_sqlite(product, "product", "replace")
 # store_df = get_store_data()
 # upload_to_sqlite(store_df, "store", "replace")
