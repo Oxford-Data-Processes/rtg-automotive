@@ -26,6 +26,26 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# Terraform files
+*.tfstate
+*.tfstate.*
+*.tfvars
+*.tfvars.json
+.terraform/
+.terraform.lock.hcl
+
+# Ignore Terraform files in the infra folder
+infra/.terraform/
+infra/*.tfstate
+infra/*.tfstate.*
+infra/*.tfvars
+infra/*.tfvars.json
+infra/.terraform.lock.hcl
+
+# Crash log files
+crash.log
+crash.*.log
+
 # macOS system files
 .DS_Store
 .AppleDouble
