@@ -15,21 +15,3 @@ provider "aws" {
   profile = "speedsheet-management"
   region  = "eu-west-2"
 }
-
-# Test resource: DynamoDB table
-resource "aws_dynamodb_table" "test_table" {
-  name         = "${var.project}-test-table"
-  billing_mode = "PAY_PER_REQUEST"
-  hash_key     = "id"
-
-  attribute {
-    name = "id"
-    type = "S"
-  }
-
-  tags = {
-    Name        = "${var.project} Test Table"
-    Environment = "Test"
-    Project     = var.project
-  }
-}
