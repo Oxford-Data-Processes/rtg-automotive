@@ -1,27 +1,72 @@
-import os
 import pandas as pd
 import streamlit as st
 import zipfile
 import io
-import sqlite3
 from typing import List, Tuple
 from config import CONFIG
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy import create_engine
 
 
-def upload_to_sqlite(df, table_name, if_exists, db_path="data.db"):
-    conn = sqlite3.connect(db_path)
-    df.to_sql(table_name, conn, if_exists=if_exists, index=False)
+def create_mysql_engine(user, password, host, port, database):
+    """
+    Create and return a SQLAlchemy engine for MySQL connection.
+
+    Args:
+    user (str): MySQL username
+    password (str): MySQL password
+    host (str): MySQL host address
+    port (str): MySQL port number
+    database (str): MySQL database name
+
+    Returns:
+    sqlalchemy.engine.base.Engine: SQLAlchemy engine object
+    """
+    return create_engine(
+        f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"
+    )
 
 
-def read_from_sqlite(table_name, db_path="data.db"):
-    conn = sqlite3.connect(db_path)
-    df = pd.read_sql(f"SELECT * FROM {table_name}", conn)
-    conn.close()
+def upload_to_mysql(df, table_name, engine, chunk_size=10000):
+    try:
+        with engine.begin() as connection:
+            # Create table if it doesn't exist
+            df.head(0).to_sql(
+                table_name, con=connection, if_exists="replace", index=False
+            )
+
+            # Upload data in chunks
+            for i in range(0, len(df), chunk_size):
+                chunk = df.iloc[i : i + chunk_size]
+                chunk.to_sql(
+                    table_name, con=connection, if_exists="append", index=False
+                )
+                print(
+                    f"Uploaded chunk {i//chunk_size + 1} of {(len(df)-1)//chunk_size + 1}"
+                )
+    except SQLAlchemyError as e:
+        print(f"Error: {e}")
+        connection.rollback()
+
+
+def read_from_mysql(table_name, engine):
+    """
+    Read data from a MySQL table using the provided SQLAlchemy engine.
+
+    Args:
+    table_name (str): Name of the table to read from
+    engine (sqlalchemy.engine.base.Engine): SQLAlchemy engine object for MySQL connection
+
+    Returns:
+    pandas.DataFrame: DataFrame containing the data from the specified table
+    """
+    with engine.connect() as connection:
+        df = pd.read_sql_table(table_name, connection)
     return df
 
 
 def prepare_stock_data():
-    df = read_from_sqlite("supplier_stock_history")
+    df = read_from_mysql("supplier_stock_history", engine)
     df = df.drop_duplicates(subset=["product_id", "updated_date"], keep="first")
     df = df.sort_values(["product_id", "updated_date"], ascending=[True, False])
     df_grouped = df.groupby("product_id").head(2)
@@ -75,24 +120,9 @@ def process_dataframe(config_key, file, processed_date):
     return df_output
 
 
-def get_store_data():
-    csv_files = [f for f in os.listdir("store_data") if f.endswith(".csv")]
-
-    dfs = []
-
-    for file in csv_files:
-        store_name = file.split(".")[0]  # Get store name from file name
-        df = pd.read_csv(os.path.join("store_data", file))
-        df["store"] = store_name
-        dfs.append(df)
-
-    store_df = pd.concat(dfs, ignore_index=True)
-    return store_df
-
-
-def merge_stock_with_product_and_store(stock_df):
-    product_df = read_from_sqlite("product")
-    store_df = read_from_sqlite("store")
+def merge_stock_with_product_and_store(stock_df, engine):
+    product_df = read_from_mysql("product", engine)
+    store_df = read_from_mysql("store", engine)
 
     ebay_df = pd.merge(
         stock_df.copy(),
@@ -111,8 +141,8 @@ def merge_stock_with_product_and_store(stock_df):
     return ebay_df[["product_id", "item_id", "Quantity", "custom_label", "store"]]
 
 
-def create_ebay_dataframe(stock_df):
-    ebay_df = merge_stock_with_product_and_store(stock_df)
+def create_ebay_dataframe(stock_df, engine):
+    ebay_df = merge_stock_with_product_and_store(stock_df, engine)
     ebay_df = ebay_df.rename(
         columns={
             "product_id": "ProductID",
@@ -146,7 +176,7 @@ def process_stock_history_data(df):
     return df_copy
 
 
-def process_and_upload_files(uploaded_folder, processed_date):
+def process_and_upload_files(uploaded_folder, processed_date, engine):
     processed_dataframes = []
     for file in uploaded_folder:
         supplier = file.name.split()[0]
@@ -154,8 +184,8 @@ def process_and_upload_files(uploaded_folder, processed_date):
             df_output = process_dataframe(supplier, file, processed_date)
             df_stock_history = process_stock_history_data(df_output)
 
-            upload_to_sqlite(df_output, "supplier_stock", "append")
-            upload_to_sqlite(df_stock_history, "supplier_stock_history", "append")
+            upload_to_mysql(df_output, "supplier_stock", engine)
+            upload_to_mysql(df_stock_history, "supplier_stock_history", engine)
 
             processed_dataframes.append((df_output, supplier))
         else:
@@ -179,17 +209,21 @@ uploaded_folder = st.file_uploader(
     "Upload folder containing Excel files", type="xlsx", accept_multiple_files=True
 )
 
-product = pd.read_csv("product_df.csv")
-upload_to_sqlite(product, "product", "replace")
-# store_df = get_store_data()
-# upload_to_sqlite(store_df, "store", "replace")
-
 processed_date = st.date_input("Date", value=pd.Timestamp.now().date())
 process_files_button = st.button("Process Files")
 
 if process_files_button:
     st.write("Processing files...")
-    processed_dataframes = process_and_upload_files(uploaded_folder, processed_date)
+    engine = create_mysql_engine(
+        "admin",
+        "password",
+        "rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com",
+        "3306",
+        "rtg_automotive",
+    )
+    processed_dataframes = process_and_upload_files(
+        uploaded_folder, processed_date, engine
+    )
     zip_buffer = zip_dataframes(processed_dataframes)
 
     st.success("All files processed!")
@@ -202,9 +236,15 @@ if process_files_button:
 
 
 if st.button("Generate eBay Upload Files"):
-
+    engine = create_mysql_engine(
+        "admin",
+        "password",
+        "rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com",
+        "3306",
+        "rtg_automotive",
+    )
     stock_df = process_stock_data()
-    ebay_df = create_ebay_dataframe(stock_df)
+    ebay_df = create_ebay_dataframe(stock_df, engine)
     stores = list(ebay_df["Store"].unique())
     ebay_dfs = [
         (ebay_df[ebay_df["Store"] == store].drop(columns=["Store"]), store)
