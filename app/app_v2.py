@@ -4,8 +4,9 @@ import zipfile
 import io
 from typing import List, Tuple
 from config import CONFIG
-from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from sqlalchemy import create_engine
+import time
 
 
 def create_mysql_engine(user, password, host, port, database):
@@ -24,6 +25,37 @@ def create_mysql_engine(user, password, host, port, database):
     """
     return create_engine(
         f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"
+    )
+
+
+def read_from_mysql(table_name, engine, max_retries=3, delay=1):
+    """
+    Read data from a MySQL table using the provided SQLAlchemy engine.
+
+    Args:
+    table_name (str): Name of the table to read from
+    engine (sqlalchemy.engine.base.Engine): SQLAlchemy engine object for MySQL connection
+    max_retries (int): Maximum number of retries in case of deadlock
+    delay (int): Delay between retries in seconds
+
+    Returns:
+    pandas.DataFrame: DataFrame containing the data from the specified table
+    """
+    retries = 0
+    while retries < max_retries:
+        try:
+            with engine.connect() as connection:
+                df = pd.read_sql_table(table_name, connection)
+            return df
+        except OperationalError as e:
+            if "1213" in str(e.orig):
+                retries += 1
+                print(f"Deadlock detected. Retrying {retries}/{max_retries}...")
+                time.sleep(delay)
+            else:
+                raise e
+    raise Exception(
+        f"Failed to read from {table_name} after {max_retries} retries due to deadlock."
     )
 
 
@@ -47,22 +79,6 @@ def upload_to_mysql(df, table_name, engine, chunk_size=10000):
     except SQLAlchemyError as e:
         print(f"Error: {e}")
         connection.rollback()
-
-
-def read_from_mysql(table_name, engine):
-    """
-    Read data from a MySQL table using the provided SQLAlchemy engine.
-
-    Args:
-    table_name (str): Name of the table to read from
-    engine (sqlalchemy.engine.base.Engine): SQLAlchemy engine object for MySQL connection
-
-    Returns:
-    pandas.DataFrame: DataFrame containing the data from the specified table
-    """
-    with engine.connect() as connection:
-        df = pd.read_sql_table(table_name, connection)
-    return df
 
 
 def prepare_stock_data():
