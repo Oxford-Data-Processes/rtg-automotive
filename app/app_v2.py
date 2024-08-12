@@ -69,7 +69,7 @@ def upload_to_mysql(df, table_name, engine, chunk_size=10000):
         connection.rollback()
 
 
-def prepare_stock_data():
+def prepare_stock_data(engine):
     df = read_from_mysql("supplier_stock_history", engine)
     df = df.drop_duplicates(subset=["product_id", "updated_date"], keep="first")
     df = df.sort_values(["product_id", "updated_date"], ascending=[True, False])
@@ -78,8 +78,8 @@ def prepare_stock_data():
     return df_grouped
 
 
-def process_stock_data():
-    df_grouped = prepare_stock_data()
+def process_stock_data(engine):
+    df_grouped = prepare_stock_data(engine)
     df_delta = (
         df_grouped.groupby("product_id")
         .agg(
@@ -247,7 +247,7 @@ def main():
             "3306",
             "rtg_automotive",
         )
-        stock_df = process_stock_data()
+        stock_df = process_stock_data(engine)
         ebay_df = create_ebay_dataframe(stock_df, engine)
         stores = list(ebay_df["Store"].unique())
         ebay_dfs = [
