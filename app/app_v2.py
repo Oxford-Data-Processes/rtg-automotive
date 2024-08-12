@@ -265,5 +265,23 @@ def main():
         )
 
 
+def login():
+    st.sidebar.title("Login")
+    username = st.sidebar.text_input("Username")
+    password = st.sidebar.text_input("Password", type="password")
+    if st.sidebar.button("Login"):
+        if (
+            username == "admin" and password == "rtgautomotive"
+        ):  # Replace with actual authentication
+            st.sidebar.success("Logged in as {}".format(username))
+            return True
+        else:
+            st.sidebar.error("Incorrect username or password")
+    return False
+
+
 if __name__ == "__main__":
-    main()
+    if login():
+        main()
+    else:
+        st.write("Please log in to access the application.")
