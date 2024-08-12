@@ -266,18 +266,24 @@ def main():
 
 
 def login():
-    st.title("Login")
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
-    if st.button("Login"):
-        if (
-            username == "admin" and password == "rtgautomotive"
-        ):  # Replace with actual authentication
-            st.success("Logged in as {}".format(username))
-            return True
-        else:
-            st.error("Incorrect username or password")
-    return False
+    if "logged_in" not in st.session_state:
+        st.session_state.logged_in = False
+
+    if not st.session_state.logged_in:
+        st.title("Login")
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+        if st.button("Login"):
+            if (
+                username == "admin" and password == "rtgautomotive"
+            ):  # Replace with actual authentication
+                st.session_state.logged_in = True
+                st.success("Logged in as {}".format(username))
+                st.experimental_rerun()
+            else:
+                st.error("Incorrect username or password")
+
+    return st.session_state.logged_in
 
 
 if __name__ == "__main__":
