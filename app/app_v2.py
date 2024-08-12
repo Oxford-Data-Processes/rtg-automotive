@@ -279,7 +279,7 @@ def login():
             ):  # Replace with actual authentication
                 st.session_state.logged_in = True
                 st.success("Logged in as {}".format(username))
-                st.experimental_rerun()
+                st.rerun()
             else:
                 st.error("Incorrect username or password")
 
@@ -289,5 +289,3 @@ def login():
 if __name__ == "__main__":
     if login():
         main()
-    else:
-        st.write("Please log in to access the application.")
