@@ -273,7 +273,6 @@ def login():
         if username == "admin" and password == "rtgautomotive":
             st.session_state.logged_in = True
             st.success("Logged in successfully!")
-            st.experimental_rerun()
         else:
             st.error("Incorrect username or password")
 
