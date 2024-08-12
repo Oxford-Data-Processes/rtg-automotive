@@ -28,35 +28,24 @@ def create_mysql_engine(user, password, host, port, database):
     )
 
 
-def read_from_mysql(table_name, engine, max_retries=3, delay=1):
+def read_from_mysql(table_name, engine, chunk_size=10000):
     """
-    Read data from a MySQL table using the provided SQLAlchemy engine.
+    Read data from a MySQL table using the provided SQLAlchemy engine in chunks.
 
     Args:
     table_name (str): Name of the table to read from
     engine (sqlalchemy.engine.base.Engine): SQLAlchemy engine object for MySQL connection
-    max_retries (int): Maximum number of retries in case of deadlock
-    delay (int): Delay between retries in seconds
+    chunk_size (int): Number of rows to read per chunk (default: 10000)
 
     Returns:
     pandas.DataFrame: DataFrame containing the data from the specified table
     """
-    retries = 0
-    while retries < max_retries:
-        try:
-            with engine.connect() as connection:
-                df = pd.read_sql_table(table_name, connection)
-            return df
-        except OperationalError as e:
-            if "1213" in str(e.orig):
-                retries += 1
-                print(f"Deadlock detected. Retrying {retries}/{max_retries}...")
-                time.sleep(delay)
-            else:
-                raise e
-    raise Exception(
-        f"Failed to read from {table_name} after {max_retries} retries due to deadlock."
-    )
+    chunks = []
+    with engine.connect() as connection:
+        for chunk in pd.read_sql_table(table_name, connection, chunksize=chunk_size):
+            chunks.append(chunk)
+
+    return pd.concat(chunks, ignore_index=True)
 
 
 def upload_to_mysql(df, table_name, engine, chunk_size=10000):
