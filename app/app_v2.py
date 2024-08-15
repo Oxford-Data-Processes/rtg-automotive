@@ -47,22 +47,17 @@ def read_from_mysql(table_name, engine, chunk_size=10000):
     return pd.concat(chunks, ignore_index=True)
 
 
-def upload_to_mysql(df, table_name, engine, chunk_size=10000):
+def append_mysql_table(df, table_name, engine, chunk_size=10000):
     try:
         with engine.begin() as connection:
-            # Create table if it doesn't exist
-            df.head(0).to_sql(
-                table_name, con=connection, if_exists="replace", index=False
-            )
-
             # Upload data in chunks
             for i in range(0, len(df), chunk_size):
                 chunk = df.iloc[i : i + chunk_size]
                 chunk.to_sql(
-                    table_name, con=connection, if_exists="append", index=False
+                    table_name, con=connection, if_exists='append', index=False
                 )
                 print(
-                    f"Uploaded chunk {i//chunk_size + 1} of {(len(df)-1)//chunk_size + 1}"
+                    f"Appended chunk {i//chunk_size + 1} of {(len(df)-1)//chunk_size + 1}"
                 )
     except SQLAlchemyError as e:
         print(f"Error: {e}")
@@ -188,8 +183,8 @@ def process_and_upload_files(uploaded_folder, processed_date, engine):
             df_output = process_dataframe(supplier, file, processed_date)
             df_stock_history = process_stock_history_data(df_output)
 
-            upload_to_mysql(df_output, "supplier_stock", engine)
-            upload_to_mysql(df_stock_history, "supplier_stock_history", engine)
+            append_mysql_table(df_output, "supplier_stock", engine)
+            append_mysql_table(df_stock_history, "supplier_stock_history", engine)
 
             processed_dataframes.append((df_output, supplier))
         else:
@@ -233,7 +228,7 @@ def main():
 
         st.success("All files processed!")
         st.download_button(
-            label="Download All CSVs",
+            label="Download All CSVs", 
             data=zip_buffer.getvalue(),
             file_name="processed_files.zip",
             mime="application/zip",
