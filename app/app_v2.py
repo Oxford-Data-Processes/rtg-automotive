@@ -1,11 +1,11 @@
 import pandas as pd
 import streamlit as st
-import zipfile
-import io
-from typing import List, Tuple
-from config import CONFIG
-from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from sqlalchemy import create_engine
+from sqlalchemy.exc import SQLAlchemyError, OperationalError
+from typing import List, Tuple
+import io
+import zipfile
+from config import CONFIG
 
 
 def create_mysql_engine(user, password, host, port, database):

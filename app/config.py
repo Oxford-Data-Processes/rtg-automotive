@@ -83,7 +83,7 @@ CONFIG = {
     "RTG": {
         "code_column_number": 1,
         "stock_column_number": 2,
-        "process_func": lambda x: 0 if str(x) == "B152381" else 20,
+        "process_func": lambda _: 0,
     },
     "SMP": {
         "code_column_number": 1,
