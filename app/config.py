@@ -1,3 +1,6 @@
+import pandas as pd
+
+
 def process_numerical(x):
     if not isinstance(x, (int, float)):
         return 0
@@ -83,11 +86,11 @@ CONFIG = {
     "RTG": {
         "code_column_number": 1,
         "stock_column_number": 2,
-        "process_func": lambda _: 0,
+        "process_func": lambda x: 10 if x is None or pd.isna(x) else 0,
     },
     "SMP": {
         "code_column_number": 1,
-        "stock_column_number": 2,
-        "process_func": process_numerical,
+        "stock_column_number": 1,
+        "process_func": lambda _: 10,
     },
 }
