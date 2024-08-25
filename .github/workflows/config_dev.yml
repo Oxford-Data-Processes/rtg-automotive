@@ -1,5 +1,8 @@
 name: Github Actions Pipeline
 
+env:
+  AWS_ACCOUNT_ID: "654654324108"
+
 on:
   push:
     tags:
@@ -30,7 +33,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          output=$(aws sts assume-role --role-arn arn:aws:iam::654654324108:role/DevAdminRole --role-session-name MySession)
+          output=$(aws sts assume-role --role-arn arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/DevAdminRole --role-session-name MySession)
           echo "AWS_ACCESS_KEY_ID=$(echo $output | jq -r .Credentials.AccessKeyId)" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=$(echo $output | jq -r .Credentials.SecretAccessKey)" >> $GITHUB_ENV
           echo "AWS_SESSION_TOKEN=$(echo $output | jq -r .Credentials.SessionToken)" >> $GITHUB_ENV

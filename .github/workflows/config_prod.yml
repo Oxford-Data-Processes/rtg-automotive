@@ -1,10 +1,12 @@
 name: Github Actions Pipeline
 
+env:
+  AWS_ACCOUNT_ID: "905418370160"
+
 on:
   push:
     tags:
       - "**prod-deploy-*"
-
 
 jobs:
   terraform:
