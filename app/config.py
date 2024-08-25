@@ -21,6 +21,7 @@ DB_CONFIG = {
     "database": st.secrets["db_config"]["database"],
 }
 
+
 # Login credentials (consider using a more secure method in production)
 LOGIN_CREDENTIALS = {
     "username": st.secrets["login_credentials"]["username"],
