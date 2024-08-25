@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 
 
@@ -11,6 +12,20 @@ def process_numerical(x):
     else:
         return x
 
+# Database configuration
+DB_CONFIG = {
+    "user": "admin",
+    "password": "password",
+    "host": "rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com",
+    "port": "3306",
+    "database": "rtg_automotive",
+}
+
+# Login credentials (consider using a more secure method in production)
+LOGIN_CREDENTIALS = {
+    "username": "admin",
+    "password": "rtgautomotive",
+}
 
 CONFIG = {
     "APE": {

@@ -1,67 +1,10 @@
 import pandas as pd
 import streamlit as st
-from sqlalchemy import create_engine
-from sqlalchemy.exc import SQLAlchemyError, OperationalError
 from typing import List, Tuple
 import io
 import zipfile
-from config import CONFIG
-
-
-def create_mysql_engine(user, password, host, port, database):
-    """
-    Create and return a SQLAlchemy engine for MySQL connection.
-
-    Args:
-    user (str): MySQL username
-    password (str): MySQL password
-    host (str): MySQL host address
-    port (str): MySQL port number
-    database (str): MySQL database name
-
-    Returns:
-    sqlalchemy.engine.base.Engine: SQLAlchemy engine object
-    """
-    return create_engine(
-        f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"
-    )
-
-
-def read_from_mysql(table_name, engine, chunk_size=10000):
-    """
-    Read data from a MySQL table using the provided SQLAlchemy engine in chunks.
-
-    Args:
-    table_name (str): Name of the table to read from
-    engine (sqlalchemy.engine.base.Engine): SQLAlchemy engine object for MySQL connection
-    chunk_size (int): Number of rows to read per chunk (default: 10000)
-
-    Returns:
-    pandas.DataFrame: DataFrame containing the data from the specified table
-    """
-    chunks = []
-    with engine.connect() as connection:
-        for chunk in pd.read_sql_table(table_name, connection, chunksize=chunk_size):
-            chunks.append(chunk)
-
-    return pd.concat(chunks, ignore_index=True)
-
-
-def append_mysql_table(df, table_name, engine, chunk_size=10000):
-    try:
-        with engine.begin() as connection:
-            # Upload data in chunks
-            for i in range(0, len(df), chunk_size):
-                chunk = df.iloc[i : i + chunk_size]
-                chunk.to_sql(
-                    table_name, con=connection, if_exists='append', index=False
-                )
-                print(
-                    f"Appended chunk {i//chunk_size + 1} of {(len(df)-1)//chunk_size + 1}"
-                )
-    except SQLAlchemyError as e:
-        print(f"Error: {e}")
-        connection.rollback()
+from config import CONFIG, DB_CONFIG, LOGIN_CREDENTIALS
+from database import create_mysql_engine, read_from_mysql, append_mysql_table
 
 
 def prepare_stock_data(engine):
@@ -214,13 +157,7 @@ def main():
 
     if process_files_button:
         st.write("Processing files...")
-        engine = create_mysql_engine(
-            "admin",
-            "password",
-            "rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com",
-            "3306",
-            "rtg_automotive",
-        )
+        engine = create_mysql_engine(**DB_CONFIG)
         processed_dataframes = process_and_upload_files(
             uploaded_folder, processed_date, engine
         )
@@ -235,13 +172,7 @@ def main():
         )
 
     if st.button("Generate eBay Upload Files"):
-        engine = create_mysql_engine(
-            "admin",
-            "password",
-            "rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com",
-            "3306",
-            "rtg_automotive",
-        )
+        engine = create_mysql_engine(**DB_CONFIG)
         stock_df = process_stock_data(engine)
         ebay_df = create_ebay_dataframe(stock_df, engine)
         stores = list(ebay_df["Store"].unique())
@@ -270,8 +201,9 @@ def login():
         password = st.text_input("Password", type="password")
         if st.button("Login"):
             if (
-                username == "admin" and password == "rtgautomotive"
-            ):  # Replace with actual authentication
+                username == LOGIN_CREDENTIALS["username"] and 
+                password == LOGIN_CREDENTIALS["password"]
+            ):
                 st.session_state.logged_in = True
                 st.success("Logged in as {}".format(username))
                 st.rerun()
