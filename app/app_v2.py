@@ -4,7 +4,7 @@ import io
 import zipfile
 import pandas as pd
 from config import CONFIG, DB_CONFIG, LOGIN_CREDENTIALS
-from database import create_mysql_engine, read_from_mysql, append_mysql_table
+from database import create_mysql_engine, append_mysql_table
 from data_processing import (
     process_stock_data,
     process_dataframe,
