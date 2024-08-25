@@ -2,6 +2,7 @@ import streamlit as st
 from typing import List, Tuple
 import io
 import zipfile
+import pandas as pd
 from config import CONFIG, DB_CONFIG, LOGIN_CREDENTIALS
 from database import create_mysql_engine, read_from_mysql, append_mysql_table
 from data_processing import (
@@ -10,8 +11,20 @@ from data_processing import (
     create_ebay_dataframe,
     process_stock_history_data,
 )
+from sqlalchemy.engine.base import Engine
 
-def process_and_upload_files(uploaded_folder, processed_date, engine):
+def process_and_upload_files(uploaded_folder: List[pd.ExcelFile], processed_date: str, engine: Engine) -> List[Tuple[pd.DataFrame, str]]:
+    """
+    Process and upload files to the database.
+
+    Args:
+        uploaded_folder (List[pd.ExcelFile]): List of uploaded Excel files.
+        processed_date (str): Date of processing.
+        engine (Engine): SQLAlchemy engine for database connection.
+
+    Returns:
+        List[Tuple[pd.DataFrame, str]]: List of processed dataframes and their corresponding supplier names.
+    """
     processed_dataframes = []
     for file in uploaded_folder:
         supplier = file.name.split()[0]
@@ -28,6 +41,15 @@ def process_and_upload_files(uploaded_folder, processed_date, engine):
     return processed_dataframes
 
 def zip_dataframes(dataframes: List[Tuple[pd.DataFrame, str]]) -> io.BytesIO:
+    """
+    Zip multiple dataframes into a single BytesIO object.
+
+    Args:
+        dataframes (List[Tuple[pd.DataFrame, str]]): List of tuples containing dataframes and their names.
+
+    Returns:
+        io.BytesIO: BytesIO object containing the zipped dataframes.
+    """
     zip_buffer = io.BytesIO()
     with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
         for df, name in dataframes:
@@ -36,9 +58,10 @@ def zip_dataframes(dataframes: List[Tuple[pd.DataFrame, str]]) -> io.BytesIO:
             zip_file.writestr(f"{name}.csv", csv_buffer.getvalue())
     return zip_buffer
 
-def main():
-    st.title("Excel File Processor")
-
+def process_files() -> None:
+    """
+    Handle file uploading, processing, and downloading of processed files.
+    """
     uploaded_folder = st.file_uploader(
         "Upload folder containing Excel files", type="xlsx", accept_multiple_files=True
     )
@@ -62,6 +85,10 @@ def main():
             mime="application/zip",
         )
 
+def generate_ebay_files() -> None:
+    """
+    Generate and provide download for eBay upload files.
+    """
     if st.button("Generate eBay Upload Files"):
         engine = create_mysql_engine(**DB_CONFIG)
         stock_df = process_stock_data(engine)
@@ -81,7 +108,21 @@ def main():
             mime="application/zip",
         )
 
-def login():
+def main() -> None:
+    """
+    Main function to run the Streamlit app.
+    """
+    st.title("Excel File Processor")
+    process_files()
+    generate_ebay_files()
+
+def login() -> bool:
+    """
+    Handle user login.
+
+    Returns:
+        bool: True if user is logged in, False otherwise.
+    """
     if "logged_in" not in st.session_state:
         st.session_state.logged_in = False
 
