@@ -1,8 +1,10 @@
 import pandas as pd
 from sqlalchemy import create_engine
+from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import SQLAlchemyError
+from typing import List, Dict, Optional, Any
 
-def create_mysql_engine(user, password, host, port, database):
+def create_mysql_engine(user: str, password: str, host: str, port: str, database: str) -> Engine:
     """
     Create and return a SQLAlchemy engine for MySQL connection.
 
@@ -20,7 +22,7 @@ def create_mysql_engine(user, password, host, port, database):
         f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"
     )
 
-def read_from_mysql(table_name, engine, chunk_size=10000):
+def read_from_mysql(table_name: str, engine: Engine, chunk_size: int = 10000) -> pd.DataFrame:
     """
     Read data from a MySQL table using the provided SQLAlchemy engine in chunks.
 
@@ -32,14 +34,14 @@ def read_from_mysql(table_name, engine, chunk_size=10000):
     Returns:
     pandas.DataFrame: DataFrame containing the data from the specified table
     """
-    chunks = []
+    chunks: List[pd.DataFrame] = []
     with engine.connect() as connection:
         for chunk in pd.read_sql_table(table_name, connection, chunksize=chunk_size):
             chunks.append(chunk)
 
     return pd.concat(chunks, ignore_index=True)
 
-def append_mysql_table(df, table_name, engine, chunk_size=10000):
+def append_mysql_table(df: pd.DataFrame, table_name: str, engine: Engine, chunk_size: int = 10000) -> None:
     """
     Append data to a MySQL table using the provided SQLAlchemy engine in chunks.
 
@@ -64,7 +66,7 @@ def append_mysql_table(df, table_name, engine, chunk_size=10000):
         print(f"Error: {e}")
         raise
 
-def execute_query(engine, query, params=None):
+def execute_query(engine: Engine, query: str, params: Optional[Dict[str, Any]] = None) -> List[tuple]:
     """
     Execute a SQL query using the provided SQLAlchemy engine.
 
@@ -80,7 +82,7 @@ def execute_query(engine, query, params=None):
         result = connection.execute(query, params)
         return result.fetchall()
 
-def update_mysql_table(df, table_name, engine, primary_key, chunk_size=10000):
+def update_mysql_table(df: pd.DataFrame, table_name: str, engine: Engine, primary_key: str, chunk_size: int = 10000) -> None:
     """
     Update existing records in a MySQL table using the provided SQLAlchemy engine in chunks.
 

@@ -1,4 +1,4 @@
-import os
+import streamlit as st
 import pandas as pd
 
 
@@ -14,18 +14,19 @@ def process_numerical(x):
 
 # Database configuration
 DB_CONFIG = {
-    "user": "admin",
-    "password": "password",
-    "host": "rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com",
-    "port": "3306",
-    "database": "rtg_automotive",
+    "user": st.secrets["db_config"]["user"],
+    "password": st.secrets["db_config"]["password"],
+    "host": st.secrets["db_config"]["host"],
+    "port": st.secrets["db_config"]["port"],
+    "database": st.secrets["db_config"]["database"],
 }
 
 # Login credentials (consider using a more secure method in production)
 LOGIN_CREDENTIALS = {
-    "username": "admin",
-    "password": "rtgautomotive",
+    "username": st.secrets["login_credentials"]["username"],
+    "password": st.secrets["login_credentials"]["password"],
 }
+
 
 CONFIG = {
     "APE": {
