@@ -4,6 +4,7 @@ from sqlalchemy.engine.base import Engine
 from config import CONFIG
 from database import read_from_mysql, append_mysql_table
 
+
 def prepare_stock_data(engine: Engine) -> pd.DataFrame:
     """
     Prepare stock data by reading from the database and performing initial processing.
@@ -19,6 +20,7 @@ def prepare_stock_data(engine: Engine) -> pd.DataFrame:
     df = df.sort_values(["product_id", "updated_date"], ascending=[True, False])
     df_grouped = df.groupby("product_id").head(2)
     return df_grouped
+
 
 def process_stock_data(engine: Engine) -> pd.DataFrame:
     """
@@ -52,7 +54,10 @@ def process_stock_data(engine: Engine) -> pd.DataFrame:
 
     return df_delta
 
-def process_dataframe(config_key: str, file: pd.ExcelFile, processed_date: str) -> pd.DataFrame:
+
+def process_dataframe(
+    config_key: str, file: pd.ExcelFile, processed_date: str
+) -> pd.DataFrame:
     """
     Process an Excel file based on the configuration for a specific supplier.
 
@@ -84,7 +89,10 @@ def process_dataframe(config_key: str, file: pd.ExcelFile, processed_date: str) 
 
     return df_output
 
-def merge_stock_with_product_and_store(stock_df: pd.DataFrame, engine: Engine) -> pd.DataFrame:
+
+def merge_stock_with_product_and_store(
+    stock_df: pd.DataFrame, engine: Engine
+) -> pd.DataFrame:
     """
     Merge stock data with product and store information.
 
@@ -113,6 +121,7 @@ def merge_stock_with_product_and_store(stock_df: pd.DataFrame, engine: Engine) -
     )
 
     return ebay_df[["product_id", "item_id", "Quantity", "custom_label", "store"]]
+
 
 def create_ebay_dataframe(stock_df: pd.DataFrame, engine: Engine) -> pd.DataFrame:
     """
@@ -151,6 +160,7 @@ def create_ebay_dataframe(stock_df: pd.DataFrame, engine: Engine) -> pd.DataFram
     ebay_df["ItemID"] = ebay_df["ItemID"].astype(int)
     return ebay_df
 
+
 def process_stock_history_data(df: pd.DataFrame) -> pd.DataFrame:
     """
     Process stock history data.
@@ -166,7 +176,10 @@ def process_stock_history_data(df: pd.DataFrame) -> pd.DataFrame:
     df_copy.drop(columns=["last_updated"], inplace=True)
     return df_copy
 
-def process_and_upload_files(uploaded_folder: List[pd.ExcelFile], processed_date: str, engine: Engine) -> List[Tuple[pd.DataFrame, str]]:
+
+def process_and_upload_files(
+    uploaded_folder: List[pd.ExcelFile], processed_date: str, engine: Engine
+) -> List[Tuple[pd.DataFrame, str]]:
     """
     Process and upload files to the database.
 

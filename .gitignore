@@ -26,6 +26,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# data
+data/
+
 # Terraform files 
 .terraform/
 .terraform.lock.hcl

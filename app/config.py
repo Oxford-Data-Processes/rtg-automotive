@@ -12,6 +12,7 @@ def process_numerical(x):
     else:
         return x
 
+
 # Database configuration
 DB_CONFIG = {
     "user": st.secrets["db_config"]["user"],
@@ -83,7 +84,7 @@ CONFIG = {
     "KYB": {
         "code_column_number": 1,
         "stock_column_number": 2,
-        "process_func": lambda x: 0 if x == "N" else (10 if x == "Y" else 0),
+        "process_func": lambda x: 10 if x == "Y" else 0,
     },
     "MOT": {
         "code_column_number": 1,
@@ -109,5 +110,10 @@ CONFIG = {
         "code_column_number": 1,
         "stock_column_number": 1,
         "process_func": lambda _: 10,
+    },
+    "ELR": {
+        "code_column_number": 1,
+        "stock_column_number": 4,
+        "process_func": process_numerical,
     },
 }
