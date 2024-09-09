@@ -26,7 +26,7 @@ share/python-wheels/
 *.egg
 MANIFEST
 
-# Terraform files
+# Terraform files 
 .terraform/
 .terraform.lock.hcl
 
@@ -34,8 +34,6 @@ MANIFEST
 infra/.terraform/
 infra/*.tfstate
 infra/*.tfstate.*
-infra/*.tfvars
-infra/*.tfvars.json
 infra/.terraform.lock.hcl
 
 # Crash log files
