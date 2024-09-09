@@ -42,5 +42,5 @@ jobs:
         run: |
           terraform fmt -check
           terraform init -backend-config=backend/backend_config_prod.tfvars
-          terraform plan -no-color -var-file env.tfvars
-          terraform apply -auto-approve -var-file env.tfvars
+          terraform plan -no-color -var-file env_prod.tfvars
+          terraform apply -auto-approve -var-file env_prod.tfvars
