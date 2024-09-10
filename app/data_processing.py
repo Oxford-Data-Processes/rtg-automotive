@@ -47,7 +47,7 @@ def process_stock_data(engine: Engine) -> pd.DataFrame:
     )
 
     df_delta = df_delta.rename(columns={"quantity": "quantity_delta"})
-    df_delta["Quantity"] = df_grouped.groupby("custom_label")["quantity"].first().values
+    df_delta["quantity"] = df_grouped.groupby("custom_label")["quantity"].first().values
     df_delta = df_delta[
         (df_delta["quantity_delta"] != 0) & (df_delta["quantity_delta"].notnull())
     ]
@@ -109,7 +109,7 @@ def merge_stock_with_product_and_store(
         how="inner",
     )
 
-    return ebay_df[["item_id", "Quantity", "custom_label", "store"]]
+    return ebay_df[["item_id", "quantity", "custom_label", "store"]]
 
 
 def create_ebay_dataframe(stock_df: pd.DataFrame, engine: Engine) -> pd.DataFrame:
@@ -124,11 +124,14 @@ def create_ebay_dataframe(stock_df: pd.DataFrame, engine: Engine) -> pd.DataFram
         pd.DataFrame: eBay-compatible dataframe.
     """
     ebay_df = merge_stock_with_product_and_store(stock_df, engine)
+    ebay_df.to_csv("ebay_df.csv", index=False)
+
     ebay_df = ebay_df.rename(
         columns={
             "custom_label": "CustomLabel",
             "item_id": "ItemID",
             "store": "Store",
+            "quantity": "Quantity",
         }
     )
     ebay_df["Action"] = "Revise"
