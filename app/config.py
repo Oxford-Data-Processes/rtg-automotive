@@ -104,7 +104,7 @@ CONFIG = {
     "RTG": {
         "code_column_number": 1,
         "stock_column_number": 2,
-        "process_func": lambda x: 10 if x is None or pd.isna(x) else 0,
+        "process_func": lambda x: 0 if x is None or pd.isna(x) else 20,
     },
     "SMP": {
         "code_column_number": 1,

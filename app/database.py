@@ -4,7 +4,10 @@ from sqlalchemy.engine.base import Engine
 from sqlalchemy.exc import SQLAlchemyError
 from typing import List, Dict, Optional, Any
 
-def create_mysql_engine(user: str, password: str, host: str, port: str, database: str) -> Engine:
+
+def create_mysql_engine(
+    user: str, password: str, host: str, port: str, database: str
+) -> Engine:
     """
     Create and return a SQLAlchemy engine for MySQL connection.
 
@@ -22,7 +25,10 @@ def create_mysql_engine(user: str, password: str, host: str, port: str, database
         f"mysql+mysqlconnector://{user}:{password}@{host}:{port}/{database}"
     )
 
-def read_from_mysql(table_name: str, engine: Engine, chunk_size: int = 10000) -> pd.DataFrame:
+
+def read_from_mysql(
+    table_name: str, engine: Engine, chunk_size: int = 10000
+) -> pd.DataFrame:
     """
     Read data from a MySQL table using the provided SQLAlchemy engine in chunks.
 
@@ -41,7 +47,10 @@ def read_from_mysql(table_name: str, engine: Engine, chunk_size: int = 10000) ->
 
     return pd.concat(chunks, ignore_index=True)
 
-def append_mysql_table(df: pd.DataFrame, table_name: str, engine: Engine, chunk_size: int = 10000) -> None:
+
+def append_mysql_table(
+    df: pd.DataFrame, table_name: str, engine: Engine, chunk_size: int = 10000
+) -> None:
     """
     Append data to a MySQL table using the provided SQLAlchemy engine in chunks.
 
@@ -57,16 +66,16 @@ def append_mysql_table(df: pd.DataFrame, table_name: str, engine: Engine, chunk_
             for i in range(0, len(df), chunk_size):
                 chunk = df.iloc[i : i + chunk_size]
                 chunk.to_sql(
-                    table_name, con=connection, if_exists='append', index=False
-                )
-                print(
-                    f"Appended chunk {i//chunk_size + 1} of {(len(df)-1)//chunk_size + 1}"
+                    table_name, con=connection, if_exists="append", index=False
                 )
     except SQLAlchemyError as e:
         print(f"Error: {e}")
         raise
 
-def execute_query(engine: Engine, query: str, params: Optional[Dict[str, Any]] = None) -> List[tuple]:
+
+def execute_query(
+    engine: Engine, query: str, params: Optional[Dict[str, Any]] = None
+) -> List[tuple]:
     """
     Execute a SQL query using the provided SQLAlchemy engine.
 
@@ -82,7 +91,14 @@ def execute_query(engine: Engine, query: str, params: Optional[Dict[str, Any]] =
         result = connection.execute(query, params)
         return result.fetchall()
 
-def update_mysql_table(df: pd.DataFrame, table_name: str, engine: Engine, primary_key: str, chunk_size: int = 10000) -> None:
+
+def update_mysql_table(
+    df: pd.DataFrame,
+    table_name: str,
+    engine: Engine,
+    primary_key: str,
+    chunk_size: int = 10000,
+) -> None:
     """
     Update existing records in a MySQL table using the provided SQLAlchemy engine in chunks.
 
@@ -99,13 +115,19 @@ def update_mysql_table(df: pd.DataFrame, table_name: str, engine: Engine, primar
                 chunk = df.iloc[i : i + chunk_size]
                 for _, row in chunk.iterrows():
                     update_query = f"UPDATE {table_name} SET "
-                    update_query += ", ".join([f"{col} = %s" for col in df.columns if col != primary_key])
+                    update_query += ", ".join(
+                        [f"{col} = %s" for col in df.columns if col != primary_key]
+                    )
                     update_query += f" WHERE {primary_key} = %s"
-                    
-                    values = [row[col] for col in df.columns if col != primary_key] + [row[primary_key]]
+
+                    values = [row[col] for col in df.columns if col != primary_key] + [
+                        row[primary_key]
+                    ]
                     connection.execute(update_query, values)
-                
-                print(f"Updated chunk {i//chunk_size + 1} of {(len(df)-1)//chunk_size + 1}")
+
+                print(
+                    f"Updated chunk {i//chunk_size + 1} of {(len(df)-1)//chunk_size + 1}"
+                )
     except SQLAlchemyError as e:
         print(f"Error: {e}")
         raise

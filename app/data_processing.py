@@ -16,9 +16,9 @@ def prepare_stock_data(engine: Engine) -> pd.DataFrame:
         pd.DataFrame: Processed stock data.
     """
     df = read_from_mysql("supplier_stock_history", engine)
-    df = df.drop_duplicates(subset=["product_id", "updated_date"], keep="first")
-    df = df.sort_values(["product_id", "updated_date"], ascending=[True, False])
-    df_grouped = df.groupby("product_id").head(2)
+    df = df.drop_duplicates(subset=["custom_label", "updated_date"], keep="first")
+    df = df.sort_values(["custom_label", "updated_date"], ascending=[True, False])
+    df_grouped = df.groupby("custom_label").head(2)
     return df_grouped
 
 
@@ -34,7 +34,7 @@ def process_stock_data(engine: Engine) -> pd.DataFrame:
     """
     df_grouped = prepare_stock_data(engine)
     df_delta = (
-        df_grouped.groupby("product_id")
+        df_grouped.groupby("custom_label")
         .agg(
             {
                 "quantity": lambda x: (
@@ -47,7 +47,7 @@ def process_stock_data(engine: Engine) -> pd.DataFrame:
     )
 
     df_delta = df_delta.rename(columns={"quantity": "quantity_delta"})
-    df_delta["Quantity"] = df_grouped.groupby("product_id")["quantity"].first().values
+    df_delta["Quantity"] = df_grouped.groupby("custom_label")["quantity"].first().values
     df_delta = df_delta[
         (df_delta["quantity_delta"] != 0) & (df_delta["quantity_delta"].notnull())
     ]
@@ -77,11 +77,8 @@ def process_dataframe(
 
     df_output = pd.DataFrame(
         {
-            "stock_id": code_column.apply(
-                lambda x: f"{processed_date}-{config_key}-{x}"
-            ),
-            "product_id": code_column.apply(lambda x: f"{config_key}-{x}"),
-            "quantity_raw": stock_column,
+            "part_number": code_column,
+            "supplier": config_key,
             "quantity": stock_column.apply(config_data["process_func"]),
             "last_updated": processed_date,
         }
@@ -103,24 +100,16 @@ def merge_stock_with_product_and_store(
     Returns:
         pd.DataFrame: Merged dataframe with stock, product, and store information.
     """
-    product_df = read_from_mysql("product", engine)
     store_df = read_from_mysql("store", engine)
 
     ebay_df = pd.merge(
-        stock_df.copy(),
-        product_df[["product_id", "custom_label"]],
-        on="product_id",
-        how="inner",
-    )
-
-    ebay_df = pd.merge(
-        ebay_df,
+        stock_df,
         store_df[["custom_label", "item_id", "store"]],
         on="custom_label",
         how="inner",
     )
 
-    return ebay_df[["product_id", "item_id", "Quantity", "custom_label", "store"]]
+    return ebay_df[["item_id", "Quantity", "custom_label", "store"]]
 
 
 def create_ebay_dataframe(stock_df: pd.DataFrame, engine: Engine) -> pd.DataFrame:
@@ -137,7 +126,6 @@ def create_ebay_dataframe(stock_df: pd.DataFrame, engine: Engine) -> pd.DataFram
     ebay_df = merge_stock_with_product_and_store(stock_df, engine)
     ebay_df = ebay_df.rename(
         columns={
-            "product_id": "ProductID",
             "custom_label": "CustomLabel",
             "item_id": "ItemID",
             "store": "Store",
@@ -171,7 +159,9 @@ def process_stock_history_data(df: pd.DataFrame) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Processed stock history dataframe.
     """
-    df_copy = df.copy()[["product_id", "quantity", "last_updated"]]
+    df_copy = df.copy()[
+        ["custom_label", "part_number", "supplier", "quantity", "last_updated"]
+    ]
     df_copy["updated_date"] = df_copy["last_updated"]
     df_copy.drop(columns=["last_updated"], inplace=True)
     return df_copy
@@ -195,13 +185,27 @@ def process_and_upload_files(
     for file in uploaded_folder:
         supplier = file.name.split()[0]
         if supplier in CONFIG:
-            df_output = process_dataframe(supplier, file, processed_date)
-            df_stock_history = process_stock_history_data(df_output)
 
-            append_mysql_table(df_output, "supplier_stock", engine)
-            append_mysql_table(df_stock_history, "supplier_stock_history", engine)
+            df_supplier_stock = process_dataframe(supplier, file, processed_date)
 
-            processed_dataframes.append((df_output, supplier))
+            product_df = pd.read_sql_table("product", engine)
+
+            df_supplier_stock = pd.merge(
+                df_supplier_stock,
+                product_df,
+                how="left",
+                left_on=["supplier", "part_number"],
+                right_on=["supplier", "part_number"],
+            )
+
+            append_mysql_table(df_supplier_stock, "supplier_stock", engine)
+            append_mysql_table(
+                process_stock_history_data(df_supplier_stock),
+                "supplier_stock_history",
+                engine,
+            )
+
+            processed_dataframes.append((df_supplier_stock, supplier))
         else:
             print(f"No configuration found for {supplier}. Skipping this file.")
     return processed_dataframes

@@ -29,6 +29,9 @@ MANIFEST
 # data
 data/
 
+# streamlit
+.streamlit/
+
 # Terraform files 
 .terraform/
 .terraform.lock.hcl

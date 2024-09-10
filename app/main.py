@@ -4,41 +4,14 @@ import io
 import zipfile
 import pandas as pd
 from config import CONFIG, DB_CONFIG, LOGIN_CREDENTIALS
-from database import create_mysql_engine, append_mysql_table
+from database import create_mysql_engine
 from data_processing import (
     process_stock_data,
-    process_dataframe,
     create_ebay_dataframe,
-    process_stock_history_data,
+    process_and_upload_files,
 )
 from sqlalchemy.engine.base import Engine
 
-def process_and_upload_files(uploaded_folder: List[pd.ExcelFile], processed_date: str, engine: Engine) -> List[Tuple[pd.DataFrame, str]]:
-    """
-    Process and upload files to the database.
-
-    Args:
-        uploaded_folder (List[pd.ExcelFile]): List of uploaded Excel files.
-        processed_date (str): Date of processing.
-        engine (Engine): SQLAlchemy engine for database connection.
-
-    Returns:
-        List[Tuple[pd.DataFrame, str]]: List of processed dataframes and their corresponding supplier names.
-    """
-    processed_dataframes = []
-    for file in uploaded_folder:
-        supplier = file.name.split()[0]
-        if supplier in CONFIG:
-            df_output = process_dataframe(supplier, file, processed_date)
-            df_stock_history = process_stock_history_data(df_output)
-
-            append_mysql_table(df_output, "supplier_stock", engine)
-            append_mysql_table(df_stock_history, "supplier_stock_history", engine)
-
-            processed_dataframes.append((df_output, supplier))
-        else:
-            st.warning(f"No configuration found for {supplier}. Skipping this file.")
-    return processed_dataframes
 
 def zip_dataframes(dataframes: List[Tuple[pd.DataFrame, str]]) -> io.BytesIO:
     """
@@ -57,6 +30,7 @@ def zip_dataframes(dataframes: List[Tuple[pd.DataFrame, str]]) -> io.BytesIO:
             df.to_csv(csv_buffer, index=False)
             zip_file.writestr(f"{name}.csv", csv_buffer.getvalue())
     return zip_buffer
+
 
 def process_files() -> None:
     """
@@ -79,11 +53,12 @@ def process_files() -> None:
 
         st.success("All files processed!")
         st.download_button(
-            label="Download All CSVs", 
+            label="Download All CSVs",
             data=zip_buffer.getvalue(),
             file_name="processed_files.zip",
             mime="application/zip",
         )
+
 
 def generate_ebay_files() -> None:
     """
@@ -93,6 +68,7 @@ def generate_ebay_files() -> None:
         engine = create_mysql_engine(**DB_CONFIG)
         stock_df = process_stock_data(engine)
         ebay_df = create_ebay_dataframe(stock_df, engine)
+
         stores = list(ebay_df["Store"].unique())
         ebay_dfs = [
             (ebay_df[ebay_df["Store"] == store].drop(columns=["Store"]), store)
@@ -108,6 +84,7 @@ def generate_ebay_files() -> None:
             mime="application/zip",
         )
 
+
 def main() -> None:
     """
     Main function to run the Streamlit app.
@@ -115,6 +92,7 @@ def main() -> None:
     st.title("Excel File Processor")
     process_files()
     generate_ebay_files()
+
 
 def login() -> bool:
     """
@@ -132,8 +110,8 @@ def login() -> bool:
         password = st.text_input("Password", type="password")
         if st.button("Login"):
             if (
-                username == LOGIN_CREDENTIALS["username"] and 
-                password == LOGIN_CREDENTIALS["password"]
+                username == LOGIN_CREDENTIALS["username"]
+                and password == LOGIN_CREDENTIALS["password"]
             ):
                 st.session_state.logged_in = True
                 st.success("Logged in as {}".format(username))
@@ -142,6 +120,7 @@ def login() -> bool:
                 st.error("Incorrect username or password")
 
     return st.session_state.logged_in
+
 
 if __name__ == "__main__":
     if login():
