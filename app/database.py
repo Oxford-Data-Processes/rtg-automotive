@@ -27,7 +27,7 @@ def create_mysql_engine(
 
 
 def read_from_mysql(
-    table_name: str, engine: Engine, chunk_size: int = 10000
+    table_name: str, columns: List[str], engine: Engine, chunk_size: int = 100000
 ) -> pd.DataFrame:
     """
     Read data from a MySQL table using the provided SQLAlchemy engine in chunks.
@@ -35,21 +35,23 @@ def read_from_mysql(
     Args:
     table_name (str): Name of the table to read from
     engine (sqlalchemy.engine.base.Engine): SQLAlchemy engine object for MySQL connection
-    chunk_size (int): Number of rows to read per chunk (default: 10000)
+    chunk_size (int): Number of rows to read per chunk (default: 100000)
 
     Returns:
     pandas.DataFrame: DataFrame containing the data from the specified table
     """
     chunks: List[pd.DataFrame] = []
     with engine.connect() as connection:
-        for chunk in pd.read_sql_table(table_name, connection, chunksize=chunk_size):
+        for chunk in pd.read_sql_table(
+            table_name, connection, chunksize=chunk_size, columns=columns
+        ):
             chunks.append(chunk)
 
     return pd.concat(chunks, ignore_index=True)
 
 
 def append_mysql_table(
-    df: pd.DataFrame, table_name: str, engine: Engine, chunk_size: int = 10000
+    df: pd.DataFrame, table_name: str, engine: Engine, chunk_size: int = 100000
 ) -> None:
     """
     Append data to a MySQL table using the provided SQLAlchemy engine in chunks.
@@ -58,7 +60,7 @@ def append_mysql_table(
     df (pandas.DataFrame): DataFrame containing the data to append
     table_name (str): Name of the table to append to
     engine (sqlalchemy.engine.base.Engine): SQLAlchemy engine object for MySQL connection
-    chunk_size (int): Number of rows to append per chunk (default: 10000)
+    chunk_size (int): Number of rows to append per chunk (default: 100000)
     """
     try:
         with engine.begin() as connection:
@@ -97,7 +99,7 @@ def update_mysql_table(
     table_name: str,
     engine: Engine,
     primary_key: str,
-    chunk_size: int = 10000,
+    chunk_size: int = 100000,
 ) -> None:
     """
     Update existing records in a MySQL table using the provided SQLAlchemy engine in chunks.
@@ -107,7 +109,7 @@ def update_mysql_table(
     table_name (str): Name of the table to update
     engine (sqlalchemy.engine.base.Engine): SQLAlchemy engine object for MySQL connection
     primary_key (str): Name of the primary key column
-    chunk_size (int): Number of rows to update per chunk (default: 10000)
+    chunk_size (int): Number of rows to update per chunk (default: 100000)
     """
     try:
         with engine.begin() as connection:

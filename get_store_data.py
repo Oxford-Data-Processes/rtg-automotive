@@ -3,7 +3,7 @@ from pathlib import Path
 
 
 def process_dataframe(df):
-    df = df.iloc[:, :7]
+    df = df.iloc[:, :12]
     df.columns = [
         "item_id",
         "brand",
@@ -12,15 +12,27 @@ def process_dataframe(df):
         "title",
         "current_price",
         "prefix",
+        "uk_rtg",
+        "fps_wds_dir",
+        "payment_profile_name",
+        "shipping_profile_name",
+        "return_profile_name",
     ]
     df["supplier"] = df["prefix"].fillna("").astype(str)
-    df["supplier"] = df["supplier"].apply(lambda x: x.split("-")[-1] if x else "")
+    df["supplier"] = df.apply(
+        lambda row: (
+            "RTG"
+            if row["uk_rtg"] == "RTG"
+            else (row["supplier"].split("-")[-1] if row["supplier"] else "RTG")
+        ),
+        axis=1,
+    )
     return df
 
 
 def read_excel_files(directory):
     dfs = {}
-    for file in directory.glob("*.xlsx"):
+    for file in [f for f in directory.glob("*.xlsx") if not f.name.startswith("~$")]:
         store = file.stem.split(" ")[0]
         excel = pd.ExcelFile(file)
         sheet_dfs = [
@@ -38,9 +50,7 @@ def read_excel_files(directory):
 def main():
     data_dir = Path("data/store_database")
     dfs = read_excel_files(data_dir)
-
     df_store = pd.concat(dfs.values(), ignore_index=True)
-
     df_store.drop_duplicates(subset=["item_id", "custom_label", "store"], inplace=True)
     df_store["custom_label"] = df_store["custom_label"].str.upper().str.strip()
     df_store.to_csv("data/tables/store.csv", index=False)

@@ -15,7 +15,11 @@ def process_stock_data(engine: Engine) -> pd.DataFrame:
     Returns:
         pd.DataFrame: Processed stock data.
     """
-    df = read_from_mysql("supplier_stock_history", engine)
+    df = read_from_mysql(
+        "supplier_stock_history",
+        columns=["custom_label", "updated_date", "quantity"],
+        engine=engine,
+    )
     df["custom_label"] = df["custom_label"].str.upper().str.strip()
     df = df.drop_duplicates(subset=["custom_label", "updated_date"], keep="first")
     df = df.sort_values(["custom_label", "updated_date"], ascending=[True, False])
@@ -56,9 +60,8 @@ def process_dataframe(
 
     config_data = CONFIG[config_key]
 
-    if config_data["stock_feed_type"] == "OUT_OF_STOCK":
-
-        query = f"SELECT * FROM rtg_automotive.store WHERE store = '{config_key}'"
+    if config_key == "RTG":
+        query = f"SELECT custom_label FROM rtg_automotive.store WHERE store = 'RTG' AND supplier = 'RTG'"
         df_store_filtered = pd.read_sql_query(query, engine)
         df_store_filtered.drop_duplicates(
             subset=["custom_label"], keep="first", inplace=True
@@ -79,7 +82,7 @@ def process_dataframe(
         )
         return df_output
 
-    elif config_data["stock_feed_type"] == "IN_STOCK":
+    else:
         code_column = df.iloc[:, config_data["code_column_number"] - 1]
         stock_column = df.iloc[:, config_data["stock_column_number"] - 1]
 
@@ -93,9 +96,6 @@ def process_dataframe(
         )
 
         return df_output
-
-    else:
-        raise ValueError(f"Invalid stock feed type: {config_data['stock_feed_type']}")
 
 
 def merge_stock_with_product_and_store(
@@ -111,10 +111,15 @@ def merge_stock_with_product_and_store(
     Returns:
         pd.DataFrame: Merged dataframe with stock, product, and store information.
     """
-    store_df = read_from_mysql("store", engine)
+    store_df = read_from_mysql(
+        "store",
+        ["custom_label", "item_id", "supplier", "store"],
+        engine,
+    )
+    store_df.rename(columns={"supplier": "supplier_store"}, inplace=True)
 
     ebay_df = pd.merge(
-        store_df[["custom_label", "item_id", "store"]],
+        store_df[["custom_label", "item_id", "supplier_store", "store"]],
         stock_df,
         on="custom_label",
         how="outer",

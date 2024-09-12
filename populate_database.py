@@ -11,7 +11,7 @@ def write_csv_to_table(csv_file, table_name, config):
         f"mysql+mysqlconnector://{config['user']}:{config['password']}@{config['host']}:{config['port']}/{config['database']}"
     )
 
-    chunk_size = 10000
+    chunk_size = 100000
     for i in range(0, len(df), chunk_size):
         chunk = df.iloc[i : i + chunk_size]
         if i == 0:
@@ -35,8 +35,8 @@ if __name__ == "__main__":
         "port": "3306",
     }
 
-    # write_csv_to_table("data/tables/store.csv", "store", config)
-    # write_csv_to_table("data/tables/product.csv", "product", config)
+    write_csv_to_table("data/tables/store.csv", "store", config)
+    write_csv_to_table("data/tables/product.csv", "product", config)
     write_csv_to_table("data/tables/supplier_stock.csv", "supplier_stock", config)
     write_csv_to_table(
         "data/tables/supplier_stock_history.csv", "supplier_stock_history", config
