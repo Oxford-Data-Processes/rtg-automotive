@@ -20,5 +20,5 @@ CREATE TABLE IF NOT EXISTS supplier_stock (
     part_number VARCHAR(255),
     supplier VARCHAR(255),
     quantity INT,
-    last_updated VARCHAR(255)
+    updated_date VARCHAR(255)
 );

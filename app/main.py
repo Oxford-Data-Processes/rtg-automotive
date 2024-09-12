@@ -40,7 +40,9 @@ def process_files() -> None:
         "Upload folder containing Excel files", type="xlsx", accept_multiple_files=True
     )
 
-    processed_date = st.date_input("Date", value=pd.Timestamp.now().date())
+    processed_date = st.date_input("Date", value=pd.Timestamp.now().date()).strftime(
+        "%Y-%m-%d"
+    )
     process_files_button = st.button("Process Files")
 
     if process_files_button:
@@ -67,6 +69,7 @@ def generate_ebay_files() -> None:
     if st.button("Generate eBay Upload Files"):
         engine = create_mysql_engine(**DB_CONFIG)
         stock_df = process_stock_data(engine)
+
         ebay_df = create_ebay_dataframe(stock_df, engine)
 
         stores = list(ebay_df["Store"].unique())

@@ -36,5 +36,8 @@ if __name__ == "__main__":
     }
 
     # write_csv_to_table("data/tables/store.csv", "store", config)
+    # write_csv_to_table("data/tables/product.csv", "product", config)
     write_csv_to_table("data/tables/supplier_stock.csv", "supplier_stock", config)
-    write_csv_to_table("data/tables/product.csv", "product", config)
+    write_csv_to_table(
+        "data/tables/supplier_stock_history.csv", "supplier_stock_history", config
+    )

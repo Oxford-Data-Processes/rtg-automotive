@@ -5,7 +5,7 @@ from config import CONFIG
 from database import read_from_mysql, append_mysql_table
 
 
-def prepare_stock_data(engine: Engine) -> pd.DataFrame:
+def process_stock_data(engine: Engine) -> pd.DataFrame:
     """
     Prepare stock data by reading from the database and performing initial processing.
 
@@ -16,23 +16,10 @@ def prepare_stock_data(engine: Engine) -> pd.DataFrame:
         pd.DataFrame: Processed stock data.
     """
     df = read_from_mysql("supplier_stock_history", engine)
+    df["custom_label"] = df["custom_label"].str.upper().str.strip()
     df = df.drop_duplicates(subset=["custom_label", "updated_date"], keep="first")
     df = df.sort_values(["custom_label", "updated_date"], ascending=[True, False])
     df_grouped = df.groupby("custom_label").head(2)
-    return df_grouped
-
-
-def process_stock_data(engine: Engine) -> pd.DataFrame:
-    """
-    Process stock data to calculate quantity deltas.
-
-    Args:
-        engine (Engine): SQLAlchemy engine for database connection.
-
-    Returns:
-        pd.DataFrame: Processed stock data with quantity deltas.
-    """
-    df_grouped = prepare_stock_data(engine)
     df_delta = (
         df_grouped.groupby("custom_label")
         .agg(
@@ -48,15 +35,11 @@ def process_stock_data(engine: Engine) -> pd.DataFrame:
 
     df_delta = df_delta.rename(columns={"quantity": "quantity_delta"})
     df_delta["quantity"] = df_grouped.groupby("custom_label")["quantity"].first().values
-    df_delta = df_delta[
-        (df_delta["quantity_delta"] != 0) & (df_delta["quantity_delta"].notnull())
-    ]
-
     return df_delta
 
 
 def process_dataframe(
-    config_key: str, file: pd.ExcelFile, processed_date: str
+    config_key: str, file: pd.ExcelFile, processed_date: str, engine: Engine
 ) -> pd.DataFrame:
     """
     Process an Excel file based on the configuration for a specific supplier.
@@ -72,19 +55,47 @@ def process_dataframe(
     df = pd.read_excel(file)
 
     config_data = CONFIG[config_key]
-    code_column = df.iloc[:, config_data["code_column_number"] - 1]
-    stock_column = df.iloc[:, config_data["stock_column_number"] - 1]
 
-    df_output = pd.DataFrame(
-        {
-            "part_number": code_column,
-            "supplier": config_key,
-            "quantity": stock_column.apply(config_data["process_func"]),
-            "last_updated": processed_date,
-        }
-    )
+    if config_data["stock_feed_type"] == "OUT_OF_STOCK":
 
-    return df_output
+        query = f"SELECT * FROM rtg_automotive.store WHERE store = '{config_key}'"
+        df_store_filtered = pd.read_sql_query(query, engine)
+        df_store_filtered.drop_duplicates(
+            subset=["custom_label"], keep="first", inplace=True
+        )
+        custom_labels = (
+            df.iloc[:, config_data["code_column_number"] - 1].unique().tolist()
+        )
+
+        df_output = pd.DataFrame(
+            {
+                "part_number": df_store_filtered["custom_label"],
+                "supplier": config_key,
+                "quantity": df_store_filtered["custom_label"].apply(
+                    lambda x: 0 if x in custom_labels else 20
+                ),
+                "updated_date": processed_date,
+            }
+        )
+        return df_output
+
+    elif config_data["stock_feed_type"] == "IN_STOCK":
+        code_column = df.iloc[:, config_data["code_column_number"] - 1]
+        stock_column = df.iloc[:, config_data["stock_column_number"] - 1]
+
+        df_output = pd.DataFrame(
+            {
+                "part_number": code_column.str.upper().str.strip(),
+                "supplier": config_key,
+                "quantity": stock_column.apply(config_data["process_func"]),
+                "updated_date": processed_date,
+            }
+        )
+
+        return df_output
+
+    else:
+        raise ValueError(f"Invalid stock feed type: {config_data['stock_feed_type']}")
 
 
 def merge_stock_with_product_and_store(
@@ -103,13 +114,15 @@ def merge_stock_with_product_and_store(
     store_df = read_from_mysql("store", engine)
 
     ebay_df = pd.merge(
-        stock_df,
         store_df[["custom_label", "item_id", "store"]],
+        stock_df,
         on="custom_label",
-        how="inner",
+        how="outer",
     )
 
-    return ebay_df[["item_id", "quantity", "custom_label", "store"]]
+    ebay_df.fillna({"quantity": 0, "quantity_delta": 0}, inplace=True)
+
+    return ebay_df[["item_id", "quantity_delta", "quantity", "custom_label", "store"]]
 
 
 def create_ebay_dataframe(stock_df: pd.DataFrame, engine: Engine) -> pd.DataFrame:
@@ -124,7 +137,13 @@ def create_ebay_dataframe(stock_df: pd.DataFrame, engine: Engine) -> pd.DataFram
         pd.DataFrame: eBay-compatible dataframe.
     """
     ebay_df = merge_stock_with_product_and_store(stock_df, engine)
-    ebay_df.to_csv("ebay_df.csv", index=False)
+    ebay_df.to_csv("data/tables/ebay.csv", index=False)
+
+    # Remove rows where quantity_delta is 0
+    ebay_df = ebay_df[ebay_df["quantity_delta"] != 0]
+
+    # Drop rows with null item_id
+    ebay_df = ebay_df.dropna(subset=["item_id"])
 
     ebay_df = ebay_df.rename(
         columns={
@@ -163,10 +182,8 @@ def process_stock_history_data(df: pd.DataFrame) -> pd.DataFrame:
         pd.DataFrame: Processed stock history dataframe.
     """
     df_copy = df.copy()[
-        ["custom_label", "part_number", "supplier", "quantity", "last_updated"]
+        ["custom_label", "part_number", "supplier", "quantity", "updated_date"]
     ]
-    df_copy["updated_date"] = df_copy["last_updated"]
-    df_copy.drop(columns=["last_updated"], inplace=True)
     return df_copy
 
 
@@ -185,13 +202,16 @@ def process_and_upload_files(
         List[Tuple[pd.DataFrame, str]]: List of processed dataframes and their corresponding supplier names.
     """
     processed_dataframes = []
+
+    product_df = pd.read_sql_table("product", engine)
+
     for file in uploaded_folder:
         supplier = file.name.split()[0]
         if supplier in CONFIG:
 
-            df_supplier_stock = process_dataframe(supplier, file, processed_date)
-
-            product_df = pd.read_sql_table("product", engine)
+            df_supplier_stock = process_dataframe(
+                supplier, file, processed_date, engine
+            )
 
             df_supplier_stock = pd.merge(
                 df_supplier_stock,
