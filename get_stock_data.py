@@ -21,7 +21,9 @@ def main():
 
     processed_dfs = [process_dataframe(df) for df in dfs.values()]
     df_stock = pd.concat(processed_dfs)
-    df_stock["updated_date"] = pd.Timestamp.now().strftime("%Y-%m-%d")
+    df_stock["updated_date"] = (pd.Timestamp.now() - pd.Timedelta(days=1)).strftime(
+        "%Y-%m-%d"
+    )
     df_stock.drop_duplicates(
         subset=["part_number", "supplier"], keep="first", inplace=True
     )
@@ -46,7 +48,7 @@ def main():
     # Create a copy of df_stock with yesterday's date
     df_stock_yesterday = df_stock.copy()
     df_stock_yesterday["updated_date"] = (
-        pd.Timestamp.now() - pd.Timedelta(days=1)
+        pd.Timestamp.now() - pd.Timedelta(days=2)
     ).strftime("%Y-%m-%d")
 
     # Append df_stock to df_stock_yesterday
