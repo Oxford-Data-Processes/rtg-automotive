@@ -127,7 +127,16 @@ def merge_stock_with_product_and_store(
 
     ebay_df.fillna({"quantity": 0, "quantity_delta": 0}, inplace=True)
 
-    return ebay_df[["item_id", "quantity_delta", "quantity", "custom_label", "store"]]
+    return ebay_df[
+        [
+            "item_id",
+            "quantity_delta",
+            "quantity",
+            "custom_label",
+            "supplier_store",
+            "store",
+        ]
+    ]
 
 
 def create_ebay_dataframe(stock_df: pd.DataFrame, engine: Engine) -> pd.DataFrame:
