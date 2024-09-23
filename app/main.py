@@ -3,7 +3,7 @@ from typing import List, Tuple
 import io
 import zipfile
 import pandas as pd
-from config import CONFIG, DB_CONFIG, LOGIN_CREDENTIALS
+from config import DB_CONFIG, LOGIN_CREDENTIALS
 from database import create_mysql_engine
 from data_processing import (
     process_stock_data,

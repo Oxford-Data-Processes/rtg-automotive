@@ -102,7 +102,7 @@ def merge_stock_with_product_and_store(
     stock_df: pd.DataFrame, engine: Engine
 ) -> pd.DataFrame:
     """
-    Merge stock data with product and store information.
+    Merge stock data with product and store information using SQL.
 
     Args:
         stock_df (pd.DataFrame): Stock dataframe.
@@ -111,21 +111,23 @@ def merge_stock_with_product_and_store(
     Returns:
         pd.DataFrame: Merged dataframe with stock, product, and store information.
     """
-    store_df = read_from_mysql(
-        "store",
-        ["custom_label", "item_id", "supplier", "store"],
-        engine,
-    )
-    store_df.rename(columns={"supplier": "supplier_store"}, inplace=True)
+    # Convert stock_df to SQL table
 
-    ebay_df = pd.merge(
-        store_df[["custom_label", "item_id", "supplier_store", "store"]],
-        stock_df,
-        on="custom_label",
-        how="outer",
-    )
+    query = """
+    SELECT 
+        s.custom_label,
+        s.item_id,
+        s.supplier AS supplier_store,
+        s.store,
+        COALESCE(st.quantity, 0) AS quantity,
+        COALESCE(st.quantity_delta, 0) AS quantity_delta
+    FROM 
+        store s
+    LEFT JOIN 
+        stock st ON s.custom_label = st.custom_label
+    """
 
-    ebay_df.fillna({"quantity": 0, "quantity_delta": 0}, inplace=True)
+    ebay_df = pd.read_sql_query(query, engine)
 
     return ebay_df[
         [
