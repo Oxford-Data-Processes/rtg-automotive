@@ -57,6 +57,6 @@ resource "aws_db_instance" "rtg_automotive_db" {
 
   tags = {
     Name    = "${var.project}-db"
-#     Project = var.project
-#   }
-# }
+    Project = var.project
+  }
+}
