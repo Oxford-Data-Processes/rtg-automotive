@@ -28,14 +28,14 @@ def write_csv_to_table(csv_file, table_name, config):
 if __name__ == "__main__":
 
     config = {
-        "host": "rtg-automotive-db.cniy2omsilgp.eu-west-2.rds.amazonaws.com",
+        "host": "rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com",
         "user": "admin",
         "password": "password",
         "database": "rtg_automotive",
         "port": "3306",
     }
 
-    # write_csv_to_table("data/tables/store.csv", "store", config)
+    write_csv_to_table("data/tables/store.csv", "store", config)
     write_csv_to_table("data/tables/product.csv", "product", config)
     write_csv_to_table("data/tables/supplier_stock.csv", "supplier_stock", config)
     write_csv_to_table(
