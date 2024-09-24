@@ -41,10 +41,6 @@ def main():
     processed_dfs = [process_dataframe(df) for df in dfs.values()]
     df_stock = pd.concat(processed_dfs)
     updated_date = datetime.datetime.now() - datetime.timedelta(days=1)
-
-    df_stock["year"] = updated_date.year
-    df_stock["month"] = updated_date.month
-    df_stock["day"] = updated_date.day
     df_stock["updated_date"] = updated_date.strftime("%Y-%m-%d")
 
     df_stock.drop_duplicates(
@@ -58,14 +54,15 @@ def main():
     ].tolist()
     remove_labels = [label.upper().strip() for label in remove_labels]
     df_stock = df_stock[~df_stock["custom_label"].isin(remove_labels)]
+    df_stock.dropna(subset=["supplier"], inplace=True)
 
     aws_account_id = os.environ["AWS_ACCOUNT_ID"]
     bucket_name = f"rtg-automotive-bucket-{aws_account_id}"
 
     for supplier in df_stock["supplier"].unique():
-        supplier_df = df_stock[df_stock["supplier"] == supplier]
+        supplier_df = df_stock.copy()[df_stock["supplier"] == supplier]
         key = f"supplier_stock/supplier={supplier}/year={updated_date.year}/month={updated_date.month}/day={updated_date.day}/data.parquet"
-
+        supplier_df.drop(columns=["supplier"], inplace=True)
         write_parquet_to_s3(supplier_df, bucket_name, key)
 
     df_product = df_stock.copy()[["custom_label", "part_number", "supplier"]]

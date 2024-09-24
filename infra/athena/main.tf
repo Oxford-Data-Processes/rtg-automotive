@@ -38,27 +38,7 @@ resource "aws_glue_catalog_table" "supplier_stock" {
     }
 
     columns {
-      name = "supplier"
-      type = "string"
-    }
-
-    columns {
       name = "quantity"
-      type = "int"
-    }
-
-    columns {
-      name = "year"
-      type = "int"
-    }
-
-    columns {
-      name = "month"
-      type = "int"
-    }
-
-    columns {
-      name = "day"
       type = "int"
     }
 
