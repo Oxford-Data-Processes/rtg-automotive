@@ -109,11 +109,7 @@ resource "aws_glue_catalog_table" "product" {
       name = "supplier"
       type = "string"
     }
-
-    columns {
-      name = "quantity"
-      type = "int"
-    }
+    
   }
 
 }
