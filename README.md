@@ -1,7 +1,35 @@
 # rtg-automotive
 
-rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com
-mysql -h rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com -P 3306 -u admin -p
+Design:
 
+Tables:
 
-nc -zv rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com 3306
+Database: rtg_automotive
+
+Table: product
+- custom_label
+- part_number
+- supplier
+
+Table: store
+- item_id
+- brand
+- custom_label
+- current_quantity
+- title
+- current_price
+- prefix
+- uk_rtg
+- fps_wds_dir
+- payment_profile_name
+- shipping_profile_name
+- return_profile_name
+- supplier
+- store
+
+Table: supplier_stock
+- custom_label
+- part_number
+- supplier
+- quantity
+- updated_date
