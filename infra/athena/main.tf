@@ -1,11 +1,10 @@
-resource "aws_athena_database" "rtg_automotive" {
-  name   = "rtg_automotive"
-  bucket = module.s3_bucket.project_bucket.bucket
+resource "aws_glue_catalog_database" "rtg_automotive" {
+  name = "rtg_automotive"
 }
 
-resource "aws_athena_table" "supplier_stock" {
+resource "aws_glue_catalog_table" "supplier_stock" {
+  database_name = aws_glue_catalog_database.rtg_automotive.name
   name          = "supplier_stock"
-  database_name = aws_athena_database.rtg_automotive.name
 
   table_type = "EXTERNAL_TABLE"
 
@@ -49,7 +48,25 @@ resource "aws_athena_table" "supplier_stock" {
     type = "string"
   }
 
-  partitioned_by = ["supplier", "year", "month", "day"]
+  partition_keys {
+    name = "supplier"
+    type = "string"
+  }
+
+  partition_keys {
+    name = "year"
+    type = "int"
+  }
+
+  partition_keys {
+    name = "month"
+    type = "int"
+  }
+
+  partition_keys {
+    name = "day"
+    type = "int"
+  }
 
   location = "s3://${module.s3_bucket.project_bucket.bucket}/supplier_stock/"
 
