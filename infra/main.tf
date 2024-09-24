@@ -22,3 +22,10 @@ module "s3_bucket" {
   stage          = var.stage
   source         = "./s3_bucket"
 }
+
+module "athena" {
+  aws_account_id = var.aws_account_id
+  project        = var.project
+  stage          = var.stage
+  source         = "./athena"
+}
