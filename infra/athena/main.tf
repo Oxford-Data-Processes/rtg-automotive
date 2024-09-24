@@ -117,3 +117,17 @@ resource "aws_glue_catalog_table" "product" {
   }
 
 }
+
+
+resource "aws_athena_workgroup" "rtg_automotive_workgroup" {
+  name = "${var.project}-workgroup"
+
+  configuration {
+    enforce_workgroup_configuration    = true
+    publish_cloudwatch_metrics_enabled = true
+
+    result_configuration {
+      output_location = "s3://${var.project}-bucket-${var.aws_account_id}/athena-results/"
+    }
+  }
+}
