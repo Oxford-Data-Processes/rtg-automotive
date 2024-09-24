@@ -51,7 +51,16 @@ resource "aws_athena_table" "supplier_stock" {
     type = "string"
   }
 
-  partitioned_by = ["supplier", "updated_date"]
+  partitioned_by = ["supplier", "year", "month", "day"]
 
   location = "s3://${aws_s3_bucket.project_bucket.bucket}/supplier_stock/"
+
+  permissions {
+    principal = "athena.amazonaws.com"
+    actions   = ["s3:GetObject", "s3:ListBucket"]
+    resources = [
+      aws_s3_bucket.project_bucket.arn,
+      "${aws_s3_bucket.project_bucket.arn}/supplier_stock/*"
+    ]
+  }
 }
