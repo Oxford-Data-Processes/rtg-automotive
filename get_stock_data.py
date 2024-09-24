@@ -2,6 +2,22 @@ import pandas as pd
 from pathlib import Path
 import os
 import datetime
+import boto3
+from io import BytesIO
+
+
+def write_parquet_to_s3(df, bucket, key):
+    buffer = BytesIO()
+    df.to_parquet(buffer, engine="pyarrow", index=False)
+    s3 = boto3.client(
+        "s3",
+        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+        aws_session_token=os.environ["AWS_SESSION_TOKEN"],
+        region_name="eu-west-2",
+    )
+    buffer.seek(0)
+    s3.upload_fileobj(buffer, bucket, key)
 
 
 def read_excel_sheets(file_path, sheet_names):
@@ -43,19 +59,17 @@ def main():
     remove_labels = [label.upper().strip() for label in remove_labels]
     df_stock = df_stock[~df_stock["custom_label"].isin(remove_labels)]
 
+    aws_account_id = os.environ["AWS_ACCOUNT_ID"]
+    bucket_name = f"rtg-automotive-bucket-{aws_account_id}"
+
     for supplier in df_stock["supplier"].unique():
         supplier_df = df_stock[df_stock["supplier"] == supplier]
-        output_dir = f"data/supplier_stock/supplier={supplier}/year={updated_date.year}/month={updated_date.month}/day={updated_date.day}/"
-        os.makedirs(output_dir, exist_ok=True)
+        key = f"supplier_stock/supplier={supplier}/year={updated_date.year}/month={updated_date.month}/day={updated_date.day}/data.parquet"
 
-        supplier_df.to_parquet(
-            os.path.join(output_dir, "data.parquet"),
-            index=False,
-            engine="pyarrow",
-        )
+        write_parquet_to_s3(supplier_df, bucket_name, key)
 
     df_product = df_stock.copy()[["custom_label", "part_number", "supplier"]]
-    df_product.to_parquet("data/product/data.parquet", index=False, engine="pyarrow")
+    write_parquet_to_s3(df_product, bucket_name, "product/data.parquet")
 
 
 if __name__ == "__main__":

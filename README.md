@@ -61,6 +61,7 @@ Columns:
 - year
 - month
 - day
+- updated_date
 
 Read frequency: Daily
 Write frequency: Daily
