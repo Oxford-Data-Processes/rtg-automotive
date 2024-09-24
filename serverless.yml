@@ -1,0 +1,64 @@
+frameworkVersion: "4.2.4"
+
+service: rtg-automotive
+
+custom:
+  stage: ${opt:stage}
+  environment: ${file(./${self:custom.stage}.yml)}
+  pythonRequirements:
+    zip: true
+    slim: true
+    layer: true
+    createLogGroup: false
+  bucketName: ${self:service}-bucket-${self:custom.environment.awsAccountId}
+
+provider:
+  name: aws
+  runtime: python3.11
+  region: eu-west-2
+  timeout: 300
+  memorySize: 2048
+  lambdaHashingVersion: 20201221
+  deploymentPrefix: serverless-lambdas
+
+plugins:
+  - serverless-python-requirements
+
+package:
+  individually: true
+  exclude:
+    - "*/**"
+    - node_modules/**
+    - .serverless/**
+    - .venv/**
+
+functions:
+  add-partition:
+    description: "Add partition to car parts data"
+    role: ${ssm:/${self:service}/add-partition/lambda-iam-role/arn}
+    handler: src.lambda.add_partition.main.lambda_handler
+    package:
+      patterns:
+        - "!node_modules/**"
+        - "!yarn.lock"
+        - "!package-lock.json"
+        - "!package.json"
+      include:
+        - "src/lambda/add_partition/**"
+        - "src/shared/**"
+        - "src/__init__.py"
+    timeout: 900
+    memorySize: 2048
+    layers:
+      - { Ref: PythonRequirementsLambdaLayer }
+    environment:
+      AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}
+    events:
+      - s3:
+          bucket: ${self:custom.bucketName}
+          event: s3:ObjectCreated:*
+          existing: true
+          filter:
+            key:
+              prefix:
+                - supplier_stock/
