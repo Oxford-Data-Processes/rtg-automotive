@@ -28,7 +28,9 @@ def read_excel_sheets(file_path, sheet_names):
 def process_dataframe(df):
     df = df.iloc[:, :4]
     df.columns = ["custom_label", "part_number", "supplier", "quantity"]
+    df.dropna(subset=["part_number", "supplier", "supplier", "quantity"], inplace=True)
     df["part_number"] = df["part_number"].astype(str)
+    df["quantity"] = df["quantity"].astype(int)
     return df
 
 
@@ -63,6 +65,9 @@ def main():
         supplier_df = df_stock.copy()[df_stock["supplier"] == supplier]
         key = f"supplier_stock/supplier={supplier}/year={updated_date.year}/month={updated_date.month}/day={updated_date.day}/data.parquet"
         supplier_df.drop(columns=["supplier"], inplace=True)
+        supplier_df["updated_date"] = updated_date.strftime(
+            "%Y-%m-%d"
+        )  # Add updated_date to supplier_df
         write_parquet_to_s3(supplier_df, bucket_name, key)
 
     df_product = df_stock.copy()[["custom_label", "part_number", "supplier"]]

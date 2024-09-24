@@ -32,6 +32,11 @@ data/
 # streamlit
 .streamlit/
 
+# Node
+node_modules/
+package-lock.json
+package.json
+
 # Terraform files 
 .terraform/
 .terraform.lock.hcl
