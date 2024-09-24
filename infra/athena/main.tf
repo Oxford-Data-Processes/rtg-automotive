@@ -1,13 +1,11 @@
 resource "aws_athena_database" "rtg_automotive" {
   name   = "rtg_automotive"
-  bucket = aws_s3_bucket.project_bucket.bucket
+  bucket = module.s3_bucket.project_bucket.bucket
 }
 
 resource "aws_athena_table" "supplier_stock" {
   name          = "supplier_stock"
   database_name = aws_athena_database.rtg_automotive.name
-
-  bucket = aws_s3_bucket.project_bucket.bucket
 
   table_type = "EXTERNAL_TABLE"
 
@@ -53,14 +51,14 @@ resource "aws_athena_table" "supplier_stock" {
 
   partitioned_by = ["supplier", "year", "month", "day"]
 
-  location = "s3://${aws_s3_bucket.project_bucket.bucket}/supplier_stock/"
+  location = "s3://${module.s3_bucket.project_bucket.bucket}/supplier_stock/"
 
   permissions {
     principal = "athena.amazonaws.com"
     actions   = ["s3:GetObject", "s3:ListBucket"]
     resources = [
-      aws_s3_bucket.project_bucket.arn,
-      "${aws_s3_bucket.project_bucket.arn}/supplier_stock/*"
+      module.s3_bucket.project_bucket.arn,
+      "${module.s3_bucket.project_bucket.arn}/supplier_stock/*"
     ]
   }
 }
