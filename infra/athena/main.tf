@@ -8,67 +8,83 @@ resource "aws_glue_catalog_table" "supplier_stock" {
 
   table_type = "EXTERNAL_TABLE"
 
-  column {
-    name = "custom_label"
-    type = "string"
-  }
-
-  column {
-    name = "part_number"
-    type = "string"
-  }
-
-  column {
-    name = "supplier"
-    type = "string"
-  }
-
-  column {
-    name = "quantity"
-    type = "int"
-  }
-
-  column {
-    name = "year"
-    type = "int"
-  }
-
-  column {
-    name = "month"
-    type = "int"
-  }
-
-  column {
-    name = "day"
-    type = "int"
-  }
-
-  column {
-    name = "updated_date"
-    type = "string"
-  }
-
-  partition_keys {
-    name = "supplier"
-    type = "string"
-  }
-
-  partition_keys {
-    name = "year"
-    type = "int"
-  }
-
-  partition_keys {
-    name = "month"
-    type = "int"
-  }
-
-  partition_keys {
-    name = "day"
-    type = "int"
+  parameters = {
+    EXTERNAL              = "TRUE"
+    "parquet.compression" = "SNAPPY"
   }
 
   storage_descriptor {
-    location = "s3://${var.project}-bucket-${var.aws_account_id}/supplier_stock/"
+    location      = "s3://${var.project}-bucket-${var.aws_account_id}/supplier_stock/"
+    input_format  = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetInputFormat"
+    output_format = "org.apache.hadoop.hive.ql.io.parquet.MapredParquetOutputFormat"
+
+    ser_de_info {
+      name                  = "supplier_stock"
+      serialization_library = "org.apache.hadoop.hive.ql.io.parquet.serde.ParquetHiveSerDe"
+
+      parameters = {
+        "serialization.format" = 1
+      }
+    }
+
+    columns {
+      name = "custom_label"
+      type = "string"
+    }
+
+    columns {
+      name = "part_number"
+      type = "string"
+    }
+
+    columns {
+      name = "supplier"
+      type = "string"
+    }
+
+    columns {
+      name = "quantity"
+      type = "int"
+    }
+
+    columns {
+      name = "year"
+      type = "int"
+    }
+
+    columns {
+      name = "month"
+      type = "int"
+    }
+
+    columns {
+      name = "day"
+      type = "int"
+    }
+
+    columns {
+      name = "updated_date"
+      type = "string"
+    }
+  }
+
+  partition_keys {
+    name = "supplier"
+    type = "string"
+  }
+
+  partition_keys {
+    name = "year"
+    type = "int"
+  }
+
+  partition_keys {
+    name = "month"
+    type = "int"
+  }
+
+  partition_keys {
+    name = "day"
+    type = "int"
   }
 }
