@@ -29,3 +29,11 @@ module "athena" {
   stage          = var.stage
   source         = "./athena"
 }
+
+module "add_partition" {
+  aws_account_id = var.aws_account_id
+  project        = var.project
+  stage          = var.stage
+  aws_region     = var.aws_region
+  source         = "./lambda/add_partition"
+}
