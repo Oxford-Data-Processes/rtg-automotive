@@ -84,12 +84,8 @@ def extract_partition_values(object_key):
     return partition_values
 
 
-def get_database_name(object_key):
-    return object_key.split("/")[0]
-
-
 def get_table_name(object_key):
-    return object_key.split("/")[1]
+    return object_key.split("/")[0]
 
 
 def lambda_handler(event, context):
@@ -107,7 +103,7 @@ def lambda_handler(event, context):
         object_key = records[0]["s3"]["object"]["key"]
         partition_values = extract_partition_values(object_key)
 
-    database_name = get_database_name(object_key)
+    database_name = "rtg_automotive"
     table_name = get_table_name(object_key)
 
     response = add_partition_to_glue(
