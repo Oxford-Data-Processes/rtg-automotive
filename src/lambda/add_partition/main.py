@@ -22,10 +22,10 @@ def add_partition_to_glue(
 
     partition_input = {
         "Values": [
+            partition_values.get("supplier"),
             partition_values.get("year"),
             partition_values.get("month"),
             partition_values.get("day"),
-            partition_values.get("supplier"),
         ],
         "LastAccessTime": current_time,
         "StorageDescriptor": {
