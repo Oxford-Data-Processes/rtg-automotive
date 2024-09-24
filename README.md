@@ -4,32 +4,108 @@ Design:
 
 Tables:
 
-Database: rtg_automotive
-
 Table: product
-- custom_label
-- part_number
-- supplier
+
+Description: Table that contains mapping of part_number and supplier to custom_label. Small table and mainly static. Updated monthly, then parquet file is recreated.
+Location: Single data.parquet file inside product folder of AWS rtg-automotive S3 bucket. Versioned. Versions older than 1 month are deleted.
+
+Columns:
+- custom_label: text
+- part_number: text
+- supplier: text
+
+Read frequency: Daily
+Write frequency: Monthly
+Read throughput minimum (MB/s): 10
+Write throughput minimum (MB/s): 0.1
+Type (Append-only, Overwrite, Upsert): Overwrite
+Estimated size (MB): 7
+
 
 Table: store
-- item_id
-- brand
-- custom_label
-- current_quantity
-- title
-- current_price
-- prefix
-- uk_rtg
-- fps_wds_dir
-- payment_profile_name
-- shipping_profile_name
-- return_profile_name
-- supplier
-- store
+
+Description: Table that contains details of each store. Mainly static, very large table. Partitioned by store and supplier. Updated weekly. Reads of entire table are daily.
+Location: Several data.parquet files inside store/ebay_store={ebay_store}/supplier={supplier} folders of AWS rtg-automotive S3 bucket. Versioned. Versions older than 1 month are deleted.
+
+Columns:
+- item_id: bigint
+- custom_label: text
+- title: text
+- current_price: double
+- prefix: text
+- uk_rtg: text
+- fps_wds_dir: text
+- payment_profile_name: text
+- shipping_profile_name: text
+- return_profile_name: text
+- supplier: text
+- ebay_store: text
+
+Read frequency: Daily
+Write frequency: Weekly
+Read throughput minimum (MB/s): 100
+Write throughput minimum (MB/s): 0.1
+Type (Append-only, Overwrite, Upsert): Upsert
+Estimated size (MB): 1,270
 
 Table: supplier_stock
+
+Description: Table that contains historical stock data for each supplier. Updated daily. Partitioned by supplier and updated_date. Data is added daily.
+Location: Several parquet files inside supplier_stock/supplier={supplier}/year={year}/month={month}/day={day} folders of AWS rtg-automotive S3 bucket. Versioned. Versions older than 1 month are deleted.
+
+Columns:
 - custom_label
 - part_number
 - supplier
 - quantity
-- updated_date
+- year
+- month
+- day
+
+Read frequency: Daily
+Write frequency: Daily
+Read throughput minimum (MB/s): 100
+Write throughput minimum (MB/s): 10
+Type (Append-only, Overwrite, Upsert): Append-only
+Estimated size (MB): 22 (appended daily)
+
+Table: ebay
+
+Description: Table that contains details of each ebay listing. Partitioned by store and supplier_store. Updated daily. Large table, overwrites are daily. The write throughput is high due to the large number of writes.
+Location: Several parquet files inside ebay/ebay_store={ebay_store}/supplier_store={supplier_store} folders of AWS rtg-automotive S3 bucket. Versioned. Versions older than 1 month are deleted.
+
+Columns:
+- item_id
+- quantity_delta
+- quantity
+- custom_label
+- supplier_store
+- ebay_store
+
+Read frequency: Daily
+Write frequency: Daily
+Read throughput minimum (MB/s): 100
+Write throughput minimum (MB/s): 100
+Type (Append-only, Overwrite, Upsert): Overwrite
+Estimated size (MB): 276
+
+
+Preparation steps:
+1. Create a store parquet files inside AWS S3 bucket.
+2. Create a product parquet files inside S3.
+3. Create initial supplier_stock parquet files inside S3.
+
+Daily Pipeline steps:
+
+1. Stock Feed xlsx files are uploaded to AWS S3 bucket using Streamlit frontend.
+2. process_stock_feed Lambda function is triggered for each file to read the xlsx files from S3, use Athena to query store and product tables,process the data and send as parquet files to supplier_stock S3 locations.
+3. Lambda function is triggered to update the AWS Glue catalog with new partitions for supplier_stock table and generate SNS notification when process is complete to update the frontend.
+4. SNS notification is used to trigger the next step. Inside a Lambda, generate eBay table using Athena query that combines/manipulates/transforms data from supplier_stock, product and store tables. Write outputs to ebay folder in S3.
+5. Generate SNS notification when process is complete to update the frontend.
+
+
+Manual update steps:
+
+- Weekly update of store table.
+- Monthly update of product table.
+
