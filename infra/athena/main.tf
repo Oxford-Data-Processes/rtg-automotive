@@ -8,7 +8,7 @@ resource "aws_glue_catalog_table" "supplier_stock" {
 
   table_type = "EXTERNAL_TABLE"
 
-  columns {
+  column {
     name = "custom_label"
     type = "string"
   }
@@ -69,6 +69,6 @@ resource "aws_glue_catalog_table" "supplier_stock" {
   }
 
   storage_descriptor {
-    location = "s3://${module.s3_bucket.project_bucket.bucket}/supplier_stock/"
+    location = "s3://${var.project}-bucket-${var.aws_account_id}/supplier_stock/"
   }
 }
