@@ -100,8 +100,8 @@ Daily Pipeline steps:
 
 1. Stock Feed xlsx files are uploaded to AWS S3 bucket using Streamlit frontend.
 2. process_stock_feed Lambda function is triggered for each file to read the xlsx files from S3, use Athena to query store and product tables, process the data and send as parquet files to supplier_stock S3 locations.
-3. Lambda function is triggered to update the AWS Glue catalog with new partitions for supplier_stock table and generate SNS notification when process is complete to update the frontend.
-4. SNS notification is used to trigger the next step. Inside a Lambda, generate eBay table using Athena query that combines/manipulates/transforms data from supplier_stock, product and store tables. Write outputs to ebay folder in S3.
+3. update_partitions Lambda function is triggered to update the AWS Glue catalog with new partitions for supplier_stock table and generate SNS notification when process is complete to update the frontend.
+4. SNS notification is used to trigger the next step. Inside a generate_ebay_table Lambda, generate eBay table using Athena query that combines/manipulates/transforms data from supplier_stock, product and store tables. Write outputs to ebay folder in S3.
 5. Generate SNS notification when process is complete to update the frontend.
 
 
@@ -112,3 +112,12 @@ Manual update steps:
 
 
 
+TODO:
+
+- Set up S3 bucket and versioning
+- Create parquet files for store, product and supplier_stock including partitions.
+- Create process_stock_feed lambda and SNS notification
+- Set up AWS Glue Data Catalog for tables
+- Create update_partitions lambda and SNS notifications
+- Integrate this with Streamlit frontend
+- Create generate_ebay_table lambda and SNS notifications
