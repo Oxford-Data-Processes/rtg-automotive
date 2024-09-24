@@ -6,7 +6,7 @@ Tables:
 
 Table: product
 
-Description: Table that contains mapping of part_number and supplier to custom_label. Small table and mainly static. Updated monthly, then parquet file is recreated.
+Description: Table that contains mapping of part_number and supplier to custom_label. Small table and mainly static. Refreshed monthly, then parquet file is recreated.
 Location: Single data.parquet file inside product folder of AWS rtg-automotive S3 bucket. Versioned. Versions older than 1 month are deleted.
 
 Columns:
@@ -51,7 +51,7 @@ Estimated size (MB): 1,270
 Table: supplier_stock
 
 Description: Table that contains historical stock data for each supplier. Updated daily. Partitioned by supplier and updated_date. Data is added daily.
-Location: Several parquet files inside supplier_stock/supplier={supplier}/year={year}/month={month}/day={day} folders of AWS rtg-automotive S3 bucket. Versioned. Versions older than 1 month are deleted.
+Location: data.parquet files inside supplier_stock/supplier={supplier}/year={year}/month={month}/day={day} folders of AWS rtg-automotive S3 bucket. Data with updated_date older than 1 month is deleted.
 
 Columns:
 - custom_label
@@ -71,8 +71,8 @@ Estimated size (MB): 22 (appended daily)
 
 Table: ebay
 
-Description: Table that contains details of each ebay listing. Partitioned by store and supplier_store. Updated daily. Large table, overwrites are daily. The write throughput is high due to the large number of writes.
-Location: Several parquet files inside ebay/ebay_store={ebay_store}/supplier_store={supplier_store} folders of AWS rtg-automotive S3 bucket. Versioned. Versions older than 1 month are deleted.
+Description: Table that contains details of each ebay listing. Partitioned by ebay_store. Updated daily. Large table, overwrites are daily.
+Location: data.parquet files inside ebay/ebay_store={ebay_store} folder of AWS rtg-automotive S3 bucket. Versioned. Versions older than 1 month are deleted.
 
 Columns:
 - item_id
@@ -89,6 +89,7 @@ Write throughput minimum (MB/s): 100
 Type (Append-only, Overwrite, Upsert): Overwrite
 Estimated size (MB): 276
 
+---
 
 Preparation steps:
 1. Create a store parquet files inside AWS S3 bucket.
@@ -98,7 +99,7 @@ Preparation steps:
 Daily Pipeline steps:
 
 1. Stock Feed xlsx files are uploaded to AWS S3 bucket using Streamlit frontend.
-2. process_stock_feed Lambda function is triggered for each file to read the xlsx files from S3, use Athena to query store and product tables,process the data and send as parquet files to supplier_stock S3 locations.
+2. process_stock_feed Lambda function is triggered for each file to read the xlsx files from S3, use Athena to query store and product tables, process the data and send as parquet files to supplier_stock S3 locations.
 3. Lambda function is triggered to update the AWS Glue catalog with new partitions for supplier_stock table and generate SNS notification when process is complete to update the frontend.
 4. SNS notification is used to trigger the next step. Inside a Lambda, generate eBay table using Athena query that combines/manipulates/transforms data from supplier_stock, product and store tables. Write outputs to ebay folder in S3.
 5. Generate SNS notification when process is complete to update the frontend.
@@ -108,4 +109,6 @@ Manual update steps:
 
 - Weekly update of store table.
 - Monthly update of product table.
+
+
 
