@@ -117,8 +117,7 @@ TODO:
 
 <!-- - Set up S3 bucket and versioning -->
 <!-- - Set up AWS Glue Data Catalog for tables -->
-- Create parquet files for store, product and supplier_stock including partitions.
+<!-- - Create parquet files for store, product and supplier_stock including partitions. -->
 - Create process_stock_feed lambda and SNS notification
-- Create add_partition lambda and SNS notifications
 - Integrate this with Streamlit frontend
 - Create generate_ebay_table lambda and SNS notifications

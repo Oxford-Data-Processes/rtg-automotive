@@ -202,7 +202,7 @@ resource "aws_glue_catalog_table" "store" {
     }
     
   }
-
+  
 }
 
 resource "aws_athena_workgroup" "rtg_automotive_workgroup" {
