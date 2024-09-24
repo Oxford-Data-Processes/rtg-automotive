@@ -13,37 +13,37 @@ resource "aws_glue_catalog_table" "supplier_stock" {
     type = "string"
   }
 
-  columns {
+  column {
     name = "part_number"
     type = "string"
   }
 
-  columns {
+  column {
     name = "supplier"
     type = "string"
   }
 
-  columns {
+  column {
     name = "quantity"
     type = "int"
   }
 
-  columns {
+  column {
     name = "year"
     type = "int"
   }
 
-  columns {
+  column {
     name = "month"
     type = "int"
   }
 
-  columns {
+  column {
     name = "day"
     type = "int"
   }
 
-  columns {
+  column {
     name = "updated_date"
     type = "string"
   }
@@ -68,14 +68,7 @@ resource "aws_glue_catalog_table" "supplier_stock" {
     type = "int"
   }
 
-  location = "s3://${module.s3_bucket.project_bucket.bucket}/supplier_stock/"
-
-  permissions {
-    principal = "athena.amazonaws.com"
-    actions   = ["s3:GetObject", "s3:ListBucket"]
-    resources = [
-      module.s3_bucket.project_bucket.arn,
-      "${module.s3_bucket.project_bucket.arn}/supplier_stock/*"
-    ]
+  storage_descriptor {
+    location = "s3://${module.s3_bucket.project_bucket.bucket}/supplier_stock/"
   }
 }
