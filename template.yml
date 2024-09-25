@@ -33,19 +33,6 @@ Resources:
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref MyS3Bucket
-        - PolicyName: AthenaAccessPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action:
-                  - athena:StartQueryExecution
-                  - athena:GetQueryExecution
-                  - athena:GetQueryResults
-                  - athena:ListDatabases
-                  - athena:ListTableMetadata
-                  - athena:ListQueryExecutions
-                Resource: "*"
       Environment:
         Variables:
           AWS_ACCOUNT_ID: !Ref AWSAccountId
@@ -55,3 +42,30 @@ Resources:
           Properties:
             Bucket: !Ref MyS3Bucket
             Events: s3:ObjectCreated:Put
+
+  ProcessStockFeedFunction:
+    Type: AWS::Serverless::Function
+    Properties: 
+      FunctionName: !Sub "${ProjectName}-${Stage}-process-stock-feed"
+      Handler: src/lambda/process_stock_feed.main.lambda_handler
+      Runtime: python3.11
+      MemorySize: 2048
+      Timeout: 900
+      Role: !Sub "arn:aws:iam::${AWSAccountId}:role/${ProjectName}/process-stock-feed/${ProjectName}-process-stock-feed-lambda-role"
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Ref MyS3Bucket
+      Environment:
+        Variables:
+          AWS_ACCOUNT_ID: !Ref AWSAccountId
+      Events:
+        S3PutEvent:
+          Type: S3
+          Properties:
+            Bucket: !Ref MyS3Bucket
+            Events: s3:ObjectCreated:Put
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: prefix
+                    Value: stock_feed/
