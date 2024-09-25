@@ -22,3 +22,14 @@ Resources:
       Environment:
         Variables:
           AWS_ACCOUNT_ID: !Ref AWSAccountId
+      Events:
+        S3PutEvent:
+          Type: S3
+          Properties:
+            Bucket: !Sub "${ProjectName}-bucket-${AWSAccountId}"
+            Events: s3:ObjectCreated:Put
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: .parquet
