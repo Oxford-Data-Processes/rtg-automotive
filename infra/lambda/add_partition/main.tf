@@ -21,7 +21,7 @@ resource "aws_iam_role_policy_attachment" "lambda_iam_to_policy_attachment" {
 
 resource "aws_lambda_event_source_mapping" "s3_trigger" {
   event_source_arn = "arn:aws:s3:::${var.project}-bucket-${var.aws_account_id}"
-  function_name = "arn:aws:lambda:${var.region}:${var.aws_account_id}:function:${var.project}-dev-${local.service_name}"
+  function_name = "arn:aws:lambda:${var.aws_region}:${var.aws_account_id}:function:${var.project}-dev-${local.service_name}"
   starting_position = "LATEST"
 
   batch_size = 1
