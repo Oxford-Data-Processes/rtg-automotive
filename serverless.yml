@@ -63,6 +63,8 @@ functions:
               prefix:
                 - supplier_stock/
                 - store/
+              suffix:
+                - .parquet
 
   process-stock-feed:
     description: "Process stock feed"
@@ -93,3 +95,5 @@ functions:
             key:
               prefix:
                 - stock_feed/
+              suffix:
+                - .xlsx
