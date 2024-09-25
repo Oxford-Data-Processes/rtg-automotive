@@ -65,6 +65,19 @@ jobs:
         run: |
           pip3 install aws-sam-cli
 
+      - name: Create Change Set
+        run: |
+          aws cloudformation create-change-set \
+            --stack-name ${{ env.PROJECT_NAME }}-lambda-stack-${{ env.STAGE }} \
+            --template-body file://template.yml \
+            --change-set-name ${{ env.PROJECT_NAME }}-change-set-${{ env.STAGE }} \
+            --parameters \
+              ParameterKey=AWSAccountId,ParameterValue=${{ env.AWS_ACCOUNT_ID }} \
+              ParameterKey=ProjectName,ParameterValue=${{ env.PROJECT_NAME }} \
+              ParameterKey=Stage,ParameterValue=${{ env.STAGE }} \
+            --capabilities CAPABILITY_IAM \
+            --region eu-west-2
+
       - name: Build Lambda Function
         run: |
           sam build --template-file template.yml
