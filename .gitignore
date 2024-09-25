@@ -32,6 +32,9 @@ data/
 # streamlit
 .streamlit/
 
+# serverless
+.serverless/
+
 # Node
 node_modules/
 package-lock.json
