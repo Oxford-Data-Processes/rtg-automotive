@@ -8,7 +8,7 @@ Resources:
       Runtime: python3.11
       MemorySize: 2048
       Timeout: 900
-      Role: ${ssm:/rtg-automotive/add-partition/lambda-iam-role/arn}
+      Role: arn:aws:iam::654654324108:role/rtg-automotive/add-partition/rtg-automotive-add-partition-lambda-role
       Policies:
         - S3ReadPolicy:
             BucketName: "rtg-automotive-bucket-654654324108"
