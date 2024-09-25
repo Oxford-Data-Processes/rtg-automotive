@@ -65,6 +65,11 @@ jobs:
         run: |
           pip3 install aws-sam-cli
 
+      
+      - name: Build Lambda Function
+        run: |
+          sam build --template-file template.yml
+
       - name: Create Change Set
         run: |
           aws cloudformation create-change-set \
@@ -78,9 +83,12 @@ jobs:
             --capabilities CAPABILITY_IAM \
             --region eu-west-2
 
-      - name: Build Lambda Function
+      - name: Execute Change Set
         run: |
-          sam build --template-file template.yml
+          aws cloudformation execute-change-set \
+            --change-set-name ${{ env.PROJECT_NAME }}-change-set-${{ env.STAGE }} \
+            --stack-name ${{ env.PROJECT_NAME }}-lambda-stack-${{ env.STAGE }} \
+            --region eu-west-2
 
       - name: Deploy All Lambda Functions
         run: |
