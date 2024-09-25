@@ -91,7 +91,7 @@ jobs:
           sam deploy --template-file template.yml \
                 --stack-name testStack \
                 --capabilities CAPABILITY_IAM \
-                --parameter-overrides Project=${{ env.AWS_ACCOUNT_ID }} ServiceName=test \
+                --parameter-overrides AWSAccountId=${{ env.AWS_ACCOUNT_ID }} \
                 --region eu-west-2 \
                 --resolve-s3
 

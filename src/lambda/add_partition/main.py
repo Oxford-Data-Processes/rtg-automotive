@@ -64,10 +64,7 @@ def add_partition_to_glue(
         return {"statusCode": 200, "body": json.dumps("Partition added successfully!")}
     except Exception as e:
         logger.error(f"Error adding partition: {str(e)}")
-        return {
-            "statusCode": 500,
-            "body": json.dumps(f"Error adding partition: {str(e)}"),
-        }
+        raise
 
 
 def extract_partition_values(object_key):

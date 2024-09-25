@@ -1,4 +1,10 @@
+AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
+Parameters:
+  AWSAccountId:
+    Type: String
+    Description: The AWS Account ID
+
 Resources:
   AddPartitionFunction:
     Type: AWS::Serverless::Function
@@ -8,10 +14,10 @@ Resources:
       Runtime: python3.11
       MemorySize: 2048
       Timeout: 900
-      Role: arn:aws:iam::654654324108:role/rtg-automotive/add-partition/rtg-automotive-add-partition-lambda-role
+      Role: !Sub "arn:aws:iam::${AWSAccountId}:role/rtg-automotive/add-partition/rtg-automotive-add-partition-lambda-role"
       Policies:
         - S3ReadPolicy:
             BucketName: "rtg-automotive-bucket-654654324108"
       Environment:
         Variables:
-          AWS_ACCOUNT_ID: "654654324108"
+          AWS_ACCOUNT_ID: !Ref AWSAccountId
