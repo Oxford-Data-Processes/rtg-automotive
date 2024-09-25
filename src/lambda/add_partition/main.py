@@ -64,10 +64,7 @@ def add_partition_to_glue(
         return {"statusCode": 200, "body": json.dumps("Partition added successfully!")}
     except Exception as e:
         logger.error(f"Error adding partition: {str(e)}")
-        return {
-            "statusCode": 500,
-            "body": json.dumps(f"Error adding partition: {str(e)}"),
-        }
+        raise
 
 
 def extract_partition_values(object_key):
@@ -106,7 +103,15 @@ def lambda_handler(event, context):
     database_name = "rtg_automotive"
     table_name = get_table_name(object_key)
 
-    response = add_partition_to_glue(
-        glue_client, database_name, table_name, bucket_name, partition_values, logger
-    )
-    return response
+    if table_name in ["supplier_stock", "store"]:
+        response = add_partition_to_glue(
+            glue_client,
+            database_name,
+            table_name,
+            bucket_name,
+            partition_values,
+            logger,
+        )
+        return response
+
+    return {"statusCode": 200, "body": json.dumps("No partition added!")}

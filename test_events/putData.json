@@ -1,10 +1,10 @@
 {
-    "Records": [
+"Records": [
         {
             "eventVersion": "2.1",
             "eventSource": "aws:s3",
             "awsRegion": "eu-west-2",
-            "eventTime": "2024-09-24T15:26:24.002Z",
+            "eventTime": "2024-09-24T15:26:20.716Z",
             "eventName": "ObjectCreated:Put",
             "userIdentity": {
                 "principalId": "AWS:AROAZQ3DQHWGJFPFB7OXW:chris@speedsheet.co.uk"
@@ -13,8 +13,8 @@
                 "sourceIPAddress": "194.35.122.101"
             },
             "responseElements": {
-                "x-amz-request-id": "FHB66WHDTQEZBAZB",
-                "x-amz-id-2": "uMHiAF2+wYBeb9eJaEvOFA9Bv/UoOH9fuBbcxavhEkxO/o3GaWltFVmvE+VR4DKE6lK3bqWlcoNNTQAyaGY5NBJVs8v/yo6f"
+                "x-amz-request-id": "K30S7ZNB5FDK6WP4",
+                "x-amz-id-2": "eSWyL/S/5Ft7p7nuFDjdHpv7YMSf7P1j/fLYou8nV3DfSO8lsnLXGgKO/cxVAATCp1mtrY3SRKdIsWlKYMkIUDU0bJ2WYGOT"
             },
             "s3": {
                 "s3SchemaVersion": "1.0",
@@ -27,11 +27,11 @@
                     "arn": "arn:aws:s3:::rtg-automotive-bucket-654654324108"
                 },
                 "object": {
-                    "key": "product/data.parquet",
-                    "size": 2704438,
-                    "eTag": "ddb1bca005ceee38cd46f93c778bf37f",
-                    "versionId": "UpzDxcvjpdEvj0KMvJXLSPih7azBbJUC",
-                    "sequencer": "0066F2DA1E0C60A9C2"
+                    "key": "supplier_stock/supplier%3DROL/year%3D2024/month%3D9/day%3D24/data.parquet",
+                    "size": 45784,
+                    "eTag": "cf1146f77d9cbd1adcd1f23296ff5574",
+                    "versionId": "hR0V2NpgdUQ.yt.4FUqwPHKALmmPE3oj",
+                    "sequencer": "0066F2DA1C98591451"
                 }
             }
         }

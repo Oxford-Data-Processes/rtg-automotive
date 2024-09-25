@@ -1,6 +1,7 @@
 locals {
   service_name = "add-partition"
 }
+
 resource "aws_iam_role" "lambda_iam" {
   force_detach_policies = true
   name                  = "${var.project}-${local.service_name}-lambda-role"
