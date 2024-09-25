@@ -92,6 +92,4 @@ jobs:
                 --stack-name ${PROJECT_NAME}-stack \
                 --capabilities CAPABILITY_IAM \
                 --parameter-overrides Project=${{ env.AWS_ACCOUNT_ID }} ServiceName=test \
-                --profile dev \
-                --no-confirm-changeset
 
