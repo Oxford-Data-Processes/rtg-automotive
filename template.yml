@@ -55,10 +55,3 @@ Resources:
           Properties:
             Bucket: !Ref MyS3Bucket
             Events: s3:ObjectCreated:Put
-            Filter:
-              S3Key:
-                Rules:
-                  - Name: prefix
-                    Value: supplier_stock/
-                  - Name: prefix
-                    Value: store/
