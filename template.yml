@@ -3,7 +3,7 @@ Resources:
   AddPartitionFunction:
     Type: AWS::Serverless::Function
     Properties: 
-      FunctionName: "add-partition"
+      FunctionName: "rtg-automotive-dev-add-partition"
       Handler: src/lambda/add_partition.main.lambda_handler
       Runtime: python3.11
       MemorySize: 2048
@@ -11,3 +11,6 @@ Resources:
       Policies:
         - S3ReadPolicy:
             BucketName: "rtg-automotive-bucket-654654324108"
+      Environment:
+        Variables:
+          AWS_ACCOUNT_ID: "654654324108"
