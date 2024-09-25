@@ -30,6 +30,7 @@ Resources:
       MemorySize: 2048
       Timeout: 900
       Role: !Sub "arn:aws:iam::${AWSAccountId}:role/${ProjectName}/add-partition/${ProjectName}-add-partition-lambda-role"
+      CodeUri: src/lambda/add_partition/
       Policies:
         - S3ReadPolicy:
             BucketName: !Ref MyS3Bucket
