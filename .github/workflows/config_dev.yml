@@ -18,11 +18,11 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      - name: Update or Install AWS CLI
-        run: |
-          curl "https://d1vvhvl2y92vvt.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip -o awscliv2.zip
-          sudo ./aws/install --update
+      # - name: Update or Install AWS CLI
+      #   run: |
+      #     curl "https://d1vvhvl2y92vvt.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      #     unzip -o awscliv2.zip
+      #     sudo ./aws/install --update
 
       - name: Check AWS CLI Version
         run: aws --version
@@ -51,12 +51,18 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+      # - name: Update or Install AWS CLI
+      #   run: |
+      #     curl "https://d1vvhvl2y92vvt.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+      #     unzip -o awscliv2.zip
+      #     sudo ./aws/install --update
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
 
-      - name: Update or Install AWS CLI
-        run: |
-          curl "https://d1vvhvl2y92vvt.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-          unzip -o awscliv2.zip
-          sudo ./aws/install --update
+      - name: Check Python Version
+        run: python --version
 
       - name: Check AWS CLI Version
         run: aws --version
@@ -71,11 +77,6 @@ jobs:
           echo "AWS_ACCESS_KEY_ID=$(echo $output | jq -r .Credentials.AccessKeyId)" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=$(echo $output | jq -r .Credentials.SecretAccessKey)" >> $GITHUB_ENV
           echo "AWS_SESSION_TOKEN=$(echo $output | jq -r .Credentials.SessionToken)" >> $GITHUB_ENV
-
-      - name: Install Python 3.11
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y python3.11 python3.11-venv python3.11-dev
 
       - name: Install SAM CLI
         run: |
