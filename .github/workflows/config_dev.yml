@@ -2,6 +2,7 @@ name: Github Actions Pipeline
 
 env:
   AWS_ACCOUNT_ID: "654654324108"
+  PROJECT_NAME: "rtg-automotive"
 
 on:
   push:
@@ -91,7 +92,7 @@ jobs:
           sam deploy --template-file template.yml \
                 --stack-name testStack \
                 --capabilities CAPABILITY_IAM \
-                --parameter-overrides AWSAccountId=${{ env.AWS_ACCOUNT_ID }} \
+                --parameter-overrides AWSAccountId=${{ env.AWS_ACCOUNT_ID }} ProjectName=${{ env.PROJECT_NAME }} \
                 --region eu-west-2 \
                 --resolve-s3
 
