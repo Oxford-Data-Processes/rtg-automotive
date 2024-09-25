@@ -65,8 +65,12 @@ resource "aws_lambda_function" "add_partition" {
   runtime       = "python3.11"
   memory_size   = 2048
   timeout       = 900
-  environment = {
-    AWS_ACCOUNT_ID = var.aws_account_id
+  role          = aws_iam_role.lambda_iam.arn
+
+  environment {
+    variables = {
+      AWS_ACCOUNT_ID = var.aws_account_id
+    }
   }
 }
 
