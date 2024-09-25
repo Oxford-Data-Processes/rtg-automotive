@@ -62,10 +62,12 @@ resource "aws_iam_role_policy_attachment" "lambda_iam_to_policy_attachment" {
 resource "aws_lambda_function" "add_partition" {
   function_name = "${var.project}-${local.service_name}"
   handler       = "src.lambda.add_partition.main.lambda_handler"
-  runtime       = "python3.11"
+  runtime       = "python3.11" // Updated to a supported runtime
   memory_size   = 2048
   timeout       = 900
   role          = aws_iam_role.lambda_iam.arn
+  s3_bucket     = "${var.project}-bucket-${var.aws_account_id}" // Added s3_bucket argument
+  filename      = "path/to/your/lambda/package.zip" // Added filename argument
 
   environment {
     variables = {
