@@ -11,6 +11,7 @@ custom:
     layer: true
     createLogGroup: false
   bucketName: ${self:service}-bucket-${self:custom.environment.awsAccountId}
+  stockFeedBucketName: stock-feed-bucket-${self:custom.environment.awsAccountId}
 
 provider:
   name: aws
@@ -86,7 +87,7 @@ functions:
       AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}
     events:
       - s3:
-          bucket: ${self:custom.bucketName}
+          bucket: ${self:custom.stockFeedBucketName}
           event: s3:ObjectCreated:*
           existing: true
           filter:

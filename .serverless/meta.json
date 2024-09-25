@@ -1,0 +1,666 @@
+{
+  "/Users/chrislittle/Documents/GitHub/rtg-automotive": {
+    "versionSfCore": null,
+    "versionFramework": "4.2.4",
+    "isWithinCompose": false,
+    "isCompose": false,
+    "composeOrgName": null,
+    "composeResolverProviders": {
+      "default-aws-credential-resolver": "<REDACTED>",
+      "opt": {
+        "instance": {
+          "credentials": "<REDACTED>",
+          "serviceConfigFile": {
+            "frameworkVersion": "4.2.4",
+            "service": "rtg-automotive",
+            "custom": {
+              "stage": "dev",
+              "environment": {
+                "awsAccountId": "654654324108"
+              },
+              "pythonRequirements": {
+                "zip": true,
+                "slim": true,
+                "layer": true,
+                "createLogGroup": false
+              },
+              "bucketName": "rtg-automotive-bucket-654654324108"
+            },
+            "provider": {
+              "name": "aws",
+              "runtime": "python3.11",
+              "region": "eu-west-2",
+              "timeout": 300,
+              "memorySize": 2048,
+              "lambdaHashingVersion": "20201221",
+              "deploymentPrefix": "serverless-lambdas",
+              "stage": "dev",
+              "versionFunctions": true
+            },
+            "plugins": [
+              "serverless-python-requirements"
+            ],
+            "package": {
+              "individually": true,
+              "exclude": [
+                "*/**",
+                "node_modules/**",
+                ".serverless/**",
+                ".venv/**"
+              ],
+              "artifactsS3KeyDirname": "serverless-lambdas/rtg-automotive/dev/code-artifacts"
+            },
+            "functions": {
+              "add-partition": {
+                "description": "Add partitions to tables",
+                "role": "arn:aws:iam::654654324108:role/rtg-automotive/add-partition/rtg-automotive-add-partition-lambda-role",
+                "handler": "src.lambda.add_partition.main.lambda_handler",
+                "package": {
+                  "patterns": [
+                    "!node_modules/**",
+                    "!yarn.lock",
+                    "!package-lock.json",
+                    "!package.json"
+                  ],
+                  "include": [
+                    "src/lambda/add_partition/**",
+                    "src/shared/**",
+                    "src/__init__.py"
+                  ]
+                },
+                "timeout": 900,
+                "memorySize": 2048,
+                "layers": [
+                  {
+                    "Ref": "PythonRequirementsLambdaLayer"
+                  }
+                ],
+                "environment": {
+                  "AWS_ACCOUNT_ID": "654654324108"
+                },
+                "events": [
+                  {
+                    "s3": {
+                      "bucket": "rtg-automotive-bucket-654654324108",
+                      "event": "s3:ObjectCreated:*",
+                      "existing": true,
+                      "filter": {
+                        "key": {
+                          "prefix": [
+                            "supplier_stock/",
+                            "store/"
+                          ],
+                          "suffix": [
+                            ".parquet"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ],
+                "name": "rtg-automotive-dev-add-partition"
+              },
+              "process-stock-feed": {
+                "description": "Process stock feed",
+                "role": "arn:aws:iam::654654324108:role/rtg-automotive/process-stock-feed/rtg-automotive-process-stock-feed-lambda-role",
+                "handler": "src.lambda.process_stock_feed.main.lambda_handler",
+                "package": {
+                  "patterns": [
+                    "!node_modules/**",
+                    "!yarn.lock",
+                    "!package-lock.json",
+                    "!package.json"
+                  ],
+                  "include": [
+                    "src/lambda/process_stock_feed/**",
+                    "src/shared/**",
+                    "src/__init__.py"
+                  ]
+                },
+                "timeout": 900,
+                "memorySize": 2048,
+                "layers": [
+                  {
+                    "Ref": "PythonRequirementsLambdaLayer"
+                  }
+                ],
+                "environment": {
+                  "AWS_ACCOUNT_ID": "654654324108"
+                },
+                "events": [
+                  {
+                    "s3": {
+                      "bucket": "rtg-automotive-bucket-654654324108",
+                      "event": "s3:ObjectCreated:*",
+                      "existing": true,
+                      "filter": {
+                        "key": {
+                          "prefix": [
+                            "stock_feed/"
+                          ],
+                          "suffix": [
+                            ".xlsx"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ],
+                "name": "rtg-automotive-dev-process-stock-feed"
+              }
+            }
+          },
+          "configFileDirPath": "/Users/chrislittle/Documents/GitHub/rtg-automotive",
+          "config": {
+            "type": "opt"
+          },
+          "options": {
+            "stage": "dev"
+          },
+          "stage": "dev",
+          "dashboard": null,
+          "_credentialsPromise": "<REDACTED>"
+        },
+        "resolvers": {}
+      },
+      "file": {
+        "instance": {
+          "credentials": "<REDACTED>",
+          "serviceConfigFile": {
+            "frameworkVersion": "4.2.4",
+            "service": "rtg-automotive",
+            "custom": {
+              "stage": "dev",
+              "environment": {
+                "awsAccountId": "654654324108"
+              },
+              "pythonRequirements": {
+                "zip": true,
+                "slim": true,
+                "layer": true,
+                "createLogGroup": false
+              },
+              "bucketName": "rtg-automotive-bucket-654654324108"
+            },
+            "provider": {
+              "name": "aws",
+              "runtime": "python3.11",
+              "region": "eu-west-2",
+              "timeout": 300,
+              "memorySize": 2048,
+              "lambdaHashingVersion": "20201221",
+              "deploymentPrefix": "serverless-lambdas",
+              "stage": "dev",
+              "versionFunctions": true
+            },
+            "plugins": [
+              "serverless-python-requirements"
+            ],
+            "package": {
+              "individually": true,
+              "exclude": [
+                "*/**",
+                "node_modules/**",
+                ".serverless/**",
+                ".venv/**"
+              ],
+              "artifactsS3KeyDirname": "serverless-lambdas/rtg-automotive/dev/code-artifacts"
+            },
+            "functions": {
+              "add-partition": {
+                "description": "Add partitions to tables",
+                "role": "arn:aws:iam::654654324108:role/rtg-automotive/add-partition/rtg-automotive-add-partition-lambda-role",
+                "handler": "src.lambda.add_partition.main.lambda_handler",
+                "package": {
+                  "patterns": [
+                    "!node_modules/**",
+                    "!yarn.lock",
+                    "!package-lock.json",
+                    "!package.json"
+                  ],
+                  "include": [
+                    "src/lambda/add_partition/**",
+                    "src/shared/**",
+                    "src/__init__.py"
+                  ]
+                },
+                "timeout": 900,
+                "memorySize": 2048,
+                "layers": [
+                  {
+                    "Ref": "PythonRequirementsLambdaLayer"
+                  }
+                ],
+                "environment": {
+                  "AWS_ACCOUNT_ID": "654654324108"
+                },
+                "events": [
+                  {
+                    "s3": {
+                      "bucket": "rtg-automotive-bucket-654654324108",
+                      "event": "s3:ObjectCreated:*",
+                      "existing": true,
+                      "filter": {
+                        "key": {
+                          "prefix": [
+                            "supplier_stock/",
+                            "store/"
+                          ],
+                          "suffix": [
+                            ".parquet"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ],
+                "name": "rtg-automotive-dev-add-partition"
+              },
+              "process-stock-feed": {
+                "description": "Process stock feed",
+                "role": "arn:aws:iam::654654324108:role/rtg-automotive/process-stock-feed/rtg-automotive-process-stock-feed-lambda-role",
+                "handler": "src.lambda.process_stock_feed.main.lambda_handler",
+                "package": {
+                  "patterns": [
+                    "!node_modules/**",
+                    "!yarn.lock",
+                    "!package-lock.json",
+                    "!package.json"
+                  ],
+                  "include": [
+                    "src/lambda/process_stock_feed/**",
+                    "src/shared/**",
+                    "src/__init__.py"
+                  ]
+                },
+                "timeout": 900,
+                "memorySize": 2048,
+                "layers": [
+                  {
+                    "Ref": "PythonRequirementsLambdaLayer"
+                  }
+                ],
+                "environment": {
+                  "AWS_ACCOUNT_ID": "654654324108"
+                },
+                "events": [
+                  {
+                    "s3": {
+                      "bucket": "rtg-automotive-bucket-654654324108",
+                      "event": "s3:ObjectCreated:*",
+                      "existing": true,
+                      "filter": {
+                        "key": {
+                          "prefix": [
+                            "stock_feed/"
+                          ],
+                          "suffix": [
+                            ".xlsx"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ],
+                "name": "rtg-automotive-dev-process-stock-feed"
+              }
+            }
+          },
+          "configFileDirPath": "/Users/chrislittle/Documents/GitHub/rtg-automotive",
+          "config": {
+            "type": "file"
+          },
+          "options": {
+            "stage": "dev"
+          },
+          "stage": "dev",
+          "dashboard": null,
+          "_credentialsPromise": "<REDACTED>"
+        },
+        "resolvers": {}
+      },
+      "self": {
+        "instance": {
+          "credentials": "<REDACTED>",
+          "serviceConfigFile": {
+            "frameworkVersion": "4.2.4",
+            "service": "rtg-automotive",
+            "custom": {
+              "stage": "dev",
+              "environment": {
+                "awsAccountId": "654654324108"
+              },
+              "pythonRequirements": {
+                "zip": true,
+                "slim": true,
+                "layer": true,
+                "createLogGroup": false
+              },
+              "bucketName": "rtg-automotive-bucket-654654324108"
+            },
+            "provider": {
+              "name": "aws",
+              "runtime": "python3.11",
+              "region": "eu-west-2",
+              "timeout": 300,
+              "memorySize": 2048,
+              "lambdaHashingVersion": "20201221",
+              "deploymentPrefix": "serverless-lambdas",
+              "stage": "dev",
+              "versionFunctions": true
+            },
+            "plugins": [
+              "serverless-python-requirements"
+            ],
+            "package": {
+              "individually": true,
+              "exclude": [
+                "*/**",
+                "node_modules/**",
+                ".serverless/**",
+                ".venv/**"
+              ],
+              "artifactsS3KeyDirname": "serverless-lambdas/rtg-automotive/dev/code-artifacts"
+            },
+            "functions": {
+              "add-partition": {
+                "description": "Add partitions to tables",
+                "role": "arn:aws:iam::654654324108:role/rtg-automotive/add-partition/rtg-automotive-add-partition-lambda-role",
+                "handler": "src.lambda.add_partition.main.lambda_handler",
+                "package": {
+                  "patterns": [
+                    "!node_modules/**",
+                    "!yarn.lock",
+                    "!package-lock.json",
+                    "!package.json"
+                  ],
+                  "include": [
+                    "src/lambda/add_partition/**",
+                    "src/shared/**",
+                    "src/__init__.py"
+                  ]
+                },
+                "timeout": 900,
+                "memorySize": 2048,
+                "layers": [
+                  {
+                    "Ref": "PythonRequirementsLambdaLayer"
+                  }
+                ],
+                "environment": {
+                  "AWS_ACCOUNT_ID": "654654324108"
+                },
+                "events": [
+                  {
+                    "s3": {
+                      "bucket": "rtg-automotive-bucket-654654324108",
+                      "event": "s3:ObjectCreated:*",
+                      "existing": true,
+                      "filter": {
+                        "key": {
+                          "prefix": [
+                            "supplier_stock/",
+                            "store/"
+                          ],
+                          "suffix": [
+                            ".parquet"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ],
+                "name": "rtg-automotive-dev-add-partition"
+              },
+              "process-stock-feed": {
+                "description": "Process stock feed",
+                "role": "arn:aws:iam::654654324108:role/rtg-automotive/process-stock-feed/rtg-automotive-process-stock-feed-lambda-role",
+                "handler": "src.lambda.process_stock_feed.main.lambda_handler",
+                "package": {
+                  "patterns": [
+                    "!node_modules/**",
+                    "!yarn.lock",
+                    "!package-lock.json",
+                    "!package.json"
+                  ],
+                  "include": [
+                    "src/lambda/process_stock_feed/**",
+                    "src/shared/**",
+                    "src/__init__.py"
+                  ]
+                },
+                "timeout": 900,
+                "memorySize": 2048,
+                "layers": [
+                  {
+                    "Ref": "PythonRequirementsLambdaLayer"
+                  }
+                ],
+                "environment": {
+                  "AWS_ACCOUNT_ID": "654654324108"
+                },
+                "events": [
+                  {
+                    "s3": {
+                      "bucket": "rtg-automotive-bucket-654654324108",
+                      "event": "s3:ObjectCreated:*",
+                      "existing": true,
+                      "filter": {
+                        "key": {
+                          "prefix": [
+                            "stock_feed/"
+                          ],
+                          "suffix": [
+                            ".xlsx"
+                          ]
+                        }
+                      }
+                    }
+                  }
+                ],
+                "name": "rtg-automotive-dev-process-stock-feed"
+              }
+            }
+          },
+          "configFileDirPath": "/Users/chrislittle/Documents/GitHub/rtg-automotive",
+          "config": {
+            "type": "self"
+          },
+          "options": {
+            "stage": "dev"
+          },
+          "stage": "dev",
+          "dashboard": null,
+          "_credentialsPromise": "<REDACTED>"
+        },
+        "resolvers": {}
+      }
+    },
+    "composeServiceName": null,
+    "servicePath": "/Users/chrislittle/Documents/GitHub/rtg-automotive",
+    "serviceConfigFileName": "serverless.yml",
+    "service": {
+      "frameworkVersion": "4.2.4",
+      "service": "rtg-automotive",
+      "custom": {
+        "stage": "dev",
+        "environment": {
+          "awsAccountId": "654654324108"
+        },
+        "pythonRequirements": {
+          "zip": true,
+          "slim": true,
+          "layer": true,
+          "createLogGroup": false
+        },
+        "bucketName": "rtg-automotive-bucket-654654324108"
+      },
+      "provider": {
+        "name": "aws",
+        "runtime": "python3.11",
+        "region": "eu-west-2",
+        "timeout": 300,
+        "memorySize": 2048,
+        "lambdaHashingVersion": "20201221",
+        "deploymentPrefix": "serverless-lambdas",
+        "stage": "dev",
+        "versionFunctions": true
+      },
+      "plugins": [
+        "serverless-python-requirements"
+      ],
+      "package": {
+        "individually": true,
+        "exclude": [
+          "*/**",
+          "node_modules/**",
+          ".serverless/**",
+          ".venv/**"
+        ],
+        "artifactsS3KeyDirname": "serverless-lambdas/rtg-automotive/dev/code-artifacts"
+      },
+      "functions": {
+        "add-partition": {
+          "description": "Add partitions to tables",
+          "role": "arn:aws:iam::654654324108:role/rtg-automotive/add-partition/rtg-automotive-add-partition-lambda-role",
+          "handler": "src.lambda.add_partition.main.lambda_handler",
+          "package": {
+            "patterns": [
+              "!node_modules/**",
+              "!yarn.lock",
+              "!package-lock.json",
+              "!package.json"
+            ],
+            "include": [
+              "src/lambda/add_partition/**",
+              "src/shared/**",
+              "src/__init__.py"
+            ]
+          },
+          "timeout": 900,
+          "memorySize": 2048,
+          "layers": [
+            {
+              "Ref": "PythonRequirementsLambdaLayer"
+            }
+          ],
+          "environment": {
+            "AWS_ACCOUNT_ID": "654654324108"
+          },
+          "events": [
+            {
+              "s3": {
+                "bucket": "rtg-automotive-bucket-654654324108",
+                "event": "s3:ObjectCreated:*",
+                "existing": true,
+                "filter": {
+                  "key": {
+                    "prefix": [
+                      "supplier_stock/",
+                      "store/"
+                    ],
+                    "suffix": [
+                      ".parquet"
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "name": "rtg-automotive-dev-add-partition"
+        },
+        "process-stock-feed": {
+          "description": "Process stock feed",
+          "role": "arn:aws:iam::654654324108:role/rtg-automotive/process-stock-feed/rtg-automotive-process-stock-feed-lambda-role",
+          "handler": "src.lambda.process_stock_feed.main.lambda_handler",
+          "package": {
+            "patterns": [
+              "!node_modules/**",
+              "!yarn.lock",
+              "!package-lock.json",
+              "!package.json"
+            ],
+            "include": [
+              "src/lambda/process_stock_feed/**",
+              "src/shared/**",
+              "src/__init__.py"
+            ]
+          },
+          "timeout": 900,
+          "memorySize": 2048,
+          "layers": [
+            {
+              "Ref": "PythonRequirementsLambdaLayer"
+            }
+          ],
+          "environment": {
+            "AWS_ACCOUNT_ID": "654654324108"
+          },
+          "events": [
+            {
+              "s3": {
+                "bucket": "rtg-automotive-bucket-654654324108",
+                "event": "s3:ObjectCreated:*",
+                "existing": true,
+                "filter": {
+                  "key": {
+                    "prefix": [
+                      "stock_feed/"
+                    ],
+                    "suffix": [
+                      ".xlsx"
+                    ]
+                  }
+                }
+              }
+            }
+          ],
+          "name": "rtg-automotive-dev-process-stock-feed"
+        }
+      }
+    },
+    "serviceRawFile": "frameworkVersion: \"4.2.4\"\n\nservice: rtg-automotive\n\ncustom:\n  stage: ${opt:stage}\n  environment: ${file(./${self:custom.stage}.yml)}\n  pythonRequirements:\n    zip: true\n    slim: true\n    layer: true\n    createLogGroup: false\n  bucketName: ${self:service}-bucket-${self:custom.environment.awsAccountId}\n\nprovider:\n  name: aws\n  runtime: python3.11\n  region: eu-west-2\n  timeout: 300\n  memorySize: 2048\n  lambdaHashingVersion: 20201221\n  deploymentPrefix: serverless-lambdas\n\nplugins:\n  - serverless-python-requirements\n\npackage:\n  individually: true\n  exclude:\n    - \"*/**\"\n    - node_modules/**\n    - .serverless/**\n    - .venv/**\n\nfunctions:\n  add-partition:\n    description: \"Add partitions to tables\"\n    role: ${ssm:/${self:service}/add-partition/lambda-iam-role/arn}\n    handler: src.lambda.add_partition.main.lambda_handler\n    package:\n      patterns:\n        - \"!node_modules/**\"\n        - \"!yarn.lock\"\n        - \"!package-lock.json\"\n        - \"!package.json\"\n      include:\n        - \"src/lambda/add_partition/**\"\n        - \"src/shared/**\"\n        - \"src/__init__.py\"\n    timeout: 900\n    memorySize: 2048\n    layers:\n      - { Ref: PythonRequirementsLambdaLayer }\n    environment:\n      AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}\n    events:\n      - s3:\n          bucket: ${self:custom.bucketName}\n          event: s3:ObjectCreated:*\n          existing: true\n          filter:\n            key:\n              prefix:\n                - supplier_stock/\n                - store/\n              suffix:\n                - .parquet\n\n  process-stock-feed:\n    description: \"Process stock feed\"\n    role: ${ssm:/${self:service}/process-stock-feed/lambda-iam-role/arn}\n    handler: src.lambda.process_stock_feed.main.lambda_handler\n    package:\n      patterns:\n        - \"!node_modules/**\"\n        - \"!yarn.lock\"\n        - \"!package-lock.json\"\n        - \"!package.json\"\n      include:\n        - \"src/lambda/process_stock_feed/**\"\n        - \"src/shared/**\"\n        - \"src/__init__.py\"\n    timeout: 900\n    memorySize: 2048\n    layers:\n      - { Ref: PythonRequirementsLambdaLayer }\n    environment:\n      AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}\n    events:\n      - s3:\n          bucket: ${self:custom.bucketName}\n          event: s3:ObjectCreated:*\n          existing: true\n          filter:\n            key:\n              prefix:\n                - stock_feed/\n              suffix:\n                - .xlsx\n",
+    "command": [
+      "remove"
+    ],
+    "options": {
+      "stage": "dev"
+    },
+    "error": null,
+    "params": {},
+    "machineId": "7a0cf37e73af02c0c226a047f74b4aaa",
+    "accessKeyV2": "<REDACTED>",
+    "accessKeyV1": "<REDACTED>",
+    "orgId": "a10fe1a9-a171-4c3f-8790-9b2f283d803f",
+    "orgName": "chrismlittle",
+    "userId": "ZyKnbmxJ2knwW1ndRY",
+    "dashboard": {
+      "isEnabledForService": false,
+      "requiredAuthentication": false,
+      "orgFeaturesInUse": null,
+      "orgObservabilityIntegrations": null,
+      "serviceAppId": null,
+      "serviceProvider": null,
+      "instanceParameters": null
+    },
+    "userName": "chrismlittle",
+    "subscription": null,
+    "userEmail": "christopher.little.personal@gmail.com",
+    "serviceProviderAwsCredentials": "<REDACTED>",
+    "serviceProviderAwsAccountId": "654654324108",
+    "projectType": "framework",
+    "versionSf": "4.2.4",
+    "serviceProviderAwsCfStackName": "rtg-automotive-dev",
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:eu-west-2:654654324108:stack/rtg-automotive-dev/d5aa6300-7b23-11ef-a7e4-06cc46103b2d",
+    "serviceProviderAwsCfStackCreated": "2024-09-25T09:52:11.111Z",
+    "serviceProviderAwsCfStackUpdated": "2024-09-25T09:52:40.256Z",
+    "serviceProviderAwsCfStackStatus": "UPDATE_ROLLBACK_COMPLETE",
+    "serviceProviderAwsCfStackOutputs": [
+      {
+        "OutputKey": "ServerlessDeploymentBucketName",
+        "OutputValue": "rtg-automotive-dev-serverlessdeploymentbucket-nkj1pu0olfe9"
+      }
+    ],
+    "integrations": {}
+  }
+}
