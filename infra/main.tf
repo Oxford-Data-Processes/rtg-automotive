@@ -37,3 +37,11 @@ module "add_partition" {
   aws_region     = var.aws_region
   source         = "./lambda/add_partition"
 }
+
+module "process_stock_feed" {
+  aws_account_id = var.aws_account_id
+  project        = var.project
+  stage          = var.stage
+  aws_region     = var.aws_region
+  source         = "./lambda/process_stock_feed"
+}
