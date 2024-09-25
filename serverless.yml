@@ -11,6 +11,7 @@ custom:
     layer: true
     createLogGroup: false
   bucketName: ${self:service}-bucket-${self:custom.environment.awsAccountId}
+  stockFeedBucketName: stock-feed-bucket-${self:custom.environment.awsAccountId}
 
 provider:
   name: aws
@@ -67,7 +68,7 @@ functions:
   process-stock-feed:
     description: "Process stock feed"
     role: ${ssm:/${self:service}/process-stock-feed/lambda-iam-role/arn}
-    handler: src.lambda.add_partition.main.lambda_handler
+    handler: src.lambda.process_stock_feed.main.lambda_handler
     package:
       patterns:
         - "!node_modules/**"
@@ -75,7 +76,7 @@ functions:
         - "!package-lock.json"
         - "!package.json"
       include:
-        - "src/lambda/add_partition/**"
+        - "src/lambda/process_stock_feed/**"
         - "src/shared/**"
         - "src/__init__.py"
     timeout: 900
@@ -86,10 +87,11 @@ functions:
       AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}
     events:
       - s3:
-          bucket: ${self:custom.bucketName}
+          bucket: ${self:custom.stockFeedBucketName}
           event: s3:ObjectCreated:*
           existing: true
           filter:
             key:
               prefix:
                 - stock_feed/
+                
