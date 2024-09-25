@@ -49,7 +49,6 @@ Resources:
       Environment:
         Variables:
           AWS_ACCOUNT_ID: !Ref AWSAccountId
-      CodeUri: src/lambda/add_partition/ 
       Events:
         S3PutEvent:
           Type: S3

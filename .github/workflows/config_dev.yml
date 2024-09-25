@@ -50,9 +50,9 @@ jobs:
       - name: Build Lambda Function
         run: |
           sam build --template-file template.yml
-
       - name: Deploy All Lambda Functions
         run: |
+          cd ..
           sam deploy --template-file template.yml \
                 --stack-name ${{ env.PROJECT_NAME }}-lambda-stack-${{ env.STAGE }} \
                 --capabilities CAPABILITY_IAM \
