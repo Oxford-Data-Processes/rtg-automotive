@@ -54,6 +54,10 @@ resource "aws_iam_role_policy_attachment" "lambda_iam_to_policy_attachment" {
   role       = aws_iam_role.lambda_iam.name
 }
 
+resource "aws_lambda_function" "add_partition" {
+  function_name = "${var.project}-${local.service_name}"
+}
+
 resource "aws_lambda_event_source_mapping" "s3_trigger" {
   event_source_arn = "arn:aws:s3:::${var.project}-bucket-name"
   function_name    = aws_lambda_function.add_partition.arn
