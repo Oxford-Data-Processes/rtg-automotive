@@ -73,4 +73,5 @@ jobs:
                 --capabilities CAPABILITY_IAM \
                 --parameter-overrides AWSAccountId=${{ env.AWS_ACCOUNT_ID }} ProjectName=${{ env.PROJECT_NAME }} Stage=${{ env.STAGE }} \
                 --region eu-west-2 \
-                --resolve-s3
+                --resolve-s3 \
+                --no-fail-on-empty-changeset
