@@ -11,7 +11,7 @@ on:
       - "**dev-deploy-*"
 
 jobs:
-  terraform:
+  infra:
     runs-on: ubuntu-latest
     defaults:
       run:
@@ -54,7 +54,7 @@ jobs:
       - name: Deploy All Lambda Functions
         run: |
           sam deploy --template-file template.yml \
-                --stack-name ${{ env.PROJECT_NAME }}-stack-${{ env.STAGE }} \
+                --stack-name ${{ env.PROJECT_NAME }}-lambda-stack-${{ env.STAGE }} \
                 --capabilities CAPABILITY_IAM \
                 --parameter-overrides AWSAccountId=${{ env.AWS_ACCOUNT_ID }} ProjectName=${{ env.PROJECT_NAME }} Stage=${{ env.STAGE }} \
                 --region eu-west-2 \
