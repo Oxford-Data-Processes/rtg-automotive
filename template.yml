@@ -1,7 +1,4 @@
-AWSTemplateFormatVersion: '2010-09-09'
 Transform: AWS::Serverless-2016-10-31
-Description: SAM Template for add-partition Lambda function
-
 Resources:
   AddPartitionFunction:
     Type: AWS::Serverless::Function
@@ -14,12 +11,3 @@ Resources:
       Policies:
         - S3ReadPolicy:
             BucketName: "rtg-automotive-bucket-654654324108"
-        - GlueFullAccess 
-        - PolicyName: SNSPublishPolicy
-          PolicyDocument:
-            Version: '2012-10-17'
-            Statement:
-              - Effect: Allow
-                Action: 
-                  - sns:Publish
-                Resource: "*"
