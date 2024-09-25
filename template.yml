@@ -7,6 +7,20 @@ Parameters:
     Type: String
 
 Resources:
+  MyS3Bucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "${ProjectName}-bucket-${AWSAccountId}"
+      VersioningConfiguration:
+        Status: Enabled
+      LifecycleConfiguration:
+        Rules:
+          - Id: "DeleteOldObjects"
+            Status: "Enabled"
+            ExpirationInDays: 30
+            Filter:
+              Prefix: "supplier_stock/"
+
   AddPartitionFunction:
     Type: AWS::Serverless::Function
     Properties: 
@@ -18,7 +32,20 @@ Resources:
       Role: !Sub "arn:aws:iam::${AWSAccountId}:role/${ProjectName}/add-partition/${ProjectName}-add-partition-lambda-role"
       Policies:
         - S3ReadPolicy:
-            BucketName: !Sub "${ProjectName}-bucket-${AWSAccountId}"
+            BucketName: !Ref MyS3Bucket
+        - PolicyName: AthenaAccessPolicy
+          PolicyDocument:
+            Version: '2012-10-17'
+            Statement:
+              - Effect: Allow
+                Action:
+                  - athena:StartQueryExecution
+                  - athena:GetQueryExecution
+                  - athena:GetQueryResults
+                  - athena:ListDatabases
+                  - athena:ListTableMetadata
+                  - athena:ListQueryExecutions
+                Resource: "*"
       Environment:
         Variables:
           AWS_ACCOUNT_ID: !Ref AWSAccountId
