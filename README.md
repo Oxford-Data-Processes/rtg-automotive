@@ -121,3 +121,8 @@ TODO:
 - Create process_stock_feed lambda and SNS notification
 - Integrate this with Streamlit frontend
 - Create generate_ebay_table lambda and SNS notifications
+
+
+Commands:
+
+sam local invoke AddPartitionFunction -e test_events/putData.json
