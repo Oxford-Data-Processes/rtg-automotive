@@ -79,19 +79,15 @@ jobs:
       - name: Create Stack
         if: steps.check_stack.outputs.stack_exists == 'false'
         run: |
-          aws cloudformation create-stack \
-            --stack-name ${{ env.PROJECT_NAME }}-lambda-stack-${{ env.STAGE }} \
-            --template-body file://template.yml \
-            --parameters \
-              ParameterKey=AWSAccountId,ParameterValue=${{ env.AWS_ACCOUNT_ID }} \
-              ParameterKey=ProjectName,ParameterValue=${{ env.PROJECT_NAME }} \
-              ParameterKey=Stage,ParameterValue=${{ env.STAGE }} \
+          sam build --template-file template.yml
+          sam deploy --stack-name ${{ env.PROJECT_NAME }}-lambda-stack-${{ env.STAGE }} \
+            --template-file template.yml \
+            --parameter-overrides \
+              AWSAccountId=${{ env.AWS_ACCOUNT_ID }} \
+              ProjectName=${{ env.PROJECT_NAME }} \
+              Stage=${{ env.STAGE }} \
             --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
             --region eu-west-2
-
-      - name: Build Lambda Function
-        run: |
-          sam build --template-file template.yml
 
       - name: Create Change Set
         if: steps.check_stack.outputs.stack_exists == 'true'
@@ -104,13 +100,18 @@ jobs:
               ParameterKey=AWSAccountId,ParameterValue=${{ env.AWS_ACCOUNT_ID }} \
               ParameterKey=ProjectName,ParameterValue=${{ env.PROJECT_NAME }} \
               ParameterKey=Stage,ParameterValue=${{ env.STAGE }} \
-            --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
+            --capabilities CAPABILITY_IAM \
             --region eu-west-2
 
       - name: Execute Change Set
         if: steps.check_stack.outputs.stack_exists == 'true'
         run: |
-          aws cloudformation execute-change-set \
-            --change-set-name ${{ env.PROJECT_NAME }}-change-set-${{ env.STAGE }} \
-            --stack-name ${{ env.PROJECT_NAME }}-lambda-stack-${{ env.STAGE }} \
-            --region eu-west-2
+          sam build --template-file template.yml
+          sam deploy --stack-name ${{ env.PROJECT_NAME }}-lambda-stack-${{ env.STAGE }} \
+              --template-file template.yml \
+              --parameter-overrides \
+                AWSAccountId=${{ env.AWS_ACCOUNT_ID }} \
+                ProjectName=${{ env.PROJECT_NAME }} \
+                Stage=${{ env.STAGE }} \
+              --capabilities CAPABILITY_IAM \
+              --region eu-west-2
