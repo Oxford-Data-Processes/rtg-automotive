@@ -3,6 +3,7 @@ name: Github Actions Pipeline
 env:
   AWS_ACCOUNT_ID: "654654324108"
   PROJECT_NAME: "rtg-automotive"
+  STAGE: "dev"
 
 on:
   push:
@@ -19,14 +20,10 @@ jobs:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # - name: Update or Install AWS CLI
-      #   run: |
-      #     curl "https://d1vvhvl2y92vvt.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-      #     unzip -o awscliv2.zip
-      #     sudo ./aws/install --update
-
-      - name: Check AWS CLI Version
-        run: aws --version
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v2
+        with:
+          python-version: '3.11'
 
       - name: Assume AWS Role
         env:
@@ -46,39 +43,6 @@ jobs:
           terraform plan -no-color -var-file env_dev.tfvars
           terraform apply -auto-approve -var-file env_dev.tfvars
 
-  lambda:
-    needs: terraform
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout Code
-        uses: actions/checkout@v3
-      # - name: Update or Install AWS CLI
-      #   run: |
-      #     curl "https://d1vvhvl2y92vvt.cloudfront.net/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-      #     unzip -o awscliv2.zip
-      #     sudo ./aws/install --update
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v2
-        with:
-          python-version: '3.11'
-
-      - name: Check Python Version
-        run: python --version
-
-      - name: Check AWS CLI Version
-        run: aws --version
-
-      - name: Assume AWS Role
-        env:
-          AWS_DEFAULT_REGION: eu-west-2
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          output=$(aws sts assume-role --role-arn arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/DevAdminRole --role-session-name MySession)
-          echo "AWS_ACCESS_KEY_ID=$(echo $output | jq -r .Credentials.AccessKeyId)" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=$(echo $output | jq -r .Credentials.SecretAccessKey)" >> $GITHUB_ENV
-          echo "AWS_SESSION_TOKEN=$(echo $output | jq -r .Credentials.SessionToken)" >> $GITHUB_ENV
-
       - name: Install SAM CLI
         run: |
           pip3 install aws-sam-cli
@@ -90,9 +54,9 @@ jobs:
       - name: Deploy All Lambda Functions
         run: |
           sam deploy --template-file template.yml \
-                --stack-name testStack \
+                --stack-name ${{ env.PROJECT_NAME }}-stack-${{ env.STAGE }} \
                 --capabilities CAPABILITY_IAM \
-                --parameter-overrides AWSAccountId=${{ env.AWS_ACCOUNT_ID }} ProjectName=${{ env.PROJECT_NAME }} \
+                --parameter-overrides AWSAccountId=${{ env.AWS_ACCOUNT_ID }} ProjectName=${{ env.PROJECT_NAME }} Stage=${{ env.STAGE }} \
                 --region eu-west-2 \
                 --resolve-s3
 

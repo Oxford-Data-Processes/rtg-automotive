@@ -5,6 +5,8 @@ Parameters:
     Type: String
   ProjectName:
     Type: String
+  Stage:
+    Type: String
 
 Resources:
   MyS3Bucket:
@@ -22,7 +24,7 @@ Resources:
   AddPartitionFunction:
     Type: AWS::Serverless::Function
     Properties: 
-      FunctionName: !Sub "${ProjectName}-dev-add-partition"
+      FunctionName: !Sub "${ProjectName}-${Stage}-add-partition"
       Handler: src/lambda/add_partition.main.lambda_handler
       Runtime: python3.11
       MemorySize: 2048
@@ -58,3 +60,5 @@ Resources:
                 Rules:
                   - Name: prefix
                     Value: supplier_stock/
+                  - Name: prefix
+                    Value: store/
