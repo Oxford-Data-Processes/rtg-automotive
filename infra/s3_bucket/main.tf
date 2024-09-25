@@ -13,6 +13,14 @@ resource "aws_s3_bucket" "project_bucket" {
       days = 30
     }
   }
+
+  notification {
+    lambda_function {
+      lambda_function_arn = "arn:aws:lambda:${var.aws_region}:${var.aws_account_id}:function:${var.project}-dev-add-partition"
+      events             = ["s3:ObjectCreated:*"]
+      filter_prefix      = "supplier_stock/"
+    }
+  }
 }
 
 data "aws_iam_policy_document" "project_bucket_policy" {
