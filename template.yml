@@ -6,23 +6,23 @@ Resources:
   AddPartitionFunction:
     Type: AWS::Serverless::Function
     Properties: 
-      FunctionName: !Sub "${ServiceName}-add-partition"
+      FunctionName: "add-partition"
       Handler: src/lambda/add_partition.main.lambda_handler
       Runtime: python3.11
       MemorySize: 2048
       Timeout: 900
       Environment:
-        AWS_ACCOUNT_ID: !Ref AWS::AccountId
+        AWS_ACCOUNT_ID: "654654324108"
       Policies:
         - S3ReadPolicy:
-            BucketName: !Sub "${ServiceName}-bucket-${AWS::AccountId}"
+            BucketName: "rtg-automotive-bucket-654654324108"
         - GlueFullAccess 
         - SNSPublishPolicy
       Events:
         S3Event:
           Type: S3
           Properties:
-            Bucket: !Sub "${ServiceName}-bucket-${AWS::AccountId}"
+            Bucket: "rtg-automotive-bucket-654654324108"
             Events: s3:ObjectCreated:*
             Filter:
               S3Key:
