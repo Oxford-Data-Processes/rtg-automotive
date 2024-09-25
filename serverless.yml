@@ -11,7 +11,7 @@ custom:
     layer: true
     createLogGroup: false
   bucketName: ${self:service}-bucket-${self:custom.environment.awsAccountId}
-  stockFeedBucketName: stock-feed-bucket-${self:custom.environment.awsAccountId}
+  stockFeedBucketName: ${self:service}-stock-feed-bucket-${self:custom.environment.awsAccountId}
 
 provider:
   name: aws
