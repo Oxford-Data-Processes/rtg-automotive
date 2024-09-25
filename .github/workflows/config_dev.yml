@@ -92,5 +92,6 @@ jobs:
                 --stack-name ${PROJECT_NAME}-stack \
                 --capabilities CAPABILITY_IAM \
                 --parameter-overrides Project=${{ env.AWS_ACCOUNT_ID }} ServiceName=test \
-                --region eu-west-2
+                --region eu-west-2 \
+                --resolve-s3
 
