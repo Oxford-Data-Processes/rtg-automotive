@@ -2,8 +2,6 @@ name: Github Actions Pipeline
 
 env:
   AWS_ACCOUNT_ID: "654654324108"
-  PROJECT_NAME: "rtg-automotive" 
-  AWS_PROFILE: "dev"            
 
 on:
   push:
@@ -62,8 +60,8 @@ jobs:
           sam deploy --template-file template.yml \
                 --stack-name ${PROJECT_NAME}-stack \
                 --capabilities CAPABILITY_IAM \
-                --parameter-overrides Project=${{ env.AWS_ACCOUNT_ID }} ServiceName=${{ env.PROJECT_NAME }} \
-                --profile ${{ env.AWS_PROFILE }} \
+                --parameter-overrides Project=${{ env.AWS_ACCOUNT_ID }} ServiceName=test \
+                --profile dev \
                 --no-confirm-changeset
 
 
