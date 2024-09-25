@@ -46,6 +46,7 @@ jobs:
           terraform apply -auto-approve -var-file env_dev.tfvars
 
   lambda:
+    needs: terraform
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Code

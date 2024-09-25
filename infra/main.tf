@@ -12,7 +12,6 @@ terraform {
 }
 
 provider "aws" {
-  profile = "speedsheet-management"
   region  = "eu-west-2"
 }
 
