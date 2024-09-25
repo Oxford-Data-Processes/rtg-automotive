@@ -25,19 +25,4 @@ resource "aws_lambda_event_source_mapping" "s3_trigger" {
   starting_position = "LATEST"
 
   batch_size = 1
-
-  filter_criteria {
-    filter {
-      key {
-        filter_rules {
-          name  = "prefix"
-          value = "supplier_stock/"  # Only trigger for objects with this prefix
-        }
-        filter_rules {
-          name  = "suffix"
-          value = ".parquet"  # Only trigger for objects with this suffix
-        }
-      }
-    }
-  }
 }
