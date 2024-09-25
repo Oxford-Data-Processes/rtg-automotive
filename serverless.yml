@@ -59,9 +59,6 @@ functions:
           bucket: ${self:custom.bucketName}
           event: s3:ObjectCreated:*
           existing: true
-          rules:
-            - prefix: supplier_stock/
-            - prefix: store/
 
   process-stock-feed:
     description: "Process stock feed"
@@ -88,5 +85,3 @@ functions:
           bucket: ${self:custom.stockFeedBucketName}
           event: s3:ObjectCreated:*
           existing: true
-          rules:
-            - prefix: supplier_stock/
