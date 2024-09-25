@@ -88,6 +88,7 @@ jobs:
               Stage=${{ env.STAGE }} \
             --capabilities CAPABILITY_IAM CAPABILITY_AUTO_EXPAND \
             --region eu-west-2
+            --resolve-s3
 
       - name: Create Change Set
         if: steps.check_stack.outputs.stack_exists == 'true'
@@ -115,3 +116,4 @@ jobs:
                 Stage=${{ env.STAGE }} \
               --capabilities CAPABILITY_IAM \
               --region eu-west-2
+              --resolve-s3
