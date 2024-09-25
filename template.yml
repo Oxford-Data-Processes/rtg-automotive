@@ -1,0 +1,35 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: SAM Template for add-partition Lambda function
+
+Resources:
+  AddPartitionFunction:
+    Type: AWS::Serverless::Function
+    Properties: 
+      FunctionName: !Sub "${ServiceName}-add-partition"
+      Handler: src/lambda/add_partition.main.lambda_handler
+      Runtime: python3.11
+      MemorySize: 2048
+      Timeout: 900
+      Environment:
+        AWS_ACCOUNT_ID: !Ref AWS::AccountId
+      Policies:
+        - S3ReadPolicy:
+            BucketName: !Sub "${ServiceName}-bucket-${AWS::AccountId}"
+        - GlueFullAccess 
+        - SNSPublishPolicy
+      Events:
+        S3Event:
+          Type: S3
+          Properties:
+            Bucket: !Sub "${ServiceName}-bucket-${AWS::AccountId}"
+            Events: s3:ObjectCreated:*
+            Filter:
+              S3Key:
+                Rules:
+                  - Name: suffix
+                    Value: .parquet
+                  - Name: prefix
+                    Value: supplier_stock/
+                  - Name: prefix
+                    Value: store/
