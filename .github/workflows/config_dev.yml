@@ -43,6 +43,10 @@ jobs:
           terraform plan -no-color -var-file env_dev.tfvars
           terraform apply -auto-approve -var-file env_dev.tfvars
 
+      - name: Move up a directory
+        run: |
+          cd ..
+
       - name: Install SAM CLI
         run: |
           pip3 install aws-sam-cli
@@ -50,9 +54,9 @@ jobs:
       - name: Build Lambda Function
         run: |
           sam build --template-file template.yml
+
       - name: Deploy All Lambda Functions
         run: |
-          cd ..
           sam deploy --template-file template.yml \
                 --stack-name ${{ env.PROJECT_NAME }}-lambda-stack-${{ env.STAGE }} \
                 --capabilities CAPABILITY_IAM \
