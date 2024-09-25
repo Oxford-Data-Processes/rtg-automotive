@@ -89,7 +89,7 @@ jobs:
       - name: Deploy All Lambda Functions
         run: |
           sam deploy --template-file template.yml \
-                --stack-name ${PROJECT_NAME}-stack \
+                --stack-name testStack \
                 --capabilities CAPABILITY_IAM \
                 --parameter-overrides Project=${{ env.AWS_ACCOUNT_ID }} ServiceName=test \
                 --region eu-west-2 \
