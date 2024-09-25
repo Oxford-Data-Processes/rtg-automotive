@@ -68,7 +68,7 @@ functions:
   process-stock-feed:
     description: "Process stock feed"
     role: ${ssm:/${self:service}/process-stock-feed/lambda-iam-role/arn}
-    handler: src.lambda.add_partition.main.lambda_handler
+    handler: src.lambda.process_stock_feed.main.lambda_handler
     package:
       patterns:
         - "!node_modules/**"
@@ -76,7 +76,7 @@ functions:
         - "!package-lock.json"
         - "!package.json"
       include:
-        - "src/lambda/add_partition/**"
+        - "src/lambda/process_stock_feed/**"
         - "src/shared/**"
         - "src/__init__.py"
     timeout: 900
@@ -94,3 +94,4 @@ functions:
             key:
               prefix:
                 - stock_feed/
+                
