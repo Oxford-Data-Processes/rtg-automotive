@@ -63,7 +63,7 @@ jobs:
           if ! aws ecr describe-repositories --repository-names process-stock-feed --region eu-west-2; then
             aws ecr create-repository --repository-name process-stock-feed --region eu-west-2
           fi
-          docker buildx build --platform linux/amd64 -t process-stock-feed .
+          docker buildx build --platform linux/amd64 -t process-stock-feed ./src/lambda/process_stock_feed
           docker tag process-stock-feed:latest ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
           docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
 
