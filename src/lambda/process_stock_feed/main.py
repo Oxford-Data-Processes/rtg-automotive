@@ -5,7 +5,7 @@ import openpyxl
 import pyarrow as pa
 import pyarrow.parquet as pq
 from io import BytesIO
-
+import os
 
 # Set up logging
 logger = logging.getLogger()
@@ -111,25 +111,21 @@ CONFIG = {
 
 
 def read_excel_from_s3(bucket_name: str, object_key: str) -> list[dict]:
-    s3_client = boto3.client("s3")
+    s3_client = boto3.client(
+        "s3",
+        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+        aws_session_token=os.environ["AWS_SESSION_TOKEN"],
+    )
     response = s3_client.get_object(Bucket=bucket_name, Key=object_key)
-
-    # Read the bytes from the response
     excel_data = response["Body"].read()
-
-    # Load the Excel file into openpyxl
     workbook = openpyxl.load_workbook(BytesIO(excel_data))
-
-    # Select the active worksheet (or specify a sheet name)
     sheet = workbook.active
 
-    # Process the data into a list of dictionaries
     data = []
-    headers = [
-        cell.value for cell in sheet[1]
-    ]  # Assuming the first row contains headers
+    headers = [cell.value for cell in sheet[1]]
 
-    for row in sheet.iter_rows(min_row=2, values_only=True):  # Skip the header row
+    for row in sheet.iter_rows(min_row=2, values_only=True):
         row_data = {headers[i]: row[i] for i in range(len(headers))}
         data.append(row_data)
 

@@ -1,7 +1,7 @@
 name: Github Actions Pipeline
 
 env:
-  AWS_ACCOUNT_ID: "654654324108"
+  AWS_ACCOUNT_ID: ${file(./dev.yml):awsAccountId}
 
 on:
   push:
@@ -36,12 +36,39 @@ jobs:
           terraform plan -no-color -var-file env_dev.tfvars
           terraform apply -auto-approve -var-file env_dev.tfvars
           
-  serverless:
+  docker:
     runs-on: ubuntu-latest
     needs: terraform
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v3
+
+      - name: Build Docker Image
+        run: |
+          for image in $(yq eval '.images | keys | .[]' ./dev.yml); do
+            docker build -t ${file(./dev.yml):images.${image}.name} ${file(./dev.yml):images.${image}.buildContext}
+          done
+
+      - name: Push Docker Images to ECR
+        env:
+          AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}
+          AWS_DEFAULT_REGION: eu-west-2
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
+          for image in $(yq eval '.images | keys | .[]' ./dev.yml); do
+            docker tag ${file(./dev.yml):images.${image}.name}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${file(./dev.yml):images.${image}.name}:latest
+            docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${file(./dev.yml):images.${image}.name}:latest
+          done
+
+  serverless:
+    runs-on: ubuntu-latest
+    needs: docker
     env:
       SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
       SLS_DEBUG: "*"
+      AWS_DEFAULT_REGION: eu-west-2
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -55,24 +82,6 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: 3.11
-
-      - name: Assume AWS Role
-        env:
-          AWS_DEFAULT_REGION: eu-west-2
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-        run: |
-          output=$(aws sts assume-role --role-arn arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/DevAdminRole --role-session-name MySession)
-          echo "AWS_ACCESS_KEY_ID=$(echo $output | jq -r .Credentials.AccessKeyId)" >> $GITHUB_ENV
-          echo "AWS_SECRET_ACCESS_KEY=$(echo $output | jq -r .Credentials.SecretAccessKey)" >> $GITHUB_ENV
-          echo "AWS_SESSION_TOKEN=$(echo $output | jq -r .Credentials.SessionToken)" >> $GITHUB_ENV
-
-      - name: Install Serverless
-        run: |
-          npm install -g serverless
-          npm init -y
-          npm install serverless-python-requirements 
-          serverless requirements install --stage dev
 
       - name: Deploy with Serverless
         run: |

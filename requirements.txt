@@ -1,3 +1,0 @@
-openpyxl
-pyarrow==12.0.0
-numpy

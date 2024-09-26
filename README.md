@@ -133,3 +133,16 @@ npm install -g serverless
 npm install serverless-python-requirements
 serverless requirements install --stage dev
 serverless invoke local --function process-stock-feed --stage dev --data "$(cat test_events/putStockFeed.json)"
+
+
+docker build -t process_stock_feed .
+docker run -p 9000:8080 \
+  -e AWS_ACCESS_KEY_ID \
+  -e AWS_SECRET_ACCESS_KEY \
+  -e AWS_SESSION_TOKEN \
+  process_stock_feed
+curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" -d @test_events/putStockFeed.json
+
+
+docker run -p 9000:8080 \
+  -e AWS_ACCESS_KEY_ID=ASIAZQ3DQHWGNPK23ZXH
