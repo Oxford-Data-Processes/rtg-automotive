@@ -57,11 +57,8 @@ jobs:
           echo "AWS_SESSION_TOKEN=$(echo $output | jq -r .Credentials.SessionToken)" >> $GITHUB_ENV
 
       - name: Build and Push Docker Image to ECR
-        env:
-          AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}
-          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
+          echo "Logging in to ECR..."
           aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com
           if ! aws ecr describe-repositories --repository-names process-stock-feed --region eu-west-2; then
             aws ecr create-repository --repository-name process-stock-feed --region eu-west-2
