@@ -4,6 +4,8 @@ env:
   STAGE: dev
   ROLE: DevAdminRole
   AWS_ACCOUNT_ID: "654654324108"
+  DOCKER_IMAGE: "process-stock-feed"
+  DOCKER_BUILD_DIR: "./src/lambda/process_stock_feed"
 
 on:
   push:
@@ -60,12 +62,12 @@ jobs:
         run: |
           echo "Logging in to ECR..."
           aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com
-          if ! aws ecr describe-repositories --repository-names process-stock-feed --region eu-west-2; then
-            aws ecr create-repository --repository-name process-stock-feed --region eu-west-2
+          if ! aws ecr describe-repositories --repository-names ${{ env.DOCKER_IMAGE }} --region eu-west-2; then
+            aws ecr create-repository --repository-name ${{ env.DOCKER_IMAGE }} --region eu-west-2
           fi
-          docker buildx build --platform linux/amd64 -t process-stock-feed ./src/lambda/process_stock_feed
-          docker tag process-stock-feed:latest ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
-          docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
+          docker buildx build --platform linux/amd64 -t ${{ env.DOCKER_IMAGE }} ${{ env.DOCKER_BUILD_DIR }}
+          docker tag ${{ env.DOCKER_IMAGE }}:latest ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/${{ env.DOCKER_IMAGE }}:latest
+          docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/${{ env.DOCKER_IMAGE }}:latest
 
   serverless:
     runs-on: ubuntu-latest
