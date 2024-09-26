@@ -34,6 +34,7 @@ data/
 
 # serverless
 .serverless/
+unzip_requirements.py
 
 # Node
 node_modules/

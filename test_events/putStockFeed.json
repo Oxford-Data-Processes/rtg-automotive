@@ -1,0 +1,39 @@
+{
+    "Records": [
+        {
+            "eventVersion": "2.1",
+            "eventSource": "aws:s3",
+            "awsRegion": "eu-west-2",
+            "eventTime": "2024-09-26T08:04:07.540Z",
+            "eventName": "ObjectCreated:Put",
+            "userIdentity": {
+                "principalId": "AWS:AROAZQ3DQHWGJFPFB7OXW:chris@speedsheet.co.uk"
+            },
+            "requestParameters": {
+                "sourceIPAddress": "31.111.18.10"
+            },
+            "responseElements": {
+                "x-amz-request-id": "D6WC75BMPYXC4ZQH",
+                "x-amz-id-2": "tR00AU+bl/x2iN7QFwhMmUdPdDCcrgfNXmTA2QDpnLZJ82CPEtEQgqrbEhFtl/VbAia8uQcXWrPHCkr/lC6X0qqSrjTaWhRl"
+            },
+            "s3": {
+                "s3SchemaVersion": "1.0",
+                "configurationId": "rtg-automotive-dev-process-stock-feed-68a737133cefb25bff959852b8f04754",
+                "bucket": {
+                    "name": "rtg-automotive-stock-feed-bucket-654654324108",
+                    "ownerIdentity": {
+                        "principalId": "A9RQVGQX48SLS"
+                    },
+                    "arn": "arn:aws:s3:::rtg-automotive-stock-feed-bucket-654654324108"
+                },
+                "object": {
+                    "key": "stock_feed/APE_SF.xlsx",
+                    "size": 311237,
+                    "eTag": "387d4ea4de1cbf3df2bdcd9270f21426",
+                    "versionId": "bHP4jMSFt_d8R8rNaRAqfTfVKOPoomyQ",
+                    "sequencer": "0066F5157775B77921"
+                }
+            }
+        }
+    ]
+}

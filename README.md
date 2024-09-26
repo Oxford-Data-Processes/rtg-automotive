@@ -126,4 +126,10 @@ TODO:
 
 Commands:
 
-sam local invoke AddPartitionFunction -e test_events/putData.json
+
+# Run inside virtual environment
+
+npm install -g serverless
+npm install serverless-python-requirements
+serverless requirements install --stage dev
+serverless invoke local --function process-stock-feed --stage dev --data "$(cat test_events/putStockFeed.json)"

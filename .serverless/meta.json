@@ -24,7 +24,8 @@
                 "layer": true,
                 "createLogGroup": false
               },
-              "bucketName": "rtg-automotive-bucket-654654324108"
+              "bucketName": "rtg-automotive-bucket-654654324108",
+              "stockFeedBucketName": "rtg-automotive-stock-feed-bucket-654654324108"
             },
             "provider": {
               "name": "aws",
@@ -35,7 +36,10 @@
               "lambdaHashingVersion": "20201221",
               "deploymentPrefix": "serverless-lambdas",
               "stage": "dev",
-              "versionFunctions": true
+              "versionFunctions": true,
+              "environment": {
+                "IS_LOCAL": "true"
+              }
             },
             "plugins": [
               "serverless-python-requirements"
@@ -83,18 +87,7 @@
                     "s3": {
                       "bucket": "rtg-automotive-bucket-654654324108",
                       "event": "s3:ObjectCreated:*",
-                      "existing": true,
-                      "filter": {
-                        "key": {
-                          "prefix": [
-                            "supplier_stock/",
-                            "store/"
-                          ],
-                          "suffix": [
-                            ".parquet"
-                          ]
-                        }
-                      }
+                      "existing": true
                     }
                   }
                 ],
@@ -130,19 +123,9 @@
                 "events": [
                   {
                     "s3": {
-                      "bucket": "rtg-automotive-bucket-654654324108",
+                      "bucket": "rtg-automotive-stock-feed-bucket-654654324108",
                       "event": "s3:ObjectCreated:*",
-                      "existing": true,
-                      "filter": {
-                        "key": {
-                          "prefix": [
-                            "stock_feed/"
-                          ],
-                          "suffix": [
-                            ".xlsx"
-                          ]
-                        }
-                      }
+                      "existing": true
                     }
                   }
                 ],
@@ -155,7 +138,9 @@
             "type": "opt"
           },
           "options": {
-            "stage": "dev"
+            "function": "process-stock-feed",
+            "stage": "dev",
+            "data": "{\n    \"Records\": [\n        {\n            \"eventVersion\": \"2.1\",\n            \"eventSource\": \"aws:s3\",\n            \"awsRegion\": \"eu-west-2\",\n            \"eventTime\": \"2024-09-26T08:04:07.540Z\",\n            \"eventName\": \"ObjectCreated:Put\",\n            \"userIdentity\": {\n                \"principalId\": \"AWS:AROAZQ3DQHWGJFPFB7OXW:chris@speedsheet.co.uk\"\n            },\n            \"requestParameters\": {\n                \"sourceIPAddress\": \"31.111.18.10\"\n            },\n            \"responseElements\": {\n                \"x-amz-request-id\": \"D6WC75BMPYXC4ZQH\",\n                \"x-amz-id-2\": \"tR00AU+bl/x2iN7QFwhMmUdPdDCcrgfNXmTA2QDpnLZJ82CPEtEQgqrbEhFtl/VbAia8uQcXWrPHCkr/lC6X0qqSrjTaWhRl\"\n            },\n            \"s3\": {\n                \"s3SchemaVersion\": \"1.0\",\n                \"configurationId\": \"rtg-automotive-dev-process-stock-feed-68a737133cefb25bff959852b8f04754\",\n                \"bucket\": {\n                    \"name\": \"rtg-automotive-stock-feed-bucket-654654324108\",\n                    \"ownerIdentity\": {\n                        \"principalId\": \"A9RQVGQX48SLS\"\n                    },\n                    \"arn\": \"arn:aws:s3:::rtg-automotive-stock-feed-bucket-654654324108\"\n                },\n                \"object\": {\n                    \"key\": \"stock_feed/APE_SF.xlsx\",\n                    \"size\": 311237,\n                    \"eTag\": \"387d4ea4de1cbf3df2bdcd9270f21426\",\n                    \"versionId\": \"bHP4jMSFt_d8R8rNaRAqfTfVKOPoomyQ\",\n                    \"sequencer\": \"0066F5157775B77921\"\n                }\n            }\n        }\n    ]\n}"
           },
           "stage": "dev",
           "dashboard": null,
@@ -180,7 +165,8 @@
                 "layer": true,
                 "createLogGroup": false
               },
-              "bucketName": "rtg-automotive-bucket-654654324108"
+              "bucketName": "rtg-automotive-bucket-654654324108",
+              "stockFeedBucketName": "rtg-automotive-stock-feed-bucket-654654324108"
             },
             "provider": {
               "name": "aws",
@@ -191,7 +177,10 @@
               "lambdaHashingVersion": "20201221",
               "deploymentPrefix": "serverless-lambdas",
               "stage": "dev",
-              "versionFunctions": true
+              "versionFunctions": true,
+              "environment": {
+                "IS_LOCAL": "true"
+              }
             },
             "plugins": [
               "serverless-python-requirements"
@@ -239,18 +228,7 @@
                     "s3": {
                       "bucket": "rtg-automotive-bucket-654654324108",
                       "event": "s3:ObjectCreated:*",
-                      "existing": true,
-                      "filter": {
-                        "key": {
-                          "prefix": [
-                            "supplier_stock/",
-                            "store/"
-                          ],
-                          "suffix": [
-                            ".parquet"
-                          ]
-                        }
-                      }
+                      "existing": true
                     }
                   }
                 ],
@@ -286,19 +264,9 @@
                 "events": [
                   {
                     "s3": {
-                      "bucket": "rtg-automotive-bucket-654654324108",
+                      "bucket": "rtg-automotive-stock-feed-bucket-654654324108",
                       "event": "s3:ObjectCreated:*",
-                      "existing": true,
-                      "filter": {
-                        "key": {
-                          "prefix": [
-                            "stock_feed/"
-                          ],
-                          "suffix": [
-                            ".xlsx"
-                          ]
-                        }
-                      }
+                      "existing": true
                     }
                   }
                 ],
@@ -311,7 +279,9 @@
             "type": "file"
           },
           "options": {
-            "stage": "dev"
+            "function": "process-stock-feed",
+            "stage": "dev",
+            "data": "{\n    \"Records\": [\n        {\n            \"eventVersion\": \"2.1\",\n            \"eventSource\": \"aws:s3\",\n            \"awsRegion\": \"eu-west-2\",\n            \"eventTime\": \"2024-09-26T08:04:07.540Z\",\n            \"eventName\": \"ObjectCreated:Put\",\n            \"userIdentity\": {\n                \"principalId\": \"AWS:AROAZQ3DQHWGJFPFB7OXW:chris@speedsheet.co.uk\"\n            },\n            \"requestParameters\": {\n                \"sourceIPAddress\": \"31.111.18.10\"\n            },\n            \"responseElements\": {\n                \"x-amz-request-id\": \"D6WC75BMPYXC4ZQH\",\n                \"x-amz-id-2\": \"tR00AU+bl/x2iN7QFwhMmUdPdDCcrgfNXmTA2QDpnLZJ82CPEtEQgqrbEhFtl/VbAia8uQcXWrPHCkr/lC6X0qqSrjTaWhRl\"\n            },\n            \"s3\": {\n                \"s3SchemaVersion\": \"1.0\",\n                \"configurationId\": \"rtg-automotive-dev-process-stock-feed-68a737133cefb25bff959852b8f04754\",\n                \"bucket\": {\n                    \"name\": \"rtg-automotive-stock-feed-bucket-654654324108\",\n                    \"ownerIdentity\": {\n                        \"principalId\": \"A9RQVGQX48SLS\"\n                    },\n                    \"arn\": \"arn:aws:s3:::rtg-automotive-stock-feed-bucket-654654324108\"\n                },\n                \"object\": {\n                    \"key\": \"stock_feed/APE_SF.xlsx\",\n                    \"size\": 311237,\n                    \"eTag\": \"387d4ea4de1cbf3df2bdcd9270f21426\",\n                    \"versionId\": \"bHP4jMSFt_d8R8rNaRAqfTfVKOPoomyQ\",\n                    \"sequencer\": \"0066F5157775B77921\"\n                }\n            }\n        }\n    ]\n}"
           },
           "stage": "dev",
           "dashboard": null,
@@ -336,7 +306,8 @@
                 "layer": true,
                 "createLogGroup": false
               },
-              "bucketName": "rtg-automotive-bucket-654654324108"
+              "bucketName": "rtg-automotive-bucket-654654324108",
+              "stockFeedBucketName": "rtg-automotive-stock-feed-bucket-654654324108"
             },
             "provider": {
               "name": "aws",
@@ -347,7 +318,10 @@
               "lambdaHashingVersion": "20201221",
               "deploymentPrefix": "serverless-lambdas",
               "stage": "dev",
-              "versionFunctions": true
+              "versionFunctions": true,
+              "environment": {
+                "IS_LOCAL": "true"
+              }
             },
             "plugins": [
               "serverless-python-requirements"
@@ -395,18 +369,7 @@
                     "s3": {
                       "bucket": "rtg-automotive-bucket-654654324108",
                       "event": "s3:ObjectCreated:*",
-                      "existing": true,
-                      "filter": {
-                        "key": {
-                          "prefix": [
-                            "supplier_stock/",
-                            "store/"
-                          ],
-                          "suffix": [
-                            ".parquet"
-                          ]
-                        }
-                      }
+                      "existing": true
                     }
                   }
                 ],
@@ -442,19 +405,9 @@
                 "events": [
                   {
                     "s3": {
-                      "bucket": "rtg-automotive-bucket-654654324108",
+                      "bucket": "rtg-automotive-stock-feed-bucket-654654324108",
                       "event": "s3:ObjectCreated:*",
-                      "existing": true,
-                      "filter": {
-                        "key": {
-                          "prefix": [
-                            "stock_feed/"
-                          ],
-                          "suffix": [
-                            ".xlsx"
-                          ]
-                        }
-                      }
+                      "existing": true
                     }
                   }
                 ],
@@ -467,7 +420,9 @@
             "type": "self"
           },
           "options": {
-            "stage": "dev"
+            "function": "process-stock-feed",
+            "stage": "dev",
+            "data": "{\n    \"Records\": [\n        {\n            \"eventVersion\": \"2.1\",\n            \"eventSource\": \"aws:s3\",\n            \"awsRegion\": \"eu-west-2\",\n            \"eventTime\": \"2024-09-26T08:04:07.540Z\",\n            \"eventName\": \"ObjectCreated:Put\",\n            \"userIdentity\": {\n                \"principalId\": \"AWS:AROAZQ3DQHWGJFPFB7OXW:chris@speedsheet.co.uk\"\n            },\n            \"requestParameters\": {\n                \"sourceIPAddress\": \"31.111.18.10\"\n            },\n            \"responseElements\": {\n                \"x-amz-request-id\": \"D6WC75BMPYXC4ZQH\",\n                \"x-amz-id-2\": \"tR00AU+bl/x2iN7QFwhMmUdPdDCcrgfNXmTA2QDpnLZJ82CPEtEQgqrbEhFtl/VbAia8uQcXWrPHCkr/lC6X0qqSrjTaWhRl\"\n            },\n            \"s3\": {\n                \"s3SchemaVersion\": \"1.0\",\n                \"configurationId\": \"rtg-automotive-dev-process-stock-feed-68a737133cefb25bff959852b8f04754\",\n                \"bucket\": {\n                    \"name\": \"rtg-automotive-stock-feed-bucket-654654324108\",\n                    \"ownerIdentity\": {\n                        \"principalId\": \"A9RQVGQX48SLS\"\n                    },\n                    \"arn\": \"arn:aws:s3:::rtg-automotive-stock-feed-bucket-654654324108\"\n                },\n                \"object\": {\n                    \"key\": \"stock_feed/APE_SF.xlsx\",\n                    \"size\": 311237,\n                    \"eTag\": \"387d4ea4de1cbf3df2bdcd9270f21426\",\n                    \"versionId\": \"bHP4jMSFt_d8R8rNaRAqfTfVKOPoomyQ\",\n                    \"sequencer\": \"0066F5157775B77921\"\n                }\n            }\n        }\n    ]\n}"
           },
           "stage": "dev",
           "dashboard": null,
@@ -493,7 +448,8 @@
           "layer": true,
           "createLogGroup": false
         },
-        "bucketName": "rtg-automotive-bucket-654654324108"
+        "bucketName": "rtg-automotive-bucket-654654324108",
+        "stockFeedBucketName": "rtg-automotive-stock-feed-bucket-654654324108"
       },
       "provider": {
         "name": "aws",
@@ -504,7 +460,10 @@
         "lambdaHashingVersion": "20201221",
         "deploymentPrefix": "serverless-lambdas",
         "stage": "dev",
-        "versionFunctions": true
+        "versionFunctions": true,
+        "environment": {
+          "IS_LOCAL": "true"
+        }
       },
       "plugins": [
         "serverless-python-requirements"
@@ -552,18 +511,7 @@
               "s3": {
                 "bucket": "rtg-automotive-bucket-654654324108",
                 "event": "s3:ObjectCreated:*",
-                "existing": true,
-                "filter": {
-                  "key": {
-                    "prefix": [
-                      "supplier_stock/",
-                      "store/"
-                    ],
-                    "suffix": [
-                      ".parquet"
-                    ]
-                  }
-                }
+                "existing": true
               }
             }
           ],
@@ -599,19 +547,9 @@
           "events": [
             {
               "s3": {
-                "bucket": "rtg-automotive-bucket-654654324108",
+                "bucket": "rtg-automotive-stock-feed-bucket-654654324108",
                 "event": "s3:ObjectCreated:*",
-                "existing": true,
-                "filter": {
-                  "key": {
-                    "prefix": [
-                      "stock_feed/"
-                    ],
-                    "suffix": [
-                      ".xlsx"
-                    ]
-                  }
-                }
+                "existing": true
               }
             }
           ],
@@ -619,16 +557,19 @@
         }
       }
     },
-    "serviceRawFile": "frameworkVersion: \"4.2.4\"\n\nservice: rtg-automotive\n\ncustom:\n  stage: ${opt:stage}\n  environment: ${file(./${self:custom.stage}.yml)}\n  pythonRequirements:\n    zip: true\n    slim: true\n    layer: true\n    createLogGroup: false\n  bucketName: ${self:service}-bucket-${self:custom.environment.awsAccountId}\n\nprovider:\n  name: aws\n  runtime: python3.11\n  region: eu-west-2\n  timeout: 300\n  memorySize: 2048\n  lambdaHashingVersion: 20201221\n  deploymentPrefix: serverless-lambdas\n\nplugins:\n  - serverless-python-requirements\n\npackage:\n  individually: true\n  exclude:\n    - \"*/**\"\n    - node_modules/**\n    - .serverless/**\n    - .venv/**\n\nfunctions:\n  add-partition:\n    description: \"Add partitions to tables\"\n    role: ${ssm:/${self:service}/add-partition/lambda-iam-role/arn}\n    handler: src.lambda.add_partition.main.lambda_handler\n    package:\n      patterns:\n        - \"!node_modules/**\"\n        - \"!yarn.lock\"\n        - \"!package-lock.json\"\n        - \"!package.json\"\n      include:\n        - \"src/lambda/add_partition/**\"\n        - \"src/shared/**\"\n        - \"src/__init__.py\"\n    timeout: 900\n    memorySize: 2048\n    layers:\n      - { Ref: PythonRequirementsLambdaLayer }\n    environment:\n      AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}\n    events:\n      - s3:\n          bucket: ${self:custom.bucketName}\n          event: s3:ObjectCreated:*\n          existing: true\n          filter:\n            key:\n              prefix:\n                - supplier_stock/\n                - store/\n              suffix:\n                - .parquet\n\n  process-stock-feed:\n    description: \"Process stock feed\"\n    role: ${ssm:/${self:service}/process-stock-feed/lambda-iam-role/arn}\n    handler: src.lambda.process_stock_feed.main.lambda_handler\n    package:\n      patterns:\n        - \"!node_modules/**\"\n        - \"!yarn.lock\"\n        - \"!package-lock.json\"\n        - \"!package.json\"\n      include:\n        - \"src/lambda/process_stock_feed/**\"\n        - \"src/shared/**\"\n        - \"src/__init__.py\"\n    timeout: 900\n    memorySize: 2048\n    layers:\n      - { Ref: PythonRequirementsLambdaLayer }\n    environment:\n      AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}\n    events:\n      - s3:\n          bucket: ${self:custom.bucketName}\n          event: s3:ObjectCreated:*\n          existing: true\n          filter:\n            key:\n              prefix:\n                - stock_feed/\n              suffix:\n                - .xlsx\n",
+    "serviceRawFile": "frameworkVersion: \"4.2.4\"\n\nservice: rtg-automotive\n\ncustom:\n  stage: ${opt:stage}\n  environment: ${file(./${self:custom.stage}.yml)}\n  pythonRequirements:\n    zip: true\n    slim: true\n    layer: true\n    createLogGroup: false\n  bucketName: ${self:service}-bucket-${self:custom.environment.awsAccountId}\n  stockFeedBucketName: ${self:service}-stock-feed-bucket-${self:custom.environment.awsAccountId}\n\nprovider:\n  name: aws\n  runtime: python3.11\n  region: eu-west-2\n  timeout: 300\n  memorySize: 2048\n  lambdaHashingVersion: 20201221\n  deploymentPrefix: serverless-lambdas\n\nplugins:\n  - serverless-python-requirements\n\npackage:\n  individually: true\n  exclude:\n    - \"*/**\"\n    - node_modules/**\n    - .serverless/**\n    - .venv/**\n\nfunctions:\n  add-partition:\n    description: \"Add partitions to tables\"\n    role: ${ssm:/${self:service}/add-partition/lambda-iam-role/arn}\n    handler: src.lambda.add_partition.main.lambda_handler\n    package:\n      patterns:\n        - \"!node_modules/**\"\n        - \"!yarn.lock\"\n        - \"!package-lock.json\"\n        - \"!package.json\"\n      include:\n        - \"src/lambda/add_partition/**\"\n        - \"src/shared/**\"\n        - \"src/__init__.py\"\n    timeout: 900\n    memorySize: 2048\n    layers:\n      - { Ref: PythonRequirementsLambdaLayer }\n    environment:\n      AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}\n    events:\n      - s3:\n          bucket: ${self:custom.bucketName}\n          event: s3:ObjectCreated:*\n          existing: true\n\n  process-stock-feed:\n    description: \"Process stock feed\"\n    role: ${ssm:/${self:service}/process-stock-feed/lambda-iam-role/arn}\n    handler: src.lambda.process_stock_feed.main.lambda_handler\n    package:\n      patterns:\n        - \"!node_modules/**\"\n        - \"!yarn.lock\"\n        - \"!package-lock.json\"\n        - \"!package.json\"\n      include:\n        - \"src/lambda/process_stock_feed/**\"\n        - \"src/shared/**\"\n        - \"src/__init__.py\"\n    timeout: 900\n    memorySize: 2048\n    layers:\n      - { Ref: PythonRequirementsLambdaLayer }\n    environment:\n      AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}\n    events:\n      - s3:\n          bucket: ${self:custom.stockFeedBucketName}\n          event: s3:ObjectCreated:*\n          existing: true",
     "command": [
-      "remove"
+      "invoke",
+      "local"
     ],
     "options": {
-      "stage": "dev"
+      "function": "process-stock-feed",
+      "stage": "dev",
+      "data": "{\n    \"Records\": [\n        {\n            \"eventVersion\": \"2.1\",\n            \"eventSource\": \"aws:s3\",\n            \"awsRegion\": \"eu-west-2\",\n            \"eventTime\": \"2024-09-26T08:04:07.540Z\",\n            \"eventName\": \"ObjectCreated:Put\",\n            \"userIdentity\": {\n                \"principalId\": \"AWS:AROAZQ3DQHWGJFPFB7OXW:chris@speedsheet.co.uk\"\n            },\n            \"requestParameters\": {\n                \"sourceIPAddress\": \"31.111.18.10\"\n            },\n            \"responseElements\": {\n                \"x-amz-request-id\": \"D6WC75BMPYXC4ZQH\",\n                \"x-amz-id-2\": \"tR00AU+bl/x2iN7QFwhMmUdPdDCcrgfNXmTA2QDpnLZJ82CPEtEQgqrbEhFtl/VbAia8uQcXWrPHCkr/lC6X0qqSrjTaWhRl\"\n            },\n            \"s3\": {\n                \"s3SchemaVersion\": \"1.0\",\n                \"configurationId\": \"rtg-automotive-dev-process-stock-feed-68a737133cefb25bff959852b8f04754\",\n                \"bucket\": {\n                    \"name\": \"rtg-automotive-stock-feed-bucket-654654324108\",\n                    \"ownerIdentity\": {\n                        \"principalId\": \"A9RQVGQX48SLS\"\n                    },\n                    \"arn\": \"arn:aws:s3:::rtg-automotive-stock-feed-bucket-654654324108\"\n                },\n                \"object\": {\n                    \"key\": \"stock_feed/APE_SF.xlsx\",\n                    \"size\": 311237,\n                    \"eTag\": \"387d4ea4de1cbf3df2bdcd9270f21426\",\n                    \"versionId\": \"bHP4jMSFt_d8R8rNaRAqfTfVKOPoomyQ\",\n                    \"sequencer\": \"0066F5157775B77921\"\n                }\n            }\n        }\n    ]\n}"
     },
     "error": null,
     "params": {},
-    "machineId": "7a0cf37e73af02c0c226a047f74b4aaa",
+    "machineId": "4dfa5befabe3b7dcbb8c3cebd6078388",
     "accessKeyV2": "<REDACTED>",
     "accessKeyV1": "<REDACTED>",
     "orgId": "a10fe1a9-a171-4c3f-8790-9b2f283d803f",
@@ -651,16 +592,47 @@
     "projectType": "framework",
     "versionSf": "4.2.4",
     "serviceProviderAwsCfStackName": "rtg-automotive-dev",
-    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:eu-west-2:654654324108:stack/rtg-automotive-dev/d5aa6300-7b23-11ef-a7e4-06cc46103b2d",
-    "serviceProviderAwsCfStackCreated": "2024-09-25T09:52:11.111Z",
-    "serviceProviderAwsCfStackUpdated": "2024-09-25T09:52:40.256Z",
-    "serviceProviderAwsCfStackStatus": "UPDATE_ROLLBACK_COMPLETE",
+    "integrations": {},
+    "serviceProviderAwsCfStackId": "arn:aws:cloudformation:eu-west-2:654654324108:stack/rtg-automotive-dev/c931fa50-7b84-11ef-bf1e-0addc5bb7b67",
+    "serviceProviderAwsCfStackCreated": "2024-09-25T21:26:11.369Z",
+    "serviceProviderAwsCfStackUpdated": "2024-09-25T21:48:49.142Z",
+    "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
     "serviceProviderAwsCfStackOutputs": [
       {
+        "OutputKey": "PythonRequirementsLambdaLayerS3Key",
+        "OutputValue": "serverless-lambdas/rtg-automotive/dev/1727300914509-2024-09-25T21:48:34.509Z/pythonRequirements.zip",
+        "Description": "Current Lambda layer S3Key",
+        "ExportName": "sls-rtg-automotive-dev-PythonRequirementsLambdaLayerS3Key"
+      },
+      {
+        "OutputKey": "ProcessDashstockDashfeedLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-process-stock-feed:8",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-rtg-automotive-dev-ProcessDashstockDashfeedLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "PythonRequirementsLambdaLayerQualifiedArn",
+        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:layer:rtg-automotive-dev-python-requirements:21",
+        "Description": "Current Lambda layer version",
+        "ExportName": "sls-rtg-automotive-dev-PythonRequirementsLambdaLayerQualifiedArn"
+      },
+      {
+        "OutputKey": "AddDashpartitionLambdaFunctionQualifiedArn",
+        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-add-partition:15",
+        "Description": "Current Lambda function version",
+        "ExportName": "sls-rtg-automotive-dev-AddDashpartitionLambdaFunctionQualifiedArn"
+      },
+      {
+        "OutputKey": "PythonRequirementsLambdaLayerHash",
+        "OutputValue": "ec4c5bc2ac101d8c8d8be3eb05b993a50f3b8f29",
+        "Description": "Current Lambda layer hash",
+        "ExportName": "sls-rtg-automotive-dev-PythonRequirementsLambdaLayerHash"
+      },
+      {
         "OutputKey": "ServerlessDeploymentBucketName",
-        "OutputValue": "rtg-automotive-dev-serverlessdeploymentbucket-nkj1pu0olfe9"
+        "OutputValue": "rtg-automotive-dev-serverlessdeploymentbucket-wy3cdmqqshha",
+        "ExportName": "sls-rtg-automotive-dev-ServerlessDeploymentBucketName"
       }
-    ],
-    "integrations": {}
+    ]
   }
 }
