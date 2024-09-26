@@ -73,8 +73,6 @@ jobs:
     needs: terraform
     env:
       SERVERLESS_ACCESS_KEY: ${{ secrets.SERVERLESS_ACCESS_KEY }}
-      SLS_DEBUG: "*"
-      AWS_DEFAULT_REGION: eu-west-2
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -89,6 +87,24 @@ jobs:
         with:
           python-version: 3.11
 
+      - name: Assume AWS Role
+        env:
+          AWS_DEFAULT_REGION: eu-west-2
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        run: |
+          output=$(aws sts assume-role --role-arn arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/DevAdminRole --role-session-name MySession)
+          echo "AWS_ACCESS_KEY_ID=$(echo $output | jq -r .Credentials.AccessKeyId)" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=$(echo $output | jq -r .Credentials.SecretAccessKey)" >> $GITHUB_ENV
+          echo "AWS_SESSION_TOKEN=$(echo $output | jq -r .Credentials.SessionToken)" >> $GITHUB_ENV
+
+      - name: Install Serverless
+        run: |
+          npm install -g serverless
+          npm init -y
+          npm install serverless-python-requirements
+          serverless requirements install --stage dev
+
       - name: Deploy with Serverless
         run: |
-          serverless deploy --stage ${{ env.STAGE }}
+          serverless deploy --stage dev

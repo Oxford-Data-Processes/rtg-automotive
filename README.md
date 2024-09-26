@@ -127,12 +127,14 @@ TODO:
 Commands:
 
 
-# Run inside virtual environment
+# Serverless local invoke
 
 npm install -g serverless
 npm install serverless-python-requirements
 serverless requirements install --stage dev
 serverless invoke local --function process-stock-feed --stage dev --data "$(cat test_events/putStockFeed.json)"
+
+# Serverless deploy
 
 
 docker build -t process_stock_feed .
@@ -144,14 +146,13 @@ docker run -p 9000:8080 \
 curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" -d @test_events/putStockFeed.json
 
 
+
+# Docker Build
+
 aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 654654324108.dkr.ecr.eu-west-2.amazonaws.com
-
 aws ecr create-repository --repository-name process-stock-feed --region eu-west-2
-
 docker build -t process-stock-feed src/lambda/process_stock_feed
-
 docker tag process-stock-feed:latest 654654324108.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
-
 docker push 654654324108.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
 
 docker run -p 9000:8080 \
