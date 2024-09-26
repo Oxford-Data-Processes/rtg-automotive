@@ -1,2 +1,2 @@
 openpyxl
-pyarrow
+pyarrow==4.0.1
