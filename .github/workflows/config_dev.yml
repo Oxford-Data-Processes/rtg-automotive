@@ -1,12 +1,14 @@
 name: Github Actions Pipeline
 
 env:
+  STAGE: dev
+  ROLE: DevAdminRole
   AWS_ACCOUNT_ID: ${file(./dev.yml):awsAccountId}
 
 on:
   push:
     tags:
-      - "**dev-deploy-*"
+      - "**${env.STAGE}-deploy-*"
 
 jobs:
   terraform:
@@ -24,7 +26,7 @@ jobs:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
-          output=$(aws sts assume-role --role-arn arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/DevAdminRole --role-session-name MySession)
+          output=$(aws sts assume-role --role-arn arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.ROLE }} --role-session-name MySession)
           echo "AWS_ACCESS_KEY_ID=$(echo $output | jq -r .Credentials.AccessKeyId)" >> $GITHUB_ENV
           echo "AWS_SECRET_ACCESS_KEY=$(echo $output | jq -r .Credentials.SecretAccessKey)" >> $GITHUB_ENV
           echo "AWS_SESSION_TOKEN=$(echo $output | jq -r .Credentials.SessionToken)" >> $GITHUB_ENV
@@ -32,9 +34,9 @@ jobs:
       - name: Terraform Setup & Apply
         run: |
           terraform fmt -check
-          terraform init -backend-config=backend/backend_config_dev.tfvars
-          terraform plan -no-color -var-file env_dev.tfvars
-          terraform apply -auto-approve -var-file env_dev.tfvars
+          terraform init -backend-config=backend/backend_config_${{ env.STAGE }}.tfvars
+          terraform plan -no-color -var-file env_${{ env.STAGE }}.tfvars
+          terraform apply -auto-approve -var-file env_${{ env.STAGE }}.tfvars
           
   docker:
     runs-on: ubuntu-latest
@@ -45,8 +47,8 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          for image in $(yq eval '.images | keys | .[]' ./dev.yml); do
-            docker build -t ${file(./dev.yml):images.${image}.name} ${file(./dev.yml):images.${image}.buildContext}
+          for image in $(yq eval '.images | keys | .[]' ./${{ env.STAGE }}.yml); do
+            docker build -t ${file(./${{ env.STAGE }}.yml):images.${image}.name} ${file(./${{ env.STAGE }}.yml):images.${image}.buildContext}
           done
 
       - name: Push Docker Images to ECR
@@ -57,9 +59,9 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
-          for image in $(yq eval '.images | keys | .[]' ./dev.yml); do
-            docker tag ${file(./dev.yml):images.${image}.name}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${file(./dev.yml):images.${image}.name}:latest
-            docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${file(./dev.yml):images.${image}.name}:latest
+          for image in $(yq eval '.images | keys | .[]' ./${{ env.STAGE }}.yml); do
+            docker tag ${file(./${{ env.STAGE }}.yml):images.${image}.name}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${file(./${{ env.STAGE }}.yml):images.${image}.name}:latest
+            docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${file(./${{ env.STAGE }}.yml):images.${image}.name}:latest
           done
 
   serverless:
@@ -85,4 +87,4 @@ jobs:
 
       - name: Deploy with Serverless
         run: |
-          serverless deploy --stage dev
+          serverless deploy --stage ${{ env.STAGE }}
