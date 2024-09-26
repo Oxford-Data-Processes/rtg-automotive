@@ -65,7 +65,7 @@ jobs:
           if ! aws ecr describe-repositories --repository-names ${{ env.DOCKER_IMAGE }} --region eu-west-2; then
             aws ecr create-repository --repository-name ${{ env.DOCKER_IMAGE }} --region eu-west-2
           fi
-          docker buildx build --platform linux/amd64 -t ${{ env.DOCKER_IMAGE }} ${{ env.DOCKER_BUILD_DIR }}
+          docker buildx build --platform linux/amd64 --build-arg AWS_ACCOUNT_ID=${{ env.AWS_ACCOUNT_ID }} -t ${{ env.DOCKER_IMAGE }} ${{ env.DOCKER_BUILD_DIR }}
           docker tag ${{ env.DOCKER_IMAGE }}:latest ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/${{ env.DOCKER_IMAGE }}:latest
           docker push ${{ env.AWS_ACCOUNT_ID }}.dkr.ecr.eu-west-2.amazonaws.com/${{ env.DOCKER_IMAGE }}:latest
 

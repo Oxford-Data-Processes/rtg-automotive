@@ -1,6 +1,9 @@
 # Use the official AWS Lambda Python base image
 FROM public.ecr.aws/lambda/python:3.11
 
+# Set environment variable
+ENV AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
+
 # Copy the requirements file
 COPY requirements.txt ./
 
