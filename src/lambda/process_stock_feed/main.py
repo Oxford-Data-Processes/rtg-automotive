@@ -201,7 +201,8 @@ def create_s3_file_name(supplier, year, month, day):
 
 
 def lambda_handler(event, context):
-    rtg_automotive_bucket = "rtg-automotive-bucket-654654324108"
+    aws_account_id = os.environ["AWS_ACCOUNT_ID"]
+    rtg_automotive_bucket = f"rtg-automotive-bucket-{aws_account_id}"
     stock_feed_schema = get_stock_feed_schema()
 
     logger.info(f"Received event: {json.dumps(event)}")
