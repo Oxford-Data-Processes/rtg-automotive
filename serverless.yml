@@ -15,7 +15,7 @@ custom:
 
 provider:
   name: aws
-  runtime: provided.al2  # Use the provided runtime for custom images
+  runtime: python3.11
   region: eu-west-2
   timeout: 300
   memorySize: 2048
@@ -64,8 +64,7 @@ functions:
     description: "Process stock feed"
     role: ${ssm:/${self:service}/process-stock-feed/lambda-iam-role/arn}
     image:
-      name: process-stock-feed
-      uri: ${self:custom.environment.awsAccountId}.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest 
+      uri: ${self:custom.environment.awsAccountId}.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
     environment:
       AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}
     events:

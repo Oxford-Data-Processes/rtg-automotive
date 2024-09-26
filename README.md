@@ -136,24 +136,31 @@ serverless invoke local --function process-stock-feed --stage dev --data "$(cat 
 
 # Serverless deploy
 
+serverless deploy --stage dev
 
-docker build -t process_stock_feed .
+# Docker local run
+
+docker buildx build --platform linux/amd64 -t process-stock-feed .
+
 docker run -p 9000:8080 \
   -e AWS_ACCESS_KEY_ID \
   -e AWS_SECRET_ACCESS_KEY \
   -e AWS_SESSION_TOKEN \
-  process_stock_feed
+  process-stock-feed
+
 curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" -d @test_events/putStockFeed.json
 
 
 
 # Docker Build
 
+# If repository does not exist
 aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 654654324108.dkr.ecr.eu-west-2.amazonaws.com
 aws ecr create-repository --repository-name process-stock-feed --region eu-west-2
-docker build -t process-stock-feed src/lambda/process_stock_feed
+
+docker buildx build --platform linux/amd64 -t process-stock-feed .
 docker tag process-stock-feed:latest 654654324108.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
 docker push 654654324108.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
 
 docker run -p 9000:8080 \
-  -e AWS_ACCESS_KEY_ID=ASIAZQ3DQHWGNPK23ZXH
+

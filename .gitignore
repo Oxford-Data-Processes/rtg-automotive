@@ -32,6 +32,9 @@ data/
 # streamlit
 .streamlit/
 
+# Requirements
+.requirements.zip
+
 # serverless
 .serverless/
 unzip_requirements.py
