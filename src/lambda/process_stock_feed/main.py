@@ -145,7 +145,9 @@ def process_stock_feed(
 
     for row in stock_feed_data:
         part_number = str(row[list(row.keys())[code_column_index]])
-        quantity = int(row[list(row.keys())[stock_column_index]])
+        quantity = config_data["process_func"](
+            row[list(row.keys())[stock_column_index]]
+        )
 
         output.append(
             {
@@ -192,7 +194,7 @@ def extract_s3_info(event):
 def process_current_date_and_supplier(object_key):
     current_date = datetime.now().strftime("%Y-%m-%d")
     year, month, day = current_date.split("-")
-    supplier = object_key.split("_")[0]
+    supplier = object_key.split("/")[-1].split("_")[0]
     return current_date, year, month, day, supplier
 
 
@@ -201,8 +203,9 @@ def create_s3_file_name(supplier, year, month, day):
 
 
 def lambda_handler(event, context):
-    aws_account_id = os.environ["AWS_ACCOUNT_ID"]
-    rtg_automotive_bucket = f"rtg-automotive-bucket-{aws_account_id}"
+
+    rtg_automotive_bucket = f"rtg-automotive-bucket-654654324108"
+    logger.info(f"RTG Automotive bucket: {rtg_automotive_bucket}")
     stock_feed_schema = get_stock_feed_schema()
 
     logger.info(f"Received event: {json.dumps(event)}")
