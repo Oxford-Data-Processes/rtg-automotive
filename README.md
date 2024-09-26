@@ -118,10 +118,10 @@ TODO:
 <!-- - Set up S3 bucket and versioning -->
 <!-- - Set up AWS Glue Data Catalog for tables -->
 <!-- - Create parquet files for store, product and supplier_stock including partitions. -->
-- Set up Logs for lambdas inside serverless.yml to fix log group bug
 - Create process_stock_feed lambda and SNS notification
 - Integrate this with Streamlit frontend
 - Create generate_ebay_table lambda and SNS notifications
+- Set up Logs for lambdas inside serverless.yml to fix log group bug
 
 
 Commands:

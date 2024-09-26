@@ -6,6 +6,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from io import BytesIO
 import os
+from datetime import datetime
 
 # Set up logging
 logger = logging.getLogger()
@@ -173,34 +174,58 @@ def write_to_s3_parquet(
     s3_client.put_object(Bucket=bucket_name, Key=file_name, Body=buffer.getvalue())
 
 
-def lambda_handler(event, context):
-    rtg_automotive_bucket = "rtg-automotive-bucket-654654324108"
-
-    stock_feed_schema = [
+def get_stock_feed_schema():
+    return [
         ("part_number", pa.string()),
         ("supplier", pa.string()),
         ("quantity", pa.int32()),
         ("updated_date", pa.string()),
     ]
 
-    logger.info(f"Received event: {json.dumps(event)}")
 
+def extract_s3_info(event):
     bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
     object_key = event["Records"][0]["s3"]["object"]["key"]
+    return bucket_name, object_key
+
+
+def process_current_date_and_supplier(object_key):
+    current_date = datetime.now().strftime("%Y-%m-%d")
+    year, month, day = current_date.split("-")
+    supplier = object_key.split("_")[0]
+    return current_date, year, month, day, supplier
+
+
+def create_s3_file_name(supplier, year, month, day):
+    return f"supplier_stock/supplier={supplier}/year={year}/month={month}/day={day}/data.parquet"
+
+
+def lambda_handler(event, context):
+    rtg_automotive_bucket = "rtg-automotive-bucket-654654324108"
+    stock_feed_schema = get_stock_feed_schema()
+
+    logger.info(f"Received event: {json.dumps(event)}")
+
+    bucket_name, object_key = extract_s3_info(event)
 
     try:
         logger.info(f"Reading file from path {object_key}")
         excel_data = read_excel_from_s3(bucket_name, object_key)
-        logger.info(f"First 5 rows of Excel data: {[item for item in excel_data[:5]]}")
-        output = process_stock_feed(excel_data, "APE", CONFIG, "2024-05-01")
-        logger.info(f"First 5 rows of output data: {[item for item in output[:5]]}")
-        write_to_s3_parquet(
-            output, rtg_automotive_bucket, "stock_feed_test.parquet", stock_feed_schema
+        logger.info(f"First 5 rows of Excel data: {excel_data[:5]}")
+
+        current_date, year, month, day, supplier = process_current_date_and_supplier(
+            object_key
         )
+
+        output = process_stock_feed(excel_data, supplier, CONFIG, current_date)
+        logger.info(f"First 5 rows of output data: {output[:5]}")
+
+        file_name = create_s3_file_name(supplier, year, month, day)
+        write_to_s3_parquet(output, rtg_automotive_bucket, file_name, stock_feed_schema)
 
         logger.info(f"File read successfully in path {object_key}")
 
         return {"statusCode": 200, "body": json.dumps("File processed successfully!")}
     except Exception as e:
         logger.error(f"Error processing file: {str(e)}")
-        raise e
+        raise
