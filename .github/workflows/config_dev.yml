@@ -8,7 +8,7 @@ env:
 on:
   push:
     tags:
-      - "**${env.STAGE}-deploy-*"
+      - "**dev-deploy-*"
 
 jobs:
   terraform:
