@@ -1,3 +1,3 @@
-# openpyxl
-# pyarrow==4.0.1
-# numpy
+openpyxl
+pyarrow==4.0.1
+numpy
