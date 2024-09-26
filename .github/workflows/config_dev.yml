@@ -80,9 +80,9 @@ jobs:
         run: |
           npm install -g serverless
           npm init -y
-          npm install serverless-python-requirements
-          serverless requirements install --stage dev
+          npm install serverless-python-requirements --no-cache
+          serverless requirements install --stage dev --no-cache
 
       - name: Deploy with Serverless
         run: |
-          serverless deploy --stage dev
+          serverless deploy --stage dev --no-cache
