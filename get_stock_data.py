@@ -43,6 +43,10 @@ def main():
     processed_dfs = [process_dataframe(df) for df in dfs.values()]
     df_stock = pd.concat(processed_dfs)
     updated_date = datetime.datetime.now() - datetime.timedelta(days=1)
+    updated_date_string = updated_date.strftime("%Y-%m-%d")
+    year = updated_date_string.split("-")[0]
+    month = updated_date_string.split("-")[1]
+    day = updated_date_string.split("-")[2]
     df_stock["updated_date"] = updated_date.strftime("%Y-%m-%d")
 
     df_stock.drop_duplicates(
@@ -63,7 +67,7 @@ def main():
 
     for supplier in df_stock["supplier"].unique():
         supplier_df = df_stock.copy()[df_stock["supplier"] == supplier]
-        key = f"supplier_stock/supplier={supplier}/year={updated_date.year}/month={updated_date.month}/day={updated_date.day}/data.parquet"
+        key = f"supplier_stock/supplier={supplier}/year={year}/month={month}/day={day}/data.parquet"
         supplier_df.drop(columns=["supplier"], inplace=True)
         supplier_df["updated_date"] = updated_date.strftime(
             "%Y-%m-%d"
