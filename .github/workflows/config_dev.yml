@@ -60,8 +60,8 @@ jobs:
         run: |
           $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
           for image in $(yq eval '.images | keys | .[]' ./${{ env.STAGE }}.yml); do
-            docker tag ${file(./${{ env.STAGE }}.yml):images.${image}.name}:latest ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${file(./${{ env.STAGE }}.yml):images.${image}.name}:latest
-            docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${file(./${{ env.STAGE }}.yml):images.${image}.name}:latest
+            docker tag ${file(./${{ env.STAGE }}.yml):images.${image}.name}:latest ${{env.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${file(./${{ env.STAGE }}.yml):images.${image}.name}:latest
+            docker push ${{env.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/${file(./${{ env.STAGE }}.yml):images.${image}.name}:latest
           done
 
   serverless:
