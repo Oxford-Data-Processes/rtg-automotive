@@ -3,7 +3,7 @@ name: Github Actions Pipeline
 env:
   STAGE: dev
   ROLE: DevAdminRole
-  AWS_ACCOUNT_ID: ${file(./dev.yml):awsAccountId}
+  AWS_ACCOUNT_ID: "654654324108"
 
 on:
   push:
