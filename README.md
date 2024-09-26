@@ -144,5 +144,15 @@ docker run -p 9000:8080 \
 curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" -d @test_events/putStockFeed.json
 
 
+aws ecr get-login-password --region eu-west-2 | docker login --username AWS --password-stdin 654654324108.dkr.ecr.eu-west-2.amazonaws.com
+
+aws ecr create-repository --repository-name process-stock-feed --region eu-west-2
+
+docker build -t process-stock-feed src/lambda/process_stock_feed
+
+docker tag process-stock-feed:latest 654654324108.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
+
+docker push 654654324108.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
+
 docker run -p 9000:8080 \
   -e AWS_ACCESS_KEY_ID=ASIAZQ3DQHWGNPK23ZXH

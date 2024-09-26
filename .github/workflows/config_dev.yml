@@ -47,11 +47,9 @@ jobs:
 
       - name: Build Docker Image
         run: |
-          for image in $(yq eval '.images | keys | .[]' ./${{ env.STAGE }}.yml); do
-            docker build -t $(yq eval ".images.${image}.name" ./${{ env.STAGE }}.yml) $(yq eval ".images.${image}.buildContext" ./${{ env.STAGE }}.yml)
-          done
+          docker build -t process-stock-feed src/lambda/process_stock_feed
 
-      - name: Push Docker Images to ECR
+      - name: Push Docker Image to ECR
         env:
           AWS_ACCOUNT_ID: ${{ env.AWS_ACCOUNT_ID }}
           AWS_DEFAULT_REGION: eu-west-2
@@ -59,10 +57,8 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           $(aws ecr get-login --no-include-email --region $AWS_DEFAULT_REGION)
-          for image in $(yq eval '.images | keys | .[]' ./${{ env.STAGE }}.yml); do
-            docker tag $(yq eval ".images.${image}.name" ./${{ env.STAGE }}.yml):latest ${{env.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/$(yq eval ".images.${image}.name" ./${{ env.STAGE }}.yml):latest
-            docker push ${{env.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/$(yq eval ".images.${image}.name" ./${{ env.STAGE }}.yml):latest
-          done
+          docker tag process-stock-feed:latest ${{env.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/process-stock-feed:latest
+          docker push ${{env.AWS_ACCOUNT_ID }}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com/process-stock-feed:latest
 
   serverless:
     runs-on: ubuntu-latest
