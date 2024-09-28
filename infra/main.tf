@@ -45,3 +45,11 @@ module "process_stock_feed" {
   aws_region     = var.aws_region
   source         = "./lambda/process_stock_feed"
 }
+
+module "generate_ebay_table" {
+  aws_account_id = var.aws_account_id
+  project        = var.project
+  stage          = var.stage
+  aws_region     = var.aws_region
+  source         = "./lambda/generate_ebay_table"
+}
