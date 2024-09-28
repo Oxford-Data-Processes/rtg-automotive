@@ -19,12 +19,7 @@ def lambda_handler(event, context):
     response = athena_client.start_query_execution(
         QueryString=query,
         QueryExecutionContext={"Database": "rtg_automotive"},
-        QueryExecutionContext={
-            "WorkGroup": "rtg-automotive-workgroup"
-        },  # Added workgroup
-        ResultConfiguration={
-            # Output location removed as per instructions
-        },
+        WorkGroup="rtg-automotive-workgroup",
     )
 
     # Log the query execution ID
