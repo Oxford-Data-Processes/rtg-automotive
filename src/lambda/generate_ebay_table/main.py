@@ -19,8 +19,11 @@ def lambda_handler(event, context):
     response = athena_client.start_query_execution(
         QueryString=query,
         QueryExecutionContext={"Database": "rtg_automotive"},
+        QueryExecutionContext={
+            "WorkGroup": "rtg-automotive-workgroup"
+        },  # Added workgroup
         ResultConfiguration={
-            "OutputLocation": "s3://rtg-automotive-bucket-654654324108/athena-results/"
+            # Output location removed as per instructions
         },
     )
 
