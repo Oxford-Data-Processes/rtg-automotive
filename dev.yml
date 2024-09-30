@@ -1,6 +1,1 @@
 awsAccountId: "654654324108"
-
-images:
-  processStockFeed:
-    name: process-stock-feed
-    buildContext: src/lambda/process_stock_feed
