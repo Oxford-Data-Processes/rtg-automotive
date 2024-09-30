@@ -45,6 +45,7 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ needs.assume-role.outputs.AWS_SECRET_ACCESS_KEY }}
           AWS_SESSION_TOKEN: ${{ needs.assume-role.outputs.AWS_SESSION_TOKEN }}
         run: |
+          cd infra
           terraform fmt -check
           terraform init -backend-config=backend/backend_config_${{ env.STAGE }}.tfvars
           terraform plan -no-color -var-file env_${{ env.STAGE }}.tfvars
