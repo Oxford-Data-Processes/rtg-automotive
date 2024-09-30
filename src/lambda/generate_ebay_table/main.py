@@ -13,7 +13,7 @@ def lambda_handler(event, context):
     athena_client = session.client("athena")
 
     # Define the query
-    query = "SELECT * FROM supplier_stock LIMIT 10"
+    query = "SELECT * FROM supplier_stock LIMIT 5"
 
     # Define the parameters for the query execution
     response = athena_client.start_query_execution(
@@ -22,8 +22,22 @@ def lambda_handler(event, context):
         WorkGroup="rtg-automotive-workgroup",
     )
 
-    # Log the query execution ID
+    logger.info(f"Query: {query}")
     query_execution_id = response["QueryExecutionId"]
-    logger.info(f"Started query with execution ID: {query_execution_id}")
+    # Wait for the query to complete
+    while True:
+        query_status = athena_client.get_query_execution(
+            QueryExecutionId=query_execution_id
+        )
+        status = query_status["QueryExecution"]["Status"]["State"]
+        if status in ["SUCCEEDED", "FAILED", "CANCELLED"]:
+            break
+
+    if status == "SUCCEEDED":
+        # Get the results
+        results = athena_client.get_query_results(QueryExecutionId=query_execution_id)
+        logger.info(f"Query results: {results['ResultSet']['Rows']}")
+    else:
+        logger.error(f"Query failed with status: {status}")
 
     return {"statusCode": 200, "body": json.dumps("Query executed successfully!")}

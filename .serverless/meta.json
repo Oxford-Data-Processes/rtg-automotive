@@ -641,7 +641,7 @@
     },
     "error": null,
     "params": {},
-    "machineId": "39f9996d624412a4774b1f7cb90e5c80",
+    "machineId": "1d3dbbd790b5183b084d9707f6f149a6",
     "accessKeyV2": "<REDACTED>",
     "accessKeyV1": "<REDACTED>",
     "orgId": "a10fe1a9-a171-4c3f-8790-9b2f283d803f",
@@ -667,42 +667,42 @@
     "integrations": {},
     "serviceProviderAwsCfStackId": "arn:aws:cloudformation:eu-west-2:654654324108:stack/rtg-automotive-dev/ea2c9e70-7c08-11ef-affb-063c98afad4f",
     "serviceProviderAwsCfStackCreated": "2024-09-26T13:12:00.266Z",
-    "serviceProviderAwsCfStackUpdated": "2024-09-28T16:32:52.246Z",
+    "serviceProviderAwsCfStackUpdated": "2024-09-30T10:16:42.845Z",
     "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
     "serviceProviderAwsCfStackOutputs": [
       {
         "OutputKey": "PythonRequirementsLambdaLayerS3Key",
-        "OutputValue": "serverless-lambdas/rtg-automotive/dev/1727541155485-2024-09-28T16:32:35.485Z/pythonRequirements.zip",
+        "OutputValue": "serverless-lambdas/rtg-automotive/dev/1727691388526-2024-09-30T10:16:28.526Z/pythonRequirements.zip",
         "Description": "Current Lambda layer S3Key",
         "ExportName": "sls-rtg-automotive-dev-PythonRequirementsLambdaLayerS3Key"
       },
       {
         "OutputKey": "ProcessDashstockDashfeedLambdaFunctionQualifiedArn",
-        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-process-stock-feed:27",
+        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-process-stock-feed:29",
         "Description": "Current Lambda function version",
         "ExportName": "sls-rtg-automotive-dev-ProcessDashstockDashfeedLambdaFunctionQualifiedArn"
       },
       {
         "OutputKey": "GenerateDashebayDashtableLambdaFunctionQualifiedArn",
-        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-generate-ebay-table:4",
+        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-generate-ebay-table:6",
         "Description": "Current Lambda function version",
         "ExportName": "sls-rtg-automotive-dev-GenerateDashebayDashtableLambdaFunctionQualifiedArn"
       },
       {
         "OutputKey": "PythonRequirementsLambdaLayerQualifiedArn",
-        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:layer:rtg-automotive-dev-python-requirements:43",
+        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:layer:rtg-automotive-dev-python-requirements:45",
         "Description": "Current Lambda layer version",
         "ExportName": "sls-rtg-automotive-dev-PythonRequirementsLambdaLayerQualifiedArn"
       },
       {
         "OutputKey": "AddDashpartitionLambdaFunctionQualifiedArn",
-        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-add-partition:36",
+        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-add-partition:38",
         "Description": "Current Lambda function version",
         "ExportName": "sls-rtg-automotive-dev-AddDashpartitionLambdaFunctionQualifiedArn"
       },
       {
         "OutputKey": "PythonRequirementsLambdaLayerHash",
-        "OutputValue": "d9be314e9a702f4f2a61a5f9d12ce55b26c1f585",
+        "OutputValue": "d0d526ce65ce5376ec7712fa025bdfd6ae032535",
         "Description": "Current Lambda layer hash",
         "ExportName": "sls-rtg-automotive-dev-PythonRequirementsLambdaLayerHash"
       },
