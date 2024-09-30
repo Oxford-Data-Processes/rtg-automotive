@@ -4,6 +4,9 @@ import os
 import time
 from io import BytesIO
 import pandas as pd
+from typing import List, Tuple
+import io
+import zipfile
 
 # Initialize S3 and SQS clients
 s3_client = boto3.client("s3", region_name="eu-west-2")
@@ -11,6 +14,16 @@ sqs_client = boto3.client("sqs", region_name="eu-west-2")
 AWS_ACCOUNT_ID = os.environ.get("AWS_ACCOUNT_ID")
 STAGE = os.environ.get("STAGE")  # Use get to avoid KeyError if STAGE is not set
 PROJECT_NAME = "rtg-automotive"
+
+
+def zip_dataframes(dataframes: List[Tuple[pd.DataFrame, str]]) -> io.BytesIO:
+    zip_buffer = io.BytesIO()
+    with zipfile.ZipFile(zip_buffer, "w", zipfile.ZIP_DEFLATED) as zip_file:
+        for df, name in dataframes:
+            csv_buffer = io.StringIO()
+            df.to_csv(csv_buffer, index=False)
+            zip_file.writestr(f"{name}.csv", csv_buffer.getvalue())
+    return zip_buffer
 
 
 def create_ebay_dataframe(ebay_df: pd.DataFrame) -> pd.DataFrame:
@@ -124,15 +137,30 @@ def main():
             if last_csv_key:
                 df = load_csv_from_s3(project_bucket_name, last_csv_key)
                 df.to_csv("ebay.csv", index=False)
+                ebay_df = create_ebay_dataframe(df)
                 st.download_button(
-                    label="Download eBay CSV",
-                    data="ebay_data.csv",
-                    file_name="ebay_data.csv",
+                    label="Download Raw eBay CSV",
+                    data="ebay.csv",
+                    file_name="ebay.csv",
                     mime="text/csv",
                 )
-                ebay_df = create_ebay_dataframe(df)
                 st.write("DataFrame loaded from CSV:")
                 st.dataframe(ebay_df)
+
+                stores = list(ebay_df["Store"].unique())
+                ebay_dfs = [
+                    (ebay_df[ebay_df["Store"] == store].drop(columns=["Store"]), store)
+                    for store in stores
+                ]
+
+                zip_buffer = zip_dataframes(ebay_dfs)
+
+                st.download_button(
+                    label="Download eBay Upload Files",
+                    data=zip_buffer.getvalue(),
+                    file_name="ebay_upload_files.zip",
+                    mime="application/zip",
+                )
 
             else:
                 st.warning("No CSV file found in the specified S3 path.")
