@@ -3,10 +3,55 @@ import streamlit as st
 import os
 import time
 from io import BytesIO
+import pandas as pd
 
-AWS_ACCOUNT_ID = os.environ.get("AWS_ACCOUNT_ID")
+# Initialize S3 and SQS clients
+s3_client = boto3.client("s3", region_name="eu-west-2")
 sqs_client = boto3.client("sqs", region_name="eu-west-2")
-s3_client = boto3.client("s3")
+AWS_ACCOUNT_ID = os.environ.get("AWS_ACCOUNT_ID")
+STAGE = os.environ.get("STAGE")  # Use get to avoid KeyError if STAGE is not set
+PROJECT_NAME = "rtg-automotive"
+
+
+def create_ebay_dataframe(ebay_df: pd.DataFrame) -> pd.DataFrame:
+    ebay_df = ebay_df[ebay_df["quantity_delta"] != 0]
+
+    # Drop rows with null item_id
+    ebay_df = ebay_df.dropna(subset=["item_id"])
+
+    ebay_df = ebay_df.rename(
+        columns={
+            "custom_label": "CustomLabel",
+            "item_id": "ItemID",
+            "ebay_store": "Store",
+            "quantity": "Quantity",
+        }
+    )
+    ebay_df["Action"] = "Revise"
+    ebay_df["SiteID"] = "UK"
+    ebay_df["Currency"] = "GBP"
+    ebay_df = ebay_df[
+        [
+            "Action",
+            "ItemID",
+            "SiteID",
+            "Currency",
+            "Quantity",
+            "Store",
+        ]
+    ]
+    ebay_df["Quantity"] = ebay_df["Quantity"].astype(int)
+    ebay_df["ItemID"] = ebay_df["ItemID"].astype(int)
+    return ebay_df
+
+
+def get_last_csv_from_s3(bucket_name, prefix):
+    response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+    csv_files = [
+        obj for obj in response.get("Contents", []) if obj["Key"].endswith(".csv")
+    ]
+    csv_files.sort(key=lambda x: x["LastModified"], reverse=True)
+    return csv_files[0]["Key"] if csv_files else None
 
 
 def receive_sqs_messages(queue_url, max_messages=10):
@@ -21,39 +66,77 @@ def display_last_n_sqs_messages(queue_url, n):
     if messages:
         for message in messages:
             st.write(f"Message: {message['Body']}")
-            # Optionally delete the message after processing
             sqs_client.delete_message(
                 QueueUrl=queue_url, ReceiptHandle=message["ReceiptHandle"]
             )
 
 
-def upload_file_to_s3(file):
-    bucket_name = f"rtg-automotive-stock-feed-bucket-{AWS_ACCOUNT_ID}"
+def upload_file_to_s3(file, bucket_name):
     s3_client.put_object(
         Bucket=bucket_name, Key=f"stock_feed/{file.name}", Body=file.getvalue()
     )
     st.success(f"File {file.name} uploaded successfully to S3.")
 
 
-st.title("SQS Message Reader App")
+def trigger_generate_ebay_table_lambda():
+    lambda_client = boto3.client("lambda", region_name="eu-west-2")
+    try:
+        response = lambda_client.invoke(
+            FunctionName=f"arn:aws:lambda:eu-west-2:{AWS_ACCOUNT_ID}:function:rtg-automotive-{STAGE}-generate-ebay-table",
+            InvocationType="RequestResponse",
+        )
+        time.sleep(2)
+        return True
+    except Exception as e:
+        st.error(f"Error triggering Lambda: {str(e)}")
+        return False
 
-sqs_queue_url = f"https://sqs.eu-west-2.amazonaws.com/{AWS_ACCOUNT_ID}/rtg-automotive-sqs-queue.fifo"
 
-uploaded_files = st.file_uploader(
-    "Upload Excel files", type=["xlsx"], accept_multiple_files=True
-)
+def load_csv_from_s3(bucket_name, csv_key):
+    csv_object = s3_client.get_object(Bucket=bucket_name, Key=csv_key)
+    csv_data = csv_object["Body"].read()
+    df = pd.read_csv(BytesIO(csv_data))
+    return df
 
-# New upload button
-if st.button("Upload Files to S3"):
-    if uploaded_files:
-        for uploaded_file in uploaded_files:
-            upload_file_to_s3(uploaded_file)
 
-        time.sleep(len(uploaded_files) * 2)
-        st.success("All files uploaded. You can now check for messages.")
-    else:
-        st.warning("Please upload at least one file first.")
+def main():
+    st.title("eBay Store Upload Generator")
+    sqs_queue_url = f"https://sqs.eu-west-2.amazonaws.com/{AWS_ACCOUNT_ID}/{PROJECT_NAME}-sqs-queue.fifo"
+    stock_feed_bucket_name = f"{PROJECT_NAME}-stock-feed-bucket-{AWS_ACCOUNT_ID}"
+    project_bucket_name = f"{PROJECT_NAME}-bucket-{AWS_ACCOUNT_ID}"
 
-# Button to get messages from SQS
-if st.button("Get Messages from SQS"):
-    display_last_n_sqs_messages(sqs_queue_url, len(uploaded_files))
+    uploaded_files = st.file_uploader(
+        "Upload Excel files", type=["xlsx"], accept_multiple_files=True
+    )
+
+    if st.button("Upload Files to S3"):
+        if uploaded_files:
+            for uploaded_file in uploaded_files:
+                upload_file_to_s3(uploaded_file, stock_feed_bucket_name)
+            time.sleep(len(uploaded_files) * 2)
+            display_last_n_sqs_messages(sqs_queue_url, len(uploaded_files))
+        else:
+            st.warning("Please upload at least one file first.")
+
+    if st.button("Trigger Generate eBay Table Lambda"):
+        if trigger_generate_ebay_table_lambda():
+            last_csv_key = get_last_csv_from_s3(project_bucket_name, "athena-results/")
+            if last_csv_key:
+                df = load_csv_from_s3(project_bucket_name, last_csv_key)
+                df.to_csv("ebay.csv", index=False)
+                st.download_button(
+                    label="Download eBay CSV",
+                    data="ebay_data.csv",
+                    file_name="ebay_data.csv",
+                    mime="text/csv",
+                )
+                ebay_df = create_ebay_dataframe(df)
+                st.write("DataFrame loaded from CSV:")
+                st.dataframe(ebay_df)
+
+            else:
+                st.warning("No CSV file found in the specified S3 path.")
+
+
+if __name__ == "__main__":
+    main()
