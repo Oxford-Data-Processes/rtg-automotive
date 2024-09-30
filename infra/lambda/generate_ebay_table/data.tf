@@ -42,7 +42,8 @@ data "aws_iam_policy_document" "lambda_policy" {
   statement {
     effect = "Allow"
     actions = [
-      "athena:StartQueryExecution"  // Added permission for Athena
+      "athena:StartQueryExecution",  // Added permission for Athena
+      "athena:GetQueryExecution"      // Added permission for GetQueryExecution
     ]
     resources = [
       "arn:aws:athena:${var.aws_region}:${var.aws_account_id}:workgroup/*"  // Added resource for Athena
