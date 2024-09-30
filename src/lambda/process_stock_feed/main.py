@@ -202,9 +202,19 @@ def create_s3_file_name(supplier, year, month, day):
     return f"supplier_stock/supplier={supplier}/year={year}/month={month}/day={day}/data.parquet"
 
 
-def lambda_handler(event, context):
+def send_sns_notification(message, AWS_ACCOUNT_ID):
+    sns_client = boto3.client("sns")
+    topic_arn = (
+        f"arn:aws:sns:eu-west-2:{AWS_ACCOUNT_ID}:rtg-automotive-stock-notifications"
+    )
+    sns_client.publish(
+        TopicArn=topic_arn, Message=message, Subject="Stock Feed Processed"
+    )
 
-    rtg_automotive_bucket = f"rtg-automotive-bucket-654654324108"
+
+def lambda_handler(event, context):
+    AWS_ACCOUNT_ID = os.environ.get("AWS_ACCOUNT_ID")
+    rtg_automotive_bucket = f"rtg-automotive-bucket-{AWS_ACCOUNT_ID}"
     logger.info(f"RTG Automotive bucket: {rtg_automotive_bucket}")
     stock_feed_schema = get_stock_feed_schema()
 
@@ -226,7 +236,10 @@ def lambda_handler(event, context):
 
         file_name = create_s3_file_name(supplier, year, month, day)
         write_to_s3_parquet(output, rtg_automotive_bucket, file_name, stock_feed_schema)
-
+        send_sns_notification(
+            f"Stock feed processed successfully for {supplier} on {current_date}",
+            AWS_ACCOUNT_ID,
+        )
         logger.info(f"File read successfully in path {object_key}")
 
         return {"statusCode": 200, "body": json.dumps("File processed successfully!")}
