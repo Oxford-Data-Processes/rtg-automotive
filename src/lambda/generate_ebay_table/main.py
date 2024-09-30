@@ -1,6 +1,7 @@
 import json
 import boto3
 import logging
+import os
 
 # Set up logging
 logger = logging.getLogger()
@@ -12,7 +13,9 @@ def lambda_handler(event, context):
     session = boto3.Session()
     athena_client = session.client("athena")
 
-    with open("generate_ebay_table.sql", "r") as file:
+    current_directory = os.path.dirname(os.path.abspath(__file__))
+
+    with open(os.path.join(current_directory, "generate_ebay_table.sql"), "r") as file:
         query = file.read()
 
     # Define the parameters for the query execution
@@ -36,7 +39,7 @@ def lambda_handler(event, context):
     if status == "SUCCEEDED":
         # Get the results
         results = athena_client.get_query_results(QueryExecutionId=query_execution_id)
-        logger.info(f"Query results: {results['ResultSet']['Rows']}")
+        logger.info(f"Query results: {results['ResultSet']['Rows'][:5]}")
     else:
         logger.error(f"Query failed with status: {status}")
 

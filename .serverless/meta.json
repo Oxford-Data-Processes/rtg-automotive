@@ -16,13 +16,7 @@
             "custom": {
               "stage": "dev",
               "environment": {
-                "awsAccountId": "654654324108",
-                "images": {
-                  "processStockFeed": {
-                    "name": "process-stock-feed",
-                    "buildContext": "src/lambda/process_stock_feed"
-                  }
-                }
+                "awsAccountId": "654654324108"
               },
               "pythonRequirements": {
                 "zip": true,
@@ -175,13 +169,7 @@
             "custom": {
               "stage": "dev",
               "environment": {
-                "awsAccountId": "654654324108",
-                "images": {
-                  "processStockFeed": {
-                    "name": "process-stock-feed",
-                    "buildContext": "src/lambda/process_stock_feed"
-                  }
-                }
+                "awsAccountId": "654654324108"
               },
               "pythonRequirements": {
                 "zip": true,
@@ -334,13 +322,7 @@
             "custom": {
               "stage": "dev",
               "environment": {
-                "awsAccountId": "654654324108",
-                "images": {
-                  "processStockFeed": {
-                    "name": "process-stock-feed",
-                    "buildContext": "src/lambda/process_stock_feed"
-                  }
-                }
+                "awsAccountId": "654654324108"
               },
               "pythonRequirements": {
                 "zip": true,
@@ -494,13 +476,7 @@
       "custom": {
         "stage": "dev",
         "environment": {
-          "awsAccountId": "654654324108",
-          "images": {
-            "processStockFeed": {
-              "name": "process-stock-feed",
-              "buildContext": "src/lambda/process_stock_feed"
-            }
-          }
+          "awsAccountId": "654654324108"
         },
         "pythonRequirements": {
           "zip": true,
@@ -641,7 +617,7 @@
     },
     "error": null,
     "params": {},
-    "machineId": "1d3dbbd790b5183b084d9707f6f149a6",
+    "machineId": "aa61fdcceefc9db67a912e55f3101def",
     "accessKeyV2": "<REDACTED>",
     "accessKeyV1": "<REDACTED>",
     "orgId": "a10fe1a9-a171-4c3f-8790-9b2f283d803f",
@@ -667,42 +643,42 @@
     "integrations": {},
     "serviceProviderAwsCfStackId": "arn:aws:cloudformation:eu-west-2:654654324108:stack/rtg-automotive-dev/ea2c9e70-7c08-11ef-affb-063c98afad4f",
     "serviceProviderAwsCfStackCreated": "2024-09-26T13:12:00.266Z",
-    "serviceProviderAwsCfStackUpdated": "2024-09-30T10:16:42.845Z",
+    "serviceProviderAwsCfStackUpdated": "2024-09-30T11:33:44.503Z",
     "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
     "serviceProviderAwsCfStackOutputs": [
       {
         "OutputKey": "PythonRequirementsLambdaLayerS3Key",
-        "OutputValue": "serverless-lambdas/rtg-automotive/dev/1727691388526-2024-09-30T10:16:28.526Z/pythonRequirements.zip",
+        "OutputValue": "serverless-lambdas/rtg-automotive/dev/1727696015109-2024-09-30T11:33:35.109Z/pythonRequirements.zip",
         "Description": "Current Lambda layer S3Key",
         "ExportName": "sls-rtg-automotive-dev-PythonRequirementsLambdaLayerS3Key"
       },
       {
         "OutputKey": "ProcessDashstockDashfeedLambdaFunctionQualifiedArn",
-        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-process-stock-feed:29",
+        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-process-stock-feed:34",
         "Description": "Current Lambda function version",
         "ExportName": "sls-rtg-automotive-dev-ProcessDashstockDashfeedLambdaFunctionQualifiedArn"
       },
       {
         "OutputKey": "GenerateDashebayDashtableLambdaFunctionQualifiedArn",
-        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-generate-ebay-table:6",
+        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-generate-ebay-table:11",
         "Description": "Current Lambda function version",
         "ExportName": "sls-rtg-automotive-dev-GenerateDashebayDashtableLambdaFunctionQualifiedArn"
       },
       {
         "OutputKey": "PythonRequirementsLambdaLayerQualifiedArn",
-        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:layer:rtg-automotive-dev-python-requirements:45",
+        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:layer:rtg-automotive-dev-python-requirements:50",
         "Description": "Current Lambda layer version",
         "ExportName": "sls-rtg-automotive-dev-PythonRequirementsLambdaLayerQualifiedArn"
       },
       {
         "OutputKey": "AddDashpartitionLambdaFunctionQualifiedArn",
-        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-add-partition:38",
+        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-add-partition:43",
         "Description": "Current Lambda function version",
         "ExportName": "sls-rtg-automotive-dev-AddDashpartitionLambdaFunctionQualifiedArn"
       },
       {
         "OutputKey": "PythonRequirementsLambdaLayerHash",
-        "OutputValue": "d0d526ce65ce5376ec7712fa025bdfd6ae032535",
+        "OutputValue": "c28649eae8ace4badf1795ff5632a93c5870222a",
         "Description": "Current Lambda layer hash",
         "ExportName": "sls-rtg-automotive-dev-PythonRequirementsLambdaLayerHash"
       },
