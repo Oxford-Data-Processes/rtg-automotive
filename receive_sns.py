@@ -32,8 +32,6 @@ def get_last_10_sqs_messages(queue_url):
 
 
 # Example usage
-sqs_queue_url = (
-    f"https://sqs.eu-west-2.amazonaws.com/{AWS_ACCOUNT_ID}/rtg-automotive-sqs-queue"
-)
+sqs_queue_url = f"https://sqs.eu-west-2.amazonaws.com/{AWS_ACCOUNT_ID}/rtg-automotive-sqs-queue.fifo"
 last_10_messages = get_last_10_sqs_messages(sqs_queue_url)
 print(json.dumps(last_10_messages, indent=2))
