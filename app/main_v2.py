@@ -3,42 +3,50 @@ import streamlit as st
 
 # Create an SNS client
 sns_client = boto3.client("sns", region_name="eu-west-2")
+sqs_client = boto3.client("sqs", region_name="eu-west-2")
 
 
-# Function to subscribe to the SNS topic
-def subscribe_to_sns(topic_arn, protocol="email"):
+# Function to subscribe the SQS queue to the SNS topic
+def subscribe_sqs_to_sns(sqs_queue_url, topic_arn):
     response = sns_client.subscribe(
-        TopicArn=topic_arn,
-        Protocol=protocol,
-        Endpoint="your_email@example.com",  # Replace with the email address to receive notifications
+        TopicArn=topic_arn, Protocol="sqs", Endpoint=sqs_queue_url
     )
     return response
 
 
-# Function to display the latest message from SNS
-def display_sns_message():
-    # Retrieve the subscriptions for the SNS topic
-    response = sns_client.list_subscriptions_by_topic(
-        TopicArn="arn:aws:sns:eu-west-2:654654324108:rtg-automotive-stock-notifications"
+# Function to receive messages from the SQS queue
+def receive_sqs_messages(queue_url):
+    response = sqs_client.receive_message(
+        QueueUrl=queue_url, MaxNumberOfMessages=10, WaitTimeSeconds=5
     )
+    return response.get("Messages", [])
 
-    if response["Subscriptions"]:
-        latest_subscription = response["Subscriptions"][-1]
-        st.write(
-            f"Latest SNS message for subscription {latest_subscription['SubscriptionArn']} will be displayed here."
-        )
-        # Instead of getting the message from subscription attributes, we will display the subscription ARN
-        st.write(f"Subscription ARN: {latest_subscription['SubscriptionArn']}")
+
+# Function to display the latest message from SQS
+def display_sqs_messages(queue_url):
+    messages = receive_sqs_messages(queue_url)
+    if messages:
+        for message in messages:
+            st.write(f"Message: {message['Body']}")
+            # Optionally delete the message after processing
+            sqs_client.delete_message(
+                QueueUrl=queue_url, ReceiptHandle=message["ReceiptHandle"]
+            )
     else:
-        st.write("No subscriptions found.")
+        st.write("No new messages.")
 
 
 # Streamlit UI
-st.title("SNS Subscription App")
+st.title("SNS to SQS Subscription App")
 
-if st.button("Subscribe to SNS Topic"):
-    topic_arn = "arn:aws:sns:eu-west-2:654654324108:rtg-automotive-stock-notifications"  # Updated topic ARN
-    response = subscribe_to_sns(topic_arn)
+# Replace with your actual SQS queue URL
+sqs_queue_url = (
+    "https://sqs.eu-west-2.amazonaws.com/654654324108/rtg-automotive-sqs-queue"
+)
 
-    st.success("Subscribed to SNS topic! Check your email for confirmation.")
-display_sns_message()
+if st.button("Subscribe SQS to SNS Topic"):
+    topic_arn = "arn:aws:sns:eu-west-2:654654324108:rtg-automotive-stock-notifications"
+    response = subscribe_sqs_to_sns(sqs_queue_url, topic_arn)
+    st.success("SQS subscribed to SNS topic!")
+
+display_sqs_messages(sqs_queue_url)
