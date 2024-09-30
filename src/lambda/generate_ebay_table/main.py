@@ -12,8 +12,8 @@ def lambda_handler(event, context):
     session = boto3.Session()
     athena_client = session.client("athena")
 
-    # Define the query
-    query = "SELECT * FROM supplier_stock LIMIT 5"
+    with open("generate_ebay_table.sql", "r") as file:
+        query = file.read()
 
     # Define the parameters for the query execution
     response = athena_client.start_query_execution(
