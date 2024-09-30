@@ -61,3 +61,11 @@ module "sns" {
   aws_region     = var.aws_region
   source         = "./sns"
 }
+
+module "sqs" {
+  aws_account_id = var.aws_account_id
+  project        = var.project
+  stage          = var.stage
+  aws_region     = var.aws_region
+  source         = "./sqs"
+}
