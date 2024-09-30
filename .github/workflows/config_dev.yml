@@ -48,6 +48,9 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
           AWS_SESSION_TOKEN: ${{ env.AWS_SESSION_TOKEN }}
         run: |
+          echo "AWS_ACCESS_KEY_ID: ${{ env.AWS_ACCESS_KEY_ID }}"
+          echo "AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}"
+          echo "AWS_SESSION_TOKEN: ${{ env.AWS_SESSION_TOKEN }}"
           terraform fmt -check
           terraform init -backend-config=backend/backend_config_${{ env.STAGE }}.tfvars
           terraform plan -no-color -var-file env_${{ env.STAGE }}.tfvars
