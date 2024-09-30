@@ -43,6 +43,18 @@ data "aws_iam_policy_document" "project_bucket_policy" {
       identifiers = ["athena.amazonaws.com"]
     }
   }
+  statement {
+    effect = "Allow"
+    principals {
+      type = "AWS"
+      identifiers = ["arn:aws:iam::${var.aws_account_id}:role/${local.service}-lambda-role"]
+    }
+    actions = ["s3:*"]
+    resources = [
+      "arn:aws:s3:::${aws_s3_bucket.project_bucket.bucket}",
+      "arn:aws:s3:::${aws_s3_bucket.project_bucket.bucket}/*"
+    ]
+  }
 }
 
 resource "aws_s3_bucket_policy" "project_bucket_policy" {
