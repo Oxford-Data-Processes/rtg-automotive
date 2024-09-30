@@ -25,6 +25,10 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Assume AWS Role
+        env:
+          AWS_DEFAULT_REGION: ${{ env.AWS_DEFAULT_REGION }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         id: assume-role
         run: |
           output=$(aws sts assume-role --role-arn arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.ROLE }} --role-session-name MySession)
