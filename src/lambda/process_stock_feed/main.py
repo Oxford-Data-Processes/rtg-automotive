@@ -204,9 +204,7 @@ def create_s3_file_name(supplier, year, month, day):
 
 def send_sns_notification(message, AWS_ACCOUNT_ID):
     sns_client = boto3.client("sns")
-    topic_arn = (
-        f"arn:aws:sns:eu-west-2:{AWS_ACCOUNT_ID}:rtg-automotive-stock-notifications"
-    )
+    topic_arn = f"arn:aws:sns:eu-west-2:{AWS_ACCOUNT_ID}:rtg-automotive-stock-notifications.fifo"
     sns_client.publish(
         TopicArn=topic_arn, Message=message, Subject="Stock Feed Processed"
     )
