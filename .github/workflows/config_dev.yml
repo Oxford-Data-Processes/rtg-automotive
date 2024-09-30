@@ -35,6 +35,9 @@ jobs:
   terraform:
     runs-on: ubuntu-latest
     needs: assume-role
+    defaults:
+      run:
+        working-directory: ./infra
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
@@ -45,7 +48,6 @@ jobs:
           AWS_SECRET_ACCESS_KEY: ${{ env.AWS_SECRET_ACCESS_KEY }}
           AWS_SESSION_TOKEN: ${{ env.AWS_SESSION_TOKEN }}
         run: |
-          cd infra
           terraform fmt -check
           terraform init -backend-config=backend/backend_config_${{ env.STAGE }}.tfvars
           terraform plan -no-color -var-file env_${{ env.STAGE }}.tfvars
