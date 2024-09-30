@@ -9,7 +9,7 @@ resource "aws_sqs_queue" "sqs_queue" {
 }
 
 resource "aws_sns_topic" "stock_notifications" {
-  name = "${var.project}-stock-notifications"
+  name = "${var.project}-stock-notifications.fifo"  # Ensure the name ends with .fifo
 }
 
 resource "aws_sns_topic_subscription" "sqs_subscription" {
