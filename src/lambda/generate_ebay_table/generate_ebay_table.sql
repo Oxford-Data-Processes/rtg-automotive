@@ -14,6 +14,7 @@ ranked_data AS (
 SELECT 
     sd.ebay_store,
     rd.custom_label,
+    rd.quantity,
     COALESCE(MAX(CASE WHEN rd.row_number = 1 THEN rd.quantity END) - MAX(CASE WHEN rd.row_number = 2 THEN rd.quantity END), MAX(CASE WHEN rd.row_number = 1 THEN rd.quantity END)) AS quantity_delta,
     MAX(rd.updated_date) AS updated_date,
     sd.item_id
@@ -22,4 +23,4 @@ FROM
 LEFT JOIN 
     store_data sd ON rd.custom_label = sd.custom_label
 GROUP BY 
-    rd.custom_label, sd.item_id, sd.ebay_store;
+    rd.custom_label, sd.item_id, sd.ebay_store, rd.quantity;
