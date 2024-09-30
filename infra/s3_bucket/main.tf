@@ -47,7 +47,7 @@ data "aws_iam_policy_document" "project_bucket_policy" {
     effect = "Allow"
     principals {
       type = "AWS"
-      identifiers = ["arn:aws:iam::${var.aws_account_id}:role/${local.service}-generate-ebay-table-lambda-role"]
+      identifiers = ["arn:aws:iam::${var.aws_account_id}:role/${var.project}/generate-ebay-table/${var.project}-generate-ebay-table-lambda-role"]
     }
     actions = ["s3:*"]
     resources = [
