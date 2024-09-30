@@ -36,10 +36,7 @@
               "lambdaHashingVersion": "20201221",
               "deploymentPrefix": "serverless-lambdas",
               "stage": "dev",
-              "versionFunctions": true,
-              "environment": {
-                "IS_LOCAL": "true"
-              }
+              "versionFunctions": true
             },
             "plugins": [
               "serverless-python-requirements"
@@ -150,9 +147,9 @@
             "type": "opt"
           },
           "options": {
-            "function": "generate-ebay-table",
+            "function": "process-stock-feed",
             "stage": "dev",
-            "data": "{\n\"Records\": [\n        {\n            \"eventVersion\": \"2.1\",\n            \"eventSource\": \"aws:s3\",\n            \"awsRegion\": \"eu-west-2\",\n            \"eventTime\": \"2024-09-24T15:26:20.716Z\",\n            \"eventName\": \"ObjectCreated:Put\",\n            \"userIdentity\": {\n                \"principalId\": \"AWS:AROAZQ3DQHWGJFPFB7OXW:chris@speedsheet.co.uk\"\n            },\n            \"requestParameters\": {\n                \"sourceIPAddress\": \"194.35.122.101\"\n            },\n            \"responseElements\": {\n                \"x-amz-request-id\": \"K30S7ZNB5FDK6WP4\",\n                \"x-amz-id-2\": \"eSWyL/S/5Ft7p7nuFDjdHpv7YMSf7P1j/fLYou8nV3DfSO8lsnLXGgKO/cxVAATCp1mtrY3SRKdIsWlKYMkIUDU0bJ2WYGOT\"\n            },\n            \"s3\": {\n                \"s3SchemaVersion\": \"1.0\",\n                \"configurationId\": \"rtg-automotive-dev-add-partition-68a737133cefb25bff959852b8f04754\",\n                \"bucket\": {\n                    \"name\": \"rtg-automotive-bucket-654654324108\",\n                    \"ownerIdentity\": {\n                        \"principalId\": \"A9RQVGQX48SLS\"\n                    },\n                    \"arn\": \"arn:aws:s3:::rtg-automotive-bucket-654654324108\"\n                },\n                \"object\": {\n                    \"key\": \"supplier_stock/supplier%3DROL/year%3D2024/month%3D9/day%3D24/data.parquet\",\n                    \"size\": 45784,\n                    \"eTag\": \"cf1146f77d9cbd1adcd1f23296ff5574\",\n                    \"versionId\": \"hR0V2NpgdUQ.yt.4FUqwPHKALmmPE3oj\",\n                    \"sequencer\": \"0066F2DA1C98591451\"\n                }\n            }\n        }\n    ]\n}"
+            "data": "{\n    \"Records\": [\n        {\n            \"eventVersion\": \"2.1\",\n            \"eventSource\": \"aws:s3\",\n            \"awsRegion\": \"eu-west-2\",\n            \"eventTime\": \"2024-09-26T08:04:07.540Z\",\n            \"eventName\": \"ObjectCreated:Put\",\n            \"userIdentity\": {\n                \"principalId\": \"AWS:AROAZQ3DQHWGJFPFB7OXW:chris@speedsheet.co.uk\"\n            },\n            \"requestParameters\": {\n                \"sourceIPAddress\": \"31.111.18.10\"\n            },\n            \"responseElements\": {\n                \"x-amz-request-id\": \"D6WC75BMPYXC4ZQH\",\n                \"x-amz-id-2\": \"tR00AU+bl/x2iN7QFwhMmUdPdDCcrgfNXmTA2QDpnLZJ82CPEtEQgqrbEhFtl/VbAia8uQcXWrPHCkr/lC6X0qqSrjTaWhRl\"\n            },\n            \"s3\": {\n                \"s3SchemaVersion\": \"1.0\",\n                \"configurationId\": \"rtg-automotive-dev-process-stock-feed-68a737133cefb25bff959852b8f04754\",\n                \"bucket\": {\n                    \"name\": \"rtg-automotive-stock-feed-bucket-654654324108\",\n                    \"ownerIdentity\": {\n                        \"principalId\": \"A9RQVGQX48SLS\"\n                    },\n                    \"arn\": \"arn:aws:s3:::rtg-automotive-stock-feed-bucket-654654324108\"\n                },\n                \"object\": {\n                    \"key\": \"stock_feed/APE_SF.xlsx\",\n                    \"size\": 311237,\n                    \"eTag\": \"387d4ea4de1cbf3df2bdcd9270f21426\",\n                    \"versionId\": \"bHP4jMSFt_d8R8rNaRAqfTfVKOPoomyQ\",\n                    \"sequencer\": \"0066F5157775B77921\"\n                }\n            }\n        }\n    ]\n}"
           },
           "stage": "dev",
           "dashboard": null,
@@ -189,10 +186,7 @@
               "lambdaHashingVersion": "20201221",
               "deploymentPrefix": "serverless-lambdas",
               "stage": "dev",
-              "versionFunctions": true,
-              "environment": {
-                "IS_LOCAL": "true"
-              }
+              "versionFunctions": true
             },
             "plugins": [
               "serverless-python-requirements"
@@ -303,9 +297,9 @@
             "type": "file"
           },
           "options": {
-            "function": "generate-ebay-table",
+            "function": "process-stock-feed",
             "stage": "dev",
-            "data": "{\n\"Records\": [\n        {\n            \"eventVersion\": \"2.1\",\n            \"eventSource\": \"aws:s3\",\n            \"awsRegion\": \"eu-west-2\",\n            \"eventTime\": \"2024-09-24T15:26:20.716Z\",\n            \"eventName\": \"ObjectCreated:Put\",\n            \"userIdentity\": {\n                \"principalId\": \"AWS:AROAZQ3DQHWGJFPFB7OXW:chris@speedsheet.co.uk\"\n            },\n            \"requestParameters\": {\n                \"sourceIPAddress\": \"194.35.122.101\"\n            },\n            \"responseElements\": {\n                \"x-amz-request-id\": \"K30S7ZNB5FDK6WP4\",\n                \"x-amz-id-2\": \"eSWyL/S/5Ft7p7nuFDjdHpv7YMSf7P1j/fLYou8nV3DfSO8lsnLXGgKO/cxVAATCp1mtrY3SRKdIsWlKYMkIUDU0bJ2WYGOT\"\n            },\n            \"s3\": {\n                \"s3SchemaVersion\": \"1.0\",\n                \"configurationId\": \"rtg-automotive-dev-add-partition-68a737133cefb25bff959852b8f04754\",\n                \"bucket\": {\n                    \"name\": \"rtg-automotive-bucket-654654324108\",\n                    \"ownerIdentity\": {\n                        \"principalId\": \"A9RQVGQX48SLS\"\n                    },\n                    \"arn\": \"arn:aws:s3:::rtg-automotive-bucket-654654324108\"\n                },\n                \"object\": {\n                    \"key\": \"supplier_stock/supplier%3DROL/year%3D2024/month%3D9/day%3D24/data.parquet\",\n                    \"size\": 45784,\n                    \"eTag\": \"cf1146f77d9cbd1adcd1f23296ff5574\",\n                    \"versionId\": \"hR0V2NpgdUQ.yt.4FUqwPHKALmmPE3oj\",\n                    \"sequencer\": \"0066F2DA1C98591451\"\n                }\n            }\n        }\n    ]\n}"
+            "data": "{\n    \"Records\": [\n        {\n            \"eventVersion\": \"2.1\",\n            \"eventSource\": \"aws:s3\",\n            \"awsRegion\": \"eu-west-2\",\n            \"eventTime\": \"2024-09-26T08:04:07.540Z\",\n            \"eventName\": \"ObjectCreated:Put\",\n            \"userIdentity\": {\n                \"principalId\": \"AWS:AROAZQ3DQHWGJFPFB7OXW:chris@speedsheet.co.uk\"\n            },\n            \"requestParameters\": {\n                \"sourceIPAddress\": \"31.111.18.10\"\n            },\n            \"responseElements\": {\n                \"x-amz-request-id\": \"D6WC75BMPYXC4ZQH\",\n                \"x-amz-id-2\": \"tR00AU+bl/x2iN7QFwhMmUdPdDCcrgfNXmTA2QDpnLZJ82CPEtEQgqrbEhFtl/VbAia8uQcXWrPHCkr/lC6X0qqSrjTaWhRl\"\n            },\n            \"s3\": {\n                \"s3SchemaVersion\": \"1.0\",\n                \"configurationId\": \"rtg-automotive-dev-process-stock-feed-68a737133cefb25bff959852b8f04754\",\n                \"bucket\": {\n                    \"name\": \"rtg-automotive-stock-feed-bucket-654654324108\",\n                    \"ownerIdentity\": {\n                        \"principalId\": \"A9RQVGQX48SLS\"\n                    },\n                    \"arn\": \"arn:aws:s3:::rtg-automotive-stock-feed-bucket-654654324108\"\n                },\n                \"object\": {\n                    \"key\": \"stock_feed/APE_SF.xlsx\",\n                    \"size\": 311237,\n                    \"eTag\": \"387d4ea4de1cbf3df2bdcd9270f21426\",\n                    \"versionId\": \"bHP4jMSFt_d8R8rNaRAqfTfVKOPoomyQ\",\n                    \"sequencer\": \"0066F5157775B77921\"\n                }\n            }\n        }\n    ]\n}"
           },
           "stage": "dev",
           "dashboard": null,
@@ -342,10 +336,7 @@
               "lambdaHashingVersion": "20201221",
               "deploymentPrefix": "serverless-lambdas",
               "stage": "dev",
-              "versionFunctions": true,
-              "environment": {
-                "IS_LOCAL": "true"
-              }
+              "versionFunctions": true
             },
             "plugins": [
               "serverless-python-requirements"
@@ -456,9 +447,9 @@
             "type": "self"
           },
           "options": {
-            "function": "generate-ebay-table",
+            "function": "process-stock-feed",
             "stage": "dev",
-            "data": "{\n\"Records\": [\n        {\n            \"eventVersion\": \"2.1\",\n            \"eventSource\": \"aws:s3\",\n            \"awsRegion\": \"eu-west-2\",\n            \"eventTime\": \"2024-09-24T15:26:20.716Z\",\n            \"eventName\": \"ObjectCreated:Put\",\n            \"userIdentity\": {\n                \"principalId\": \"AWS:AROAZQ3DQHWGJFPFB7OXW:chris@speedsheet.co.uk\"\n            },\n            \"requestParameters\": {\n                \"sourceIPAddress\": \"194.35.122.101\"\n            },\n            \"responseElements\": {\n                \"x-amz-request-id\": \"K30S7ZNB5FDK6WP4\",\n                \"x-amz-id-2\": \"eSWyL/S/5Ft7p7nuFDjdHpv7YMSf7P1j/fLYou8nV3DfSO8lsnLXGgKO/cxVAATCp1mtrY3SRKdIsWlKYMkIUDU0bJ2WYGOT\"\n            },\n            \"s3\": {\n                \"s3SchemaVersion\": \"1.0\",\n                \"configurationId\": \"rtg-automotive-dev-add-partition-68a737133cefb25bff959852b8f04754\",\n                \"bucket\": {\n                    \"name\": \"rtg-automotive-bucket-654654324108\",\n                    \"ownerIdentity\": {\n                        \"principalId\": \"A9RQVGQX48SLS\"\n                    },\n                    \"arn\": \"arn:aws:s3:::rtg-automotive-bucket-654654324108\"\n                },\n                \"object\": {\n                    \"key\": \"supplier_stock/supplier%3DROL/year%3D2024/month%3D9/day%3D24/data.parquet\",\n                    \"size\": 45784,\n                    \"eTag\": \"cf1146f77d9cbd1adcd1f23296ff5574\",\n                    \"versionId\": \"hR0V2NpgdUQ.yt.4FUqwPHKALmmPE3oj\",\n                    \"sequencer\": \"0066F2DA1C98591451\"\n                }\n            }\n        }\n    ]\n}"
+            "data": "{\n    \"Records\": [\n        {\n            \"eventVersion\": \"2.1\",\n            \"eventSource\": \"aws:s3\",\n            \"awsRegion\": \"eu-west-2\",\n            \"eventTime\": \"2024-09-26T08:04:07.540Z\",\n            \"eventName\": \"ObjectCreated:Put\",\n            \"userIdentity\": {\n                \"principalId\": \"AWS:AROAZQ3DQHWGJFPFB7OXW:chris@speedsheet.co.uk\"\n            },\n            \"requestParameters\": {\n                \"sourceIPAddress\": \"31.111.18.10\"\n            },\n            \"responseElements\": {\n                \"x-amz-request-id\": \"D6WC75BMPYXC4ZQH\",\n                \"x-amz-id-2\": \"tR00AU+bl/x2iN7QFwhMmUdPdDCcrgfNXmTA2QDpnLZJ82CPEtEQgqrbEhFtl/VbAia8uQcXWrPHCkr/lC6X0qqSrjTaWhRl\"\n            },\n            \"s3\": {\n                \"s3SchemaVersion\": \"1.0\",\n                \"configurationId\": \"rtg-automotive-dev-process-stock-feed-68a737133cefb25bff959852b8f04754\",\n                \"bucket\": {\n                    \"name\": \"rtg-automotive-stock-feed-bucket-654654324108\",\n                    \"ownerIdentity\": {\n                        \"principalId\": \"A9RQVGQX48SLS\"\n                    },\n                    \"arn\": \"arn:aws:s3:::rtg-automotive-stock-feed-bucket-654654324108\"\n                },\n                \"object\": {\n                    \"key\": \"stock_feed/APE_SF.xlsx\",\n                    \"size\": 311237,\n                    \"eTag\": \"387d4ea4de1cbf3df2bdcd9270f21426\",\n                    \"versionId\": \"bHP4jMSFt_d8R8rNaRAqfTfVKOPoomyQ\",\n                    \"sequencer\": \"0066F5157775B77921\"\n                }\n            }\n        }\n    ]\n}"
           },
           "stage": "dev",
           "dashboard": null,
@@ -496,10 +487,7 @@
         "lambdaHashingVersion": "20201221",
         "deploymentPrefix": "serverless-lambdas",
         "stage": "dev",
-        "versionFunctions": true,
-        "environment": {
-          "IS_LOCAL": "true"
-        }
+        "versionFunctions": true
       },
       "plugins": [
         "serverless-python-requirements"
@@ -611,11 +599,15 @@
       "local"
     ],
     "options": {
-      "function": "generate-ebay-table",
+      "function": "process-stock-feed",
       "stage": "dev",
-      "data": "{\n\"Records\": [\n        {\n            \"eventVersion\": \"2.1\",\n            \"eventSource\": \"aws:s3\",\n            \"awsRegion\": \"eu-west-2\",\n            \"eventTime\": \"2024-09-24T15:26:20.716Z\",\n            \"eventName\": \"ObjectCreated:Put\",\n            \"userIdentity\": {\n                \"principalId\": \"AWS:AROAZQ3DQHWGJFPFB7OXW:chris@speedsheet.co.uk\"\n            },\n            \"requestParameters\": {\n                \"sourceIPAddress\": \"194.35.122.101\"\n            },\n            \"responseElements\": {\n                \"x-amz-request-id\": \"K30S7ZNB5FDK6WP4\",\n                \"x-amz-id-2\": \"eSWyL/S/5Ft7p7nuFDjdHpv7YMSf7P1j/fLYou8nV3DfSO8lsnLXGgKO/cxVAATCp1mtrY3SRKdIsWlKYMkIUDU0bJ2WYGOT\"\n            },\n            \"s3\": {\n                \"s3SchemaVersion\": \"1.0\",\n                \"configurationId\": \"rtg-automotive-dev-add-partition-68a737133cefb25bff959852b8f04754\",\n                \"bucket\": {\n                    \"name\": \"rtg-automotive-bucket-654654324108\",\n                    \"ownerIdentity\": {\n                        \"principalId\": \"A9RQVGQX48SLS\"\n                    },\n                    \"arn\": \"arn:aws:s3:::rtg-automotive-bucket-654654324108\"\n                },\n                \"object\": {\n                    \"key\": \"supplier_stock/supplier%3DROL/year%3D2024/month%3D9/day%3D24/data.parquet\",\n                    \"size\": 45784,\n                    \"eTag\": \"cf1146f77d9cbd1adcd1f23296ff5574\",\n                    \"versionId\": \"hR0V2NpgdUQ.yt.4FUqwPHKALmmPE3oj\",\n                    \"sequencer\": \"0066F2DA1C98591451\"\n                }\n            }\n        }\n    ]\n}"
+      "data": "{\n    \"Records\": [\n        {\n            \"eventVersion\": \"2.1\",\n            \"eventSource\": \"aws:s3\",\n            \"awsRegion\": \"eu-west-2\",\n            \"eventTime\": \"2024-09-26T08:04:07.540Z\",\n            \"eventName\": \"ObjectCreated:Put\",\n            \"userIdentity\": {\n                \"principalId\": \"AWS:AROAZQ3DQHWGJFPFB7OXW:chris@speedsheet.co.uk\"\n            },\n            \"requestParameters\": {\n                \"sourceIPAddress\": \"31.111.18.10\"\n            },\n            \"responseElements\": {\n                \"x-amz-request-id\": \"D6WC75BMPYXC4ZQH\",\n                \"x-amz-id-2\": \"tR00AU+bl/x2iN7QFwhMmUdPdDCcrgfNXmTA2QDpnLZJ82CPEtEQgqrbEhFtl/VbAia8uQcXWrPHCkr/lC6X0qqSrjTaWhRl\"\n            },\n            \"s3\": {\n                \"s3SchemaVersion\": \"1.0\",\n                \"configurationId\": \"rtg-automotive-dev-process-stock-feed-68a737133cefb25bff959852b8f04754\",\n                \"bucket\": {\n                    \"name\": \"rtg-automotive-stock-feed-bucket-654654324108\",\n                    \"ownerIdentity\": {\n                        \"principalId\": \"A9RQVGQX48SLS\"\n                    },\n                    \"arn\": \"arn:aws:s3:::rtg-automotive-stock-feed-bucket-654654324108\"\n                },\n                \"object\": {\n                    \"key\": \"stock_feed/APE_SF.xlsx\",\n                    \"size\": 311237,\n                    \"eTag\": \"387d4ea4de1cbf3df2bdcd9270f21426\",\n                    \"versionId\": \"bHP4jMSFt_d8R8rNaRAqfTfVKOPoomyQ\",\n                    \"sequencer\": \"0066F5157775B77921\"\n                }\n            }\n        }\n    ]\n}"
     },
-    "error": null,
+    "error": {
+      "message": "Local invocation of lambdas pointing AWS ECR images is not supported",
+      "stack": "ServerlessError2: Local invocation of lambdas pointing AWS ECR images is not supported\n    at AwsInvokeLocal.extendedValidate (file:///Users/chrislittle/.serverless/releases/4.2.4/package/dist/sf-core.js:876:10149)\n    at before:invoke:local:loadEnvVars (file:///Users/chrislittle/.serverless/releases/4.2.4/package/dist/sf-core.js:876:8960)\n    at PluginManager.runHooks (file:///Users/chrislittle/.serverless/releases/4.2.4/package/dist/sf-core.js:884:9315)\n    at PluginManager.invoke (file:///Users/chrislittle/.serverless/releases/4.2.4/package/dist/sf-core.js:884:10032)\n    at PluginManager.run (file:///Users/chrislittle/.serverless/releases/4.2.4/package/dist/sf-core.js:884:10822)\n    at async Serverless.run (file:///Users/chrislittle/.serverless/releases/4.2.4/package/dist/sf-core.js:891:10464)\n    at async runFramework (file:///Users/chrislittle/.serverless/releases/4.2.4/package/dist/sf-core.js:939:2314)\n    at async route (file:///Users/chrislittle/.serverless/releases/4.2.4/package/dist/sf-core.js:950:16936)\n    at async Object.run2 [as run] (file:///Users/chrislittle/.serverless/releases/4.2.4/package/dist/sf-core.js:950:17334)\n    at async run3 (file:///Users/chrislittle/.serverless/releases/4.2.4/package/dist/sf-core.js:950:18594)",
+      "code": "INVOKE_LOCAL_IMAGE_BACKED_FUNCTIONS_NOT_SUPPORTED"
+    },
     "params": {},
     "machineId": "aa61fdcceefc9db67a912e55f3101def",
     "accessKeyV2": "<REDACTED>",
@@ -640,45 +632,44 @@
     "projectType": "framework",
     "versionSf": "4.2.4",
     "serviceProviderAwsCfStackName": "rtg-automotive-dev",
-    "integrations": {},
     "serviceProviderAwsCfStackId": "arn:aws:cloudformation:eu-west-2:654654324108:stack/rtg-automotive-dev/ea2c9e70-7c08-11ef-affb-063c98afad4f",
     "serviceProviderAwsCfStackCreated": "2024-09-26T13:12:00.266Z",
-    "serviceProviderAwsCfStackUpdated": "2024-09-30T11:33:44.503Z",
+    "serviceProviderAwsCfStackUpdated": "2024-09-30T17:28:02.711Z",
     "serviceProviderAwsCfStackStatus": "UPDATE_COMPLETE",
     "serviceProviderAwsCfStackOutputs": [
       {
         "OutputKey": "PythonRequirementsLambdaLayerS3Key",
-        "OutputValue": "serverless-lambdas/rtg-automotive/dev/1727696015109-2024-09-30T11:33:35.109Z/pythonRequirements.zip",
+        "OutputValue": "serverless-lambdas/rtg-automotive/dev/1727717273510-2024-09-30T17:27:53.510Z/pythonRequirements.zip",
         "Description": "Current Lambda layer S3Key",
         "ExportName": "sls-rtg-automotive-dev-PythonRequirementsLambdaLayerS3Key"
       },
       {
         "OutputKey": "ProcessDashstockDashfeedLambdaFunctionQualifiedArn",
-        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-process-stock-feed:34",
+        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-process-stock-feed:40",
         "Description": "Current Lambda function version",
         "ExportName": "sls-rtg-automotive-dev-ProcessDashstockDashfeedLambdaFunctionQualifiedArn"
       },
       {
         "OutputKey": "GenerateDashebayDashtableLambdaFunctionQualifiedArn",
-        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-generate-ebay-table:11",
+        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-generate-ebay-table:17",
         "Description": "Current Lambda function version",
         "ExportName": "sls-rtg-automotive-dev-GenerateDashebayDashtableLambdaFunctionQualifiedArn"
       },
       {
         "OutputKey": "PythonRequirementsLambdaLayerQualifiedArn",
-        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:layer:rtg-automotive-dev-python-requirements:50",
+        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:layer:rtg-automotive-dev-python-requirements:56",
         "Description": "Current Lambda layer version",
         "ExportName": "sls-rtg-automotive-dev-PythonRequirementsLambdaLayerQualifiedArn"
       },
       {
         "OutputKey": "AddDashpartitionLambdaFunctionQualifiedArn",
-        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-add-partition:43",
+        "OutputValue": "arn:aws:lambda:eu-west-2:654654324108:function:rtg-automotive-dev-add-partition:49",
         "Description": "Current Lambda function version",
         "ExportName": "sls-rtg-automotive-dev-AddDashpartitionLambdaFunctionQualifiedArn"
       },
       {
         "OutputKey": "PythonRequirementsLambdaLayerHash",
-        "OutputValue": "c28649eae8ace4badf1795ff5632a93c5870222a",
+        "OutputValue": "18e7d50d495c652b066f3cf031e6a589200e81bd",
         "Description": "Current Lambda layer hash",
         "ExportName": "sls-rtg-automotive-dev-PythonRequirementsLambdaLayerHash"
       },
