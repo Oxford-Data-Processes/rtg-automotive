@@ -16,22 +16,39 @@ data "aws_iam_policy_document" "lambda_policy" {
     actions = [
       "s3:GetObject",
       "s3:PutObject",
-      "s3:ListBucket",
-      "glue:CreatePartition",
-      "glue:GetDatabase",
-      "glue:GetTable",
-      "glue:GetPartitions",
-      "athena:StartQueryExecution"  // Added permission for Athena
+      "s3:ListBucket"
     ]
     resources = [
       "arn:aws:s3:::${var.project}-bucket-${var.aws_account_id}",
-      "arn:aws:s3:::${var.project}-bucket-${var.aws_account_id}/*",
+      "arn:aws:s3:::${var.project}-bucket-${var.aws_account_id}/*"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "glue:CreatePartition",
+      "glue:GetDatabase",
+      "glue:GetTable",
+      "glue:GetPartitions"
+    ]
+    resources = [
       "arn:aws:glue:${var.aws_region}:${var.aws_account_id}:catalog",
       "arn:aws:glue:${var.aws_region}:${var.aws_account_id}:database/*",
-      "arn:aws:glue:${var.aws_region}:${var.aws_account_id}:table/*",
+      "arn:aws:glue:${var.aws_region}:${var.aws_account_id}:table/*"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "athena:StartQueryExecution"  // Added permission for Athena
+    ]
+    resources = [
       "arn:aws:athena:${var.aws_region}:${var.aws_account_id}:workgroup/*"  // Added resource for Athena
     ]
   }
+}
 
   statement {
     effect = "Allow"
