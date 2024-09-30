@@ -48,9 +48,8 @@ data "aws_iam_policy_document" "lambda_policy" {
       "arn:aws:athena:${var.aws_region}:${var.aws_account_id}:workgroup/*"  // Added resource for Athena
     ]
   }
-}
 
-  statement {
+  statement {  // Fixed syntax by adding 'statement' block here
     effect = "Allow"
     actions = [
       "logs:CreateLogGroup",
@@ -59,5 +58,4 @@ data "aws_iam_policy_document" "lambda_policy" {
     ]
     resources = ["*"]
   }
-
 }
