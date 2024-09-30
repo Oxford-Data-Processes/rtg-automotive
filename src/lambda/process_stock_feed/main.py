@@ -230,6 +230,7 @@ def lambda_handler(event, context):
         current_date, year, month, day, supplier = process_current_date_and_supplier(
             object_key
         )
+        time_stamp = datetime.now().isoformat()
 
         output = process_stock_feed(excel_data, supplier, CONFIG, current_date)
         logger.info(f"First 5 rows of output data: {output[:5]}")
@@ -237,7 +238,7 @@ def lambda_handler(event, context):
         file_name = create_s3_file_name(supplier, year, month, day)
         write_to_s3_parquet(output, rtg_automotive_bucket, file_name, stock_feed_schema)
         send_sns_notification(
-            f"Stock feed processed successfully for {supplier} on {current_date}",
+            f"Stock feed processed successfully for {supplier} at {time_stamp}",
             AWS_ACCOUNT_ID,
         )
         logger.info(f"File read successfully in path {object_key}")
