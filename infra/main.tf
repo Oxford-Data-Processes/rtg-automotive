@@ -53,3 +53,11 @@ module "generate_ebay_table" {
   aws_region     = var.aws_region
   source         = "./lambda/generate_ebay_table"
 }
+
+module "sns" {
+  aws_account_id = var.aws_account_id
+  project        = var.project
+  stage          = var.stage
+  aws_region     = var.aws_region
+  source         = "./sns"
+}
