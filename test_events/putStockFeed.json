@@ -27,7 +27,7 @@
                     "arn": "arn:aws:s3:::rtg-automotive-stock-feed-bucket-654654324108"
                 },
                 "object": {
-                    "key": "stock_feed/year%3D2024/month%3D10/day%3D01/RTG_SF.xlsx",
+                    "key": "stock_feed/year%3D2024/month%3D10/day%3D02/RTG_SF.xlsx",
                     "size": 26848,
                     "eTag": "ecf3868a9e1df05b478e292e1e2d0699",
                     "versionId": "SV3JrPacAPijVL9iV0JttI_tvPWEvoNO",
