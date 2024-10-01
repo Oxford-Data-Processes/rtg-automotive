@@ -133,16 +133,76 @@ def read_excel_from_s3(bucket_name: str, object_key: str) -> list[dict]:
     return data
 
 
+def fetch_rtg_custom_labels() -> list:
+    query = """SELECT DISTINCT(custom_label) FROM "rtg_automotive"."store" WHERE ebay_store = 'RTG' AND supplier = 'RTG';"""
+    athena_client = boto3.client("athena")
+    response = athena_client.start_query_execution(
+        QueryString=query,
+        QueryExecutionContext={"Database": "rtg_automotive"},
+        WorkGroup="rtg-automotive-workgroup",
+    )
+    return response["QueryExecution"]["Result"]["Rows"]
+
+
 def process_stock_feed(
     stock_feed_data: list[dict], config_key: str, config, processed_date: str
 ):
     config_data = config[config_key]
-
     code_column_index = config_data["code_column_number"] - 1
-    stock_column_index = config_data["stock_column_number"] - 1
+    stock_column_index = config_data.get("stock_column_number", None)
 
+    if config_key == "RTG":
+        custom_labels = fetch_rtg_custom_labels()
+        return process_rtg_stock_feed(
+            stock_feed_data,
+            custom_labels,
+            code_column_index,
+            config_key,
+            processed_date,
+        )
+    else:
+        return process_other_stock_feed(
+            stock_feed_data,
+            config_data,
+            code_column_index,
+            stock_column_index,
+            config_key,
+            processed_date,
+        )
+
+
+def process_rtg_stock_feed(
+    stock_feed_data: list[dict],
+    custom_labels: list,
+    code_column_index: int,
+    config_key: str,
+    processed_date: str,
+) -> list[dict]:
     output = []
+    for row in stock_feed_data:
+        part_number = str(row[list(row.keys())[code_column_index]])
+        quantity = 0 if part_number in custom_labels else 20
 
+        output.append(
+            {
+                "part_number": part_number,
+                "supplier": config_key,
+                "quantity": quantity,
+                "updated_date": processed_date,
+            }
+        )
+    return output
+
+
+def process_other_stock_feed(
+    stock_feed_data: list[dict],
+    config_data: dict,
+    code_column_index: int,
+    stock_column_index: int,
+    config_key: str,
+    processed_date: str,
+) -> list[dict]:
+    output = []
     for row in stock_feed_data:
         part_number = str(row[list(row.keys())[code_column_index]])
         quantity = config_data["process_func"](
@@ -157,7 +217,6 @@ def process_stock_feed(
                 "updated_date": processed_date,
             }
         )
-
     return output
 
 
