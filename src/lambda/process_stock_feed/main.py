@@ -9,6 +9,7 @@ import os
 import urllib.parse
 from datetime import datetime
 import time
+from dateutil.tz import timezone
 
 # Set up logging
 logger = logging.getLogger()
@@ -333,7 +334,7 @@ def write_output_to_s3(output, bucket_name, file_name):
 
 
 def send_success_notification(supplier, AWS_ACCOUNT_ID):
-    time_stamp = datetime.now().isoformat()
+    time_stamp = datetime.now(tz=timezone("Europe/London")).isoformat()
     send_sns_notification(
         f"Stock feed processed successfully for {supplier} at {time_stamp}",
         AWS_ACCOUNT_ID,
@@ -344,8 +345,16 @@ def create_success_response():
     return {"statusCode": 200, "body": json.dumps("File processed successfully!")}
 
 
+def send_failure_notification(supplier, AWS_ACCOUNT_ID):
+    time_stamp = datetime.now(tz=timezone("Europe/London")).isoformat()
+    send_sns_notification(
+        f"Stock feed processing failed for {supplier} at {time_stamp}",
+        AWS_ACCOUNT_ID,
+    )
+
+
 def lambda_handler(event, context):
-    AWS_ACCOUNT_ID = os.environ.get("AWS_ACCOUNT_ID")
+    AWS_ACCOUNT_ID = "654654324108"
     rtg_automotive_bucket = f"rtg-automotive-bucket-{AWS_ACCOUNT_ID}"
     logger.info(f"RTG Automotive bucket: {rtg_automotive_bucket}")
     logger.info(f"Received event: {json.dumps(event)}")
@@ -369,4 +378,5 @@ def lambda_handler(event, context):
         return create_success_response()
     except Exception as e:
         logger.error(f"Error processing file: {str(e)}")
+        send_failure_notification(supplier, AWS_ACCOUNT_ID)
         raise
