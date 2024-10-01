@@ -309,7 +309,9 @@ def send_sns_notification(message, AWS_ACCOUNT_ID):
     sns_client = boto3.client(
         "sns", region_name=os.environ["AWS_REGION"]
     )  # Ensure the region is specified
-    topic_arn = f"arn:aws:sns:eu-west-2:{AWS_ACCOUNT_ID}:rtg-automotive-stock-notifications.fifo"
+    topic_arn = (
+        f"arn:aws:sns:eu-west-2:{AWS_ACCOUNT_ID}:rtg-automotive-stock-notifications"
+    )
     sns_client.publish(
         TopicArn=topic_arn,
         Message=message,
@@ -342,10 +344,9 @@ def send_success_notification(supplier, AWS_ACCOUNT_ID):
     time_stamp = datetime.now(pytz.timezone("Europe/London")).strftime(
         "%Y-%m-%d %H:%M:%S"
     )
-    send_sns_notification(
-        f"Stock feed processed successfully for {supplier} at {time_stamp}",
-        AWS_ACCOUNT_ID,
-    )
+    message = f"Stock feed processed successfully for {supplier} at {time_stamp}"
+    send_sns_notification(message, AWS_ACCOUNT_ID)
+    logger.info(message)
 
 
 def create_success_response():
@@ -356,10 +357,9 @@ def send_failure_notification(supplier, AWS_ACCOUNT_ID):
     time_stamp = datetime.now(pytz.timezone("Europe/London")).strftime(
         "%Y-%m-%d %H:%M:%S"
     )
-    send_sns_notification(
-        f"Stock feed processing failed for {supplier} at {time_stamp}",
-        AWS_ACCOUNT_ID,
-    )
+    message = f"Stock feed processing failed for {supplier} at {time_stamp}"
+    send_sns_notification(message, AWS_ACCOUNT_ID)
+    logger.info(message)
 
 
 def lambda_handler(event, context):

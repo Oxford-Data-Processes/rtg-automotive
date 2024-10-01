@@ -31,7 +31,29 @@ def get_last_10_sqs_messages(queue_url):
     return messages
 
 
+def get_last_n_sqs_messages(queue_url, max_messages=10):
+    sqs_client = boto3.client("sqs", region_name="eu-west-2")
+    messages = []
+
+    # Receive messages from the SQS queue
+    response = sqs_client.receive_message(
+        QueueUrl=queue_url,
+        MaxNumberOfMessages=max_messages,
+        WaitTimeSeconds=20,
+        MessageAttributeNames=["All"],
+    )
+
+    for message in response.get("Messages", []):
+        # Check if 'Attributes' exists in the message
+        timestamp = message.get("Attributes", {}).get("SentTimestamp", None)
+        messages.append(message["Body"])
+
+    return messages
+
+
 # Example usage
-sqs_queue_url = f"https://sqs.eu-west-2.amazonaws.com/{AWS_ACCOUNT_ID}/rtg-automotive-sqs-queue.fifo"
-last_10_messages = get_last_10_sqs_messages(sqs_queue_url)
-print(json.dumps(last_10_messages, indent=2))
+sqs_queue_url = (
+    f"https://sqs.eu-west-2.amazonaws.com/{AWS_ACCOUNT_ID}/rtg-automotive-sqs-queue"
+)
+last_10_messages = get_last_n_sqs_messages(sqs_queue_url, 3)
+print(last_10_messages)

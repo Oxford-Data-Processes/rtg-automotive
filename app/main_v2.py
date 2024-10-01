@@ -74,14 +74,24 @@ def receive_sqs_messages(queue_url, max_messages=10):
     return response.get("Messages", [])
 
 
-def display_last_n_sqs_messages(queue_url, n):
-    messages = receive_sqs_messages(queue_url, max_messages=n)
-    if messages:
-        for message in messages:
-            st.write(f"Message: {message['Body']}")
-            sqs_client.delete_message(
-                QueueUrl=queue_url, ReceiptHandle=message["ReceiptHandle"]
-            )
+def get_last_n_sqs_messages(queue_url, max_messages=10):
+    sqs_client = boto3.client("sqs", region_name="eu-west-2")
+    messages = []
+
+    # Receive messages from the SQS queue
+    response = sqs_client.receive_message(
+        QueueUrl=queue_url,
+        MaxNumberOfMessages=max_messages,
+        WaitTimeSeconds=20,
+        MessageAttributeNames=["All"],
+    )
+
+    for message in response.get("Messages", []):
+        # Check if 'Attributes' exists in the message
+        timestamp = message.get("Attributes", {}).get("SentTimestamp", None)
+        messages.append(message["Body"])
+
+    return messages
 
 
 def upload_file_to_s3(file, bucket_name, date):
@@ -119,7 +129,7 @@ def load_csv_from_s3(bucket_name, csv_key):
 
 def main():
     st.title("eBay Store Upload Generator")
-    sqs_queue_url = f"https://sqs.eu-west-2.amazonaws.com/{AWS_ACCOUNT_ID}/{PROJECT_NAME}-sqs-queue.fifo"
+    sqs_queue_url = f"https://sqs.eu-west-2.amazonaws.com/{AWS_ACCOUNT_ID}/{PROJECT_NAME}-sqs-queue"
     stock_feed_bucket_name = f"{PROJECT_NAME}-stock-feed-bucket-{AWS_ACCOUNT_ID}"
     project_bucket_name = f"{PROJECT_NAME}-bucket-{AWS_ACCOUNT_ID}"
 
@@ -136,7 +146,10 @@ def main():
             for uploaded_file in uploaded_files:
                 upload_file_to_s3(uploaded_file, stock_feed_bucket_name, date)
             time.sleep(len(uploaded_files) * 10)
-            display_last_n_sqs_messages(sqs_queue_url, len(uploaded_files))
+            messages = get_last_n_sqs_messages(sqs_queue_url, len(uploaded_files))
+            print(messages)
+            for message in messages:
+                st.write(message)
         else:
             st.warning("Please upload at least one file first.")
 

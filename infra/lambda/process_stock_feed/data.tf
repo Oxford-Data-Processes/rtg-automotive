@@ -45,7 +45,7 @@ data "aws_iam_policy_document" "lambda_policy" {
       "sns:Publish"
     ]
     resources = [
-      "arn:aws:sns:${var.aws_region}:${var.aws_account_id}:${var.project}-stock-notifications.fifo"  // Added resource for SNS
+      "arn:aws:sns:${var.aws_region}:${var.aws_account_id}:${var.project}-stock-notifications"  // Added resource for SNS
     ]
   }
 
