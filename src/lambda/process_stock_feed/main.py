@@ -293,7 +293,6 @@ def extract_s3_info(event):
 
 
 def process_current_date_and_supplier(object_key):
-
     year = object_key.split("/")[1].split("=")[1]
     month = object_key.split("/")[2].split("=")[1]
     day = object_key.split("/")[3].split("=")[1]
@@ -316,7 +315,6 @@ def send_sns_notification(message, AWS_ACCOUNT_ID):
         TopicArn=topic_arn,
         Message=message,
         Subject="Stock Feed Processed",
-        MessageGroupId="groupId",
     )
 
 
@@ -369,13 +367,13 @@ def lambda_handler(event, context):
     logger.info(f"Received event: {json.dumps(event)}")
 
     bucket_name, object_key = extract_s3_info(event)
+    object_key = urllib.parse.unquote(object_key)
+    year, month, day, supplier = process_current_date_and_supplier(object_key)
+    current_date = f"{year}-{month}-{day}"
 
     try:
         logger.info(f"Object key: {object_key}")
-        object_key = urllib.parse.unquote(object_key)
         excel_data = read_excel_data(bucket_name, object_key)
-        year, month, day, supplier = process_current_date_and_supplier(object_key)
-        current_date = f"{year}-{month}-{day}"
 
         output = process_stock_data(
             excel_data, supplier, current_date, rtg_automotive_bucket
