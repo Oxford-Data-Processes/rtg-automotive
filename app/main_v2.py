@@ -84,9 +84,14 @@ def display_last_n_sqs_messages(queue_url, n):
             )
 
 
-def upload_file_to_s3(file, bucket_name):
+def upload_file_to_s3(file, bucket_name, date):
+    year = date.split("-")[0]
+    month = date.split("-")[1]
+    day = date.split("-")[2]
     s3_client.put_object(
-        Bucket=bucket_name, Key=f"stock_feed/{file.name}", Body=file.getvalue()
+        Bucket=bucket_name,
+        Key=f"stock_feed/{year}/{month}/{day}/{file.name}",
+        Body=file.getvalue(),
     )
     st.success(f"File {file.name} uploaded successfully to S3.")
 
@@ -122,16 +127,20 @@ def main():
         "Upload Excel files", type=["xlsx"], accept_multiple_files=True
     )
 
-    if st.button("Upload Files to S3"):
+    date = st.date_input("Select a date", value=pd.Timestamp.now().date()).strftime(
+        "%Y-%m-%d"
+    )
+
+    if st.button("Upload Files to S3") and date:
         if uploaded_files:
             for uploaded_file in uploaded_files:
-                upload_file_to_s3(uploaded_file, stock_feed_bucket_name)
+                upload_file_to_s3(uploaded_file, stock_feed_bucket_name, date)
             time.sleep(len(uploaded_files) * 2)
             display_last_n_sqs_messages(sqs_queue_url, len(uploaded_files))
         else:
             st.warning("Please upload at least one file first.")
 
-    if st.button("Trigger Generate eBay Table Lambda"):
+    if st.button("Generate eBay Store Upload Files"):
         if trigger_generate_ebay_table_lambda():
             last_csv_key = get_last_csv_from_s3(project_bucket_name, "athena-results/")
             if last_csv_key:

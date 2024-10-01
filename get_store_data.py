@@ -49,9 +49,7 @@ def process_dataframe(df):
 
 def read_excel_files(directory):
     dfs = {}
-    for file in [f for f in directory.glob("*.xlsx") if not f.name.startswith("~$")][
-        :1
-    ]:
+    for file in [f for f in directory.glob("*.xlsx") if not f.name.startswith("~$")]:
         ebay_store = file.stem.split(" ")[0]
         excel = pd.ExcelFile(file)
         sheet_dfs = [
@@ -78,8 +76,8 @@ def main():
     aws_account_id = os.environ["AWS_ACCOUNT_ID"]
     bucket_name = f"rtg-automotive-bucket-{aws_account_id}"
 
-    for ebay_store in df_store["ebay_store"].unique()[:1]:
-        for supplier in df_store["supplier"].unique()[:1]:
+    for ebay_store in df_store["ebay_store"].unique():
+        for supplier in df_store["supplier"].unique():
             supplier_df = df_store[df_store["supplier"] == supplier]
             supplier_ebay_df = supplier_df[supplier_df["ebay_store"] == ebay_store]
             if not supplier_ebay_df.empty:

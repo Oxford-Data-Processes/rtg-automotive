@@ -192,10 +192,12 @@ def extract_s3_info(event):
 
 
 def process_current_date_and_supplier(object_key):
-    current_date = datetime.now().strftime("%Y-%m-%d")
-    year, month, day = current_date.split("-")
+
+    year = object_key.split("-")[0]
+    month = object_key.split("-")[1]
+    day = object_key.split("-")[2]
     supplier = object_key.split("/")[-1].split("_")[0]
-    return current_date, year, month, day, supplier
+    return year, month, day, supplier
 
 
 def create_s3_file_name(supplier, year, month, day):
@@ -228,10 +230,11 @@ def lambda_handler(event, context):
         excel_data = read_excel_from_s3(bucket_name, object_key)
         logger.info(f"First 5 rows of Excel data: {excel_data[:5]}")
 
-        current_date, year, month, day, supplier = process_current_date_and_supplier(
-            object_key
-        )
+        year, month, day, supplier = process_current_date_and_supplier(object_key)
+
         time_stamp = datetime.now().isoformat()
+
+        current_date = f"{year}-{month}-{day}"
 
         output = process_stock_feed(excel_data, supplier, CONFIG, current_date)
         logger.info(f"First 5 rows of output data: {output[:5]}")
