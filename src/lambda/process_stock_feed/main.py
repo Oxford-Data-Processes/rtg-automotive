@@ -9,7 +9,7 @@ import os
 import urllib.parse
 from datetime import datetime
 import time
-from dateutil.tz import timezone
+import pytz
 
 # Set up logging
 logger = logging.getLogger()
@@ -334,7 +334,7 @@ def write_output_to_s3(output, bucket_name, file_name):
 
 
 def send_success_notification(supplier, AWS_ACCOUNT_ID):
-    time_stamp = datetime.now(tz=timezone("Europe/London")).isoformat()
+    time_stamp = datetime.now(pytz.timezone("Europe/London")).isoformat()
     send_sns_notification(
         f"Stock feed processed successfully for {supplier} at {time_stamp}",
         AWS_ACCOUNT_ID,
@@ -346,7 +346,7 @@ def create_success_response():
 
 
 def send_failure_notification(supplier, AWS_ACCOUNT_ID):
-    time_stamp = datetime.now(tz=timezone("Europe/London")).isoformat()
+    time_stamp = datetime.now(pytz.timezone("Europe/London")).isoformat()
     send_sns_notification(
         f"Stock feed processing failed for {supplier} at {time_stamp}",
         AWS_ACCOUNT_ID,
