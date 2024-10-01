@@ -16,19 +16,35 @@ data "aws_iam_policy_document" "lambda_policy" {
     actions = [
       "s3:GetObject",
       "s3:PutObject",
-      "s3:ListBucket",
-      "glue:CreatePartition",
-      "glue:GetDatabase",
-      "glue:GetTable",
-      "glue:GetPartitions",
-      "sns:Publish"  // Added permission for SNS Publish
+      "s3:ListBucket"
     ]
     resources = [
       "arn:aws:s3:::${var.project}-bucket-${var.aws_account_id}",
-      "arn:aws:s3:::${var.project}-bucket-${var.aws_account_id}/*",
+      "arn:aws:s3:::${var.project}-bucket-${var.aws_account_id}/*"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "glue:CreatePartition",
+      "glue:GetDatabase",
+      "glue:GetTable",
+      "glue:GetPartitions"
+    ]
+    resources = [
       "arn:aws:glue:${var.aws_region}:${var.aws_account_id}:catalog",
       "arn:aws:glue:${var.aws_region}:${var.aws_account_id}:database/*",
-      "arn:aws:glue:${var.aws_region}:${var.aws_account_id}:table/*",
+      "arn:aws:glue:${var.aws_region}:${var.aws_account_id}:table/*"
+    ]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "sns:Publish"  // Added permission for SNS Publish
+    ]
+    resources = [
       "arn:aws:sns:${var.aws_region}:${var.aws_account_id}:${var.project}-stock-notifications.fifo"  // Added resource for SNS
     ]
   }
@@ -41,5 +57,13 @@ data "aws_iam_policy_document" "lambda_policy" {
       "logs:PutLogEvents"
     ]
     resources = ["*"]
+  }
+
+  statement {
+    effect = "Allow"
+    actions = [
+      "athena:StartQueryExecution"  // Added permission for Athena StartQueryExecution
+    ]
+    resources = ["*"]  // Adjust resource as necessary for your use case
   }
 }
