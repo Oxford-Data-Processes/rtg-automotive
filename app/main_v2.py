@@ -145,17 +145,11 @@ def main():
             last_csv_key = get_last_csv_from_s3(project_bucket_name, "athena-results/")
             if last_csv_key:
                 df = load_csv_from_s3(project_bucket_name, last_csv_key)
-                df.to_csv("ebay.csv", index=False)
+                st.write("Raw eBay Table:")
+                st.dataframe(df)
                 ebay_df = create_ebay_dataframe(df)
-                st.download_button(
-                    label="Download Raw eBay CSV",
-                    data="ebay.csv",
-                    file_name="ebay.csv",
-                    mime="text/csv",
-                )
-                st.write("DataFrame loaded from CSV:")
+                st.write("Processed eBay Table:")
                 st.dataframe(ebay_df)
-
                 stores = list(ebay_df["Store"].unique())
                 ebay_dfs = [
                     (ebay_df[ebay_df["Store"] == store].drop(columns=["Store"]), store)

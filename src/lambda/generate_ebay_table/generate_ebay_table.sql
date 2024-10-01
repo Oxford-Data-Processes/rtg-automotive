@@ -1,16 +1,3 @@
-WITH store_data AS (
-    SELECT custom_label, item_id, supplier, ebay_store 
-    FROM "rtg_automotive"."store"
-),
-ranked_data AS (
-    SELECT 
-        custom_label,
-        quantity,
-        updated_date,
-        ROW_NUMBER() OVER (PARTITION BY custom_label ORDER BY updated_date DESC) AS row_number
-    FROM 
-        "rtg_automotive"."supplier_stock"
-)
 SELECT 
     sd.ebay_store,
     rd.custom_label,
@@ -19,8 +6,22 @@ SELECT
     MAX(rd.updated_date) AS updated_date,
     sd.item_id
 FROM 
-    ranked_data rd
+    (
+        SELECT 
+            ps.part_number,
+            ps.quantity,
+            ps.updated_date,
+            p.custom_label,
+            ROW_NUMBER() OVER (PARTITION BY p.custom_label ORDER BY ps.updated_date DESC) AS row_number
+        FROM 
+            "rtg_automotive"."supplier_stock" ps
+        LEFT JOIN 
+            "rtg_automotive"."product" p ON ps.part_number = p.part_number
+    ) rd
 LEFT JOIN 
-    store_data sd ON rd.custom_label = sd.custom_label
+    (
+        SELECT custom_label, item_id, supplier, ebay_store 
+        FROM "rtg_automotive"."store"
+    ) sd ON rd.custom_label = sd.custom_label
 GROUP BY 
-    rd.custom_label, sd.item_id, sd.ebay_store, rd.quantity;
+    sd.item_id, sd.ebay_store, rd.quantity, rd.custom_label;

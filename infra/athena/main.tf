@@ -28,11 +28,6 @@ resource "aws_glue_catalog_table" "supplier_stock" {
     }
 
     columns {
-      name = "custom_label"
-      type = "string"
-    }
-
-    columns {
       name = "part_number"
       type = "string"
     }
