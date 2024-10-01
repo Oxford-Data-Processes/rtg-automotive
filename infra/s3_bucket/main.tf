@@ -55,6 +55,18 @@ data "aws_iam_policy_document" "project_bucket_policy" {
       "arn:aws:s3:::${aws_s3_bucket.project_bucket.bucket}/*"
     ]
   }
+  statement {
+    effect = "Allow"
+    principals {
+      type = "AWS"
+      identifiers = ["arn:aws:iam::${var.aws_account_id}:role/${var.project}/process-stock-feed/${var.project}-process-stock-feed-lambda-role"]
+    }
+    actions = ["s3:*"]
+    resources = [
+      "arn:aws:s3:::${aws_s3_bucket.project_bucket.bucket}",
+      "arn:aws:s3:::${aws_s3_bucket.project_bucket.bucket}/*"
+    ]
+  }
 }
 
 resource "aws_s3_bucket_policy" "project_bucket_policy" {
@@ -112,6 +124,18 @@ data "aws_iam_policy_document" "stock_feed_bucket_policy" {
       type        = "Service"
       identifiers = ["athena.amazonaws.com"]
     }
+  }
+  statement {
+    effect = "Allow"
+    principals {
+      type = "AWS"
+      identifiers = ["arn:aws:iam::${var.aws_account_id}:role/${var.project}/process-stock-feed/${var.project}-process-stock-feed-lambda-role"]
+    }
+    actions = ["s3:*"]
+    resources = [
+      "arn:aws:s3:::${aws_s3_bucket.stock_feed_bucket.bucket}",
+      "arn:aws:s3:::${aws_s3_bucket.stock_feed_bucket.bucket}/*"
+    ]
   }
 }
 

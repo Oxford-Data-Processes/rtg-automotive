@@ -140,34 +140,39 @@ def read_excel_from_s3(bucket_name: str, object_key: str) -> list[dict]:
 def fetch_rtg_custom_labels(rtg_automotive_bucket) -> list:
     query = """SELECT DISTINCT(custom_label) FROM "rtg_automotive"."store" WHERE ebay_store = 'RTG' AND supplier = 'RTG';"""
     athena_client = boto3.client("athena", region_name=os.environ["AWS_REGION"])
+
+    # Start the query execution
     response = athena_client.start_query_execution(
         QueryString=query,
         QueryExecutionContext={"Database": "rtg_automotive"},
         ResultConfiguration={
-            "OutputLocation": f"s3://{rtg_automotive_bucket}/athena-results/"
+            "OutputLocation": f"s3://{rtg_automotive_bucket}/athena-results/"  # Temporary output location
         },
         WorkGroup="rtg-automotive-workgroup",
     )
 
-    # Wait for the query to complete
     query_execution_id = response["QueryExecutionId"]
+
+    # Wait for the query to complete
     while True:
         query_status = athena_client.get_query_execution(
             QueryExecutionId=query_execution_id
         )
         status = query_status["QueryExecution"]["Status"]["State"]
+
         if status in ["SUCCEEDED", "FAILED", "CANCELLED"]:
             break
+
         time.sleep(1)  # Wait before checking the status again
 
+    # If the query succeeded, get the results
     if status == "SUCCEEDED":
-        result_response = athena_client.get_query_results(
-            QueryExecutionId=query_execution_id
-        )
-        return [
-            row["Data"][0]["VarCharValue"]
-            for row in result_response["ResultSet"]["Rows"][1:]
-        ]
+        results = athena_client.get_query_results(QueryExecutionId=query_execution_id)
+        # Extract the custom labels from the results
+        custom_labels = [
+            row["Data"][0]["VarCharValue"] for row in results["ResultSet"]["Rows"][1:]
+        ]  # Skip header row
+        return custom_labels
     else:
         raise Exception(f"Query failed with status: {status}")
 

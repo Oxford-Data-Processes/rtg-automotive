@@ -135,7 +135,7 @@ def main():
         if uploaded_files:
             for uploaded_file in uploaded_files:
                 upload_file_to_s3(uploaded_file, stock_feed_bucket_name, date)
-            time.sleep(len(uploaded_files) * 2)
+            time.sleep(len(uploaded_files) * 5)
             display_last_n_sqs_messages(sqs_queue_url, len(uploaded_files))
         else:
             st.warning("Please upload at least one file first.")
