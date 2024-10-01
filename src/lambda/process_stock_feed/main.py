@@ -252,10 +252,10 @@ def extract_s3_info(event):
 
 def process_current_date_and_supplier(object_key):
 
-    year = object_key.split("-")[0]
-    month = object_key.split("-")[1]
-    day = object_key.split("-")[2]
-    supplier = object_key.split("/")[-1].split("_")[0]
+    year = object_key.split("/")[0].split("=")[1]
+    month = object_key.split("/")[1].split("=")[1]
+    day = object_key.split("/")[2].split("=")[1]
+    supplier = object_key.split("/")[3].split("_")[0]
     return year, month, day, supplier
 
 
@@ -274,39 +274,55 @@ def send_sns_notification(message, AWS_ACCOUNT_ID):
     )
 
 
+def read_excel_data(bucket_name, object_key):
+    logger.info(f"Reading file from path {object_key}")
+    excel_data = read_excel_from_s3(bucket_name, object_key)
+    logger.info(f"First 5 rows of Excel data: {excel_data[:5]}")
+    return excel_data
+
+
+def process_stock_data(excel_data, supplier, current_date):
+    output = process_stock_feed(excel_data, supplier, CONFIG, current_date)
+    logger.info(f"First 5 rows of output data: {output[:5]}")
+    return output
+
+
+def write_output_to_s3(output, bucket_name, file_name):
+    stock_feed_schema = get_stock_feed_schema()
+    write_to_s3_parquet(output, bucket_name, file_name, stock_feed_schema)
+
+
+def send_success_notification(supplier, AWS_ACCOUNT_ID):
+    time_stamp = datetime.now().isoformat()
+    send_sns_notification(
+        f"Stock feed processed successfully for {supplier} at {time_stamp}",
+        AWS_ACCOUNT_ID,
+    )
+
+
+def create_success_response():
+    return {"statusCode": 200, "body": json.dumps("File processed successfully!")}
+
+
 def lambda_handler(event, context):
     AWS_ACCOUNT_ID = os.environ.get("AWS_ACCOUNT_ID")
     rtg_automotive_bucket = f"rtg-automotive-bucket-{AWS_ACCOUNT_ID}"
     logger.info(f"RTG Automotive bucket: {rtg_automotive_bucket}")
-    stock_feed_schema = get_stock_feed_schema()
-
     logger.info(f"Received event: {json.dumps(event)}")
 
     bucket_name, object_key = extract_s3_info(event)
 
     try:
-        logger.info(f"Reading file from path {object_key}")
-        excel_data = read_excel_from_s3(bucket_name, object_key)
-        logger.info(f"First 5 rows of Excel data: {excel_data[:5]}")
-
+        excel_data = read_excel_data(bucket_name, object_key)
         year, month, day, supplier = process_current_date_and_supplier(object_key)
-
-        time_stamp = datetime.now().isoformat()
-
         current_date = f"{year}-{month}-{day}"
 
-        output = process_stock_feed(excel_data, supplier, CONFIG, current_date)
-        logger.info(f"First 5 rows of output data: {output[:5]}")
-
+        output = process_stock_data(excel_data, supplier, current_date)
         file_name = create_s3_file_name(supplier, year, month, day)
-        write_to_s3_parquet(output, rtg_automotive_bucket, file_name, stock_feed_schema)
-        send_sns_notification(
-            f"Stock feed processed successfully for {supplier} at {time_stamp}",
-            AWS_ACCOUNT_ID,
-        )
-        logger.info(f"File read successfully in path {object_key}")
+        write_output_to_s3(output, rtg_automotive_bucket, file_name)
 
-        return {"statusCode": 200, "body": json.dumps("File processed successfully!")}
+        send_success_notification(supplier, AWS_ACCOUNT_ID)
+        return create_success_response()
     except Exception as e:
         logger.error(f"Error processing file: {str(e)}")
         raise
