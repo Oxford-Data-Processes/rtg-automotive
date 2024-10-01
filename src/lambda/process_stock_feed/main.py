@@ -6,6 +6,7 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from io import BytesIO
 import os
+import urllib.parse
 from datetime import datetime
 
 # Set up logging
@@ -149,7 +150,7 @@ def process_stock_feed(
 ):
     config_data = config[config_key]
     code_column_index = config_data["code_column_number"] - 1
-    stock_column_index = config_data.get("stock_column_number", None)
+    stock_column_index = config_data["stock_column_number"] - 1
 
     if config_key == "RTG":
         custom_labels = fetch_rtg_custom_labels()
@@ -232,6 +233,7 @@ def write_to_s3_parquet(
     pq.write_table(table, buffer)
     s3_client = boto3.client("s3")
     buffer.seek(0)
+    logger.info(f"Writing to S3 path {bucket_name}/{file_name}")
     s3_client.put_object(Bucket=bucket_name, Key=file_name, Body=buffer.getvalue())
 
 
@@ -252,10 +254,10 @@ def extract_s3_info(event):
 
 def process_current_date_and_supplier(object_key):
 
-    year = object_key.split("/")[0].split("=")[1]
-    month = object_key.split("/")[1].split("=")[1]
-    day = object_key.split("/")[2].split("=")[1]
-    supplier = object_key.split("/")[3].split("_")[0]
+    year = object_key.split("/")[1].split("=")[1]
+    month = object_key.split("/")[2].split("=")[1]
+    day = object_key.split("/")[3].split("=")[1]
+    supplier = object_key.split("/")[4].split("_")[0]
     return year, month, day, supplier
 
 
@@ -313,6 +315,8 @@ def lambda_handler(event, context):
     bucket_name, object_key = extract_s3_info(event)
 
     try:
+        logger.info(f"Object key: {object_key}")
+        object_key = urllib.parse.unquote(object_key)
         excel_data = read_excel_data(bucket_name, object_key)
         year, month, day, supplier = process_current_date_and_supplier(object_key)
         current_date = f"{year}-{month}-{day}"
