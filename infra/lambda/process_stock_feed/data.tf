@@ -66,8 +66,6 @@ data "aws_iam_policy_document" "lambda_policy" {
       "athena:GetQueryExecution",      // Added permission for GetQueryExecution
       "athena:GetQueryResults"         // Added permission for GetQueryResults
     ]
-    resources = [
-      "arn:aws:athena:${var.aws_region}:${var.aws_account_id}:workgroup/*"  // Added resource for Athena
-    ]
+    resources = ["*"]
   }
 }
