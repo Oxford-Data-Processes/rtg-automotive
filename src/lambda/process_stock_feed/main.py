@@ -136,14 +136,15 @@ def read_excel_from_s3(bucket_name: str, object_key: str) -> list[dict]:
     return data
 
 
-def fetch_rtg_custom_labels() -> list:
+def fetch_rtg_custom_labels(rtg_automotive_bucket) -> list:
     query = """SELECT DISTINCT(custom_label) FROM "rtg_automotive"."store" WHERE ebay_store = 'RTG' AND supplier = 'RTG';"""
-    athena_client = boto3.client(
-        "athena", region_name=os.environ["AWS_REGION"]  # Ensure the region is specified
-    )
+    athena_client = boto3.client("athena", region_name=os.environ["AWS_REGION"])
     response = athena_client.start_query_execution(
         QueryString=query,
         QueryExecutionContext={"Database": "rtg_automotive"},
+        ResultConfiguration={
+            "OutputLocation": f"s3://{rtg_automotive_bucket}/athena-results/"
+        },
         WorkGroup="rtg-automotive-workgroup",
     )
 
@@ -171,13 +172,17 @@ def fetch_rtg_custom_labels() -> list:
 
 
 def process_stock_feed(
-    stock_feed_data: list[dict], config_key: str, config, processed_date: str
+    stock_feed_data: list[dict],
+    config_key: str,
+    config,
+    processed_date: str,
+    rtg_automotive_bucket: str,
 ):
     config_data = config[config_key]
     code_column_index = config_data["code_column_number"] - 1
 
     if config_key == "RTG":
-        custom_labels = fetch_rtg_custom_labels()
+        custom_labels = fetch_rtg_custom_labels(rtg_automotive_bucket)
         return process_rtg_stock_feed(
             stock_feed_data,
             custom_labels,
@@ -314,8 +319,10 @@ def read_excel_data(bucket_name, object_key):
     return excel_data
 
 
-def process_stock_data(excel_data, supplier, current_date):
-    output = process_stock_feed(excel_data, supplier, CONFIG, current_date)
+def process_stock_data(excel_data, supplier, current_date, rtg_automotive_bucket):
+    output = process_stock_feed(
+        excel_data, supplier, CONFIG, current_date, rtg_automotive_bucket
+    )
     logger.info(f"First 5 rows of output data: {output[:5]}")
     return output
 
@@ -352,7 +359,9 @@ def lambda_handler(event, context):
         year, month, day, supplier = process_current_date_and_supplier(object_key)
         current_date = f"{year}-{month}-{day}"
 
-        output = process_stock_data(excel_data, supplier, current_date)
+        output = process_stock_data(
+            excel_data, supplier, current_date, rtg_automotive_bucket
+        )
         file_name = create_s3_file_name(supplier, year, month, day)
         write_output_to_s3(output, rtg_automotive_bucket, file_name)
 

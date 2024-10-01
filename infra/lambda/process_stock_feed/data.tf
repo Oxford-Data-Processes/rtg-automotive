@@ -42,7 +42,7 @@ data "aws_iam_policy_document" "lambda_policy" {
   statement {
     effect = "Allow"
     actions = [
-      "sns:Publish"  // Added permission for SNS Publish
+      "sns:Publish"
     ]
     resources = [
       "arn:aws:sns:${var.aws_region}:${var.aws_account_id}:${var.project}-stock-notifications.fifo"  // Added resource for SNS
@@ -62,9 +62,9 @@ data "aws_iam_policy_document" "lambda_policy" {
   statement {
     effect = "Allow"
     actions = [
-      "athena:StartQueryExecution",  // Added permission for Athena StartQueryExecution
-      "athena:GetQueryExecution",      // Added permission for GetQueryExecution
-      "athena:GetQueryResults"         // Added permission for GetQueryResults
+      "athena:StartQueryExecution",  
+      "athena:GetQueryExecution",    
+      "athena:GetQueryResults"       
     ]
     resources = ["*"]
   }
