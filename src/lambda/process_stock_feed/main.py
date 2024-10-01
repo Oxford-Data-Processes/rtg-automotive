@@ -8,6 +8,7 @@ from io import BytesIO
 import os
 import urllib.parse
 from datetime import datetime
+import time
 
 # Set up logging
 logger = logging.getLogger()
@@ -118,6 +119,7 @@ def read_excel_from_s3(bucket_name: str, object_key: str) -> list[dict]:
         aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
         aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
         aws_session_token=os.environ["AWS_SESSION_TOKEN"],
+        region_name=os.environ["AWS_REGION"],  # Ensure the region is specified
     )
     response = s3_client.get_object(Bucket=bucket_name, Key=object_key)
     excel_data = response["Body"].read()
@@ -136,13 +138,36 @@ def read_excel_from_s3(bucket_name: str, object_key: str) -> list[dict]:
 
 def fetch_rtg_custom_labels() -> list:
     query = """SELECT DISTINCT(custom_label) FROM "rtg_automotive"."store" WHERE ebay_store = 'RTG' AND supplier = 'RTG';"""
-    athena_client = boto3.client("athena")
+    athena_client = boto3.client(
+        "athena", region_name=os.environ["AWS_REGION"]  # Ensure the region is specified
+    )
     response = athena_client.start_query_execution(
         QueryString=query,
         QueryExecutionContext={"Database": "rtg_automotive"},
         WorkGroup="rtg-automotive-workgroup",
     )
-    return response["QueryExecution"]["Result"]["Rows"]
+
+    # Wait for the query to complete
+    query_execution_id = response["QueryExecutionId"]
+    while True:
+        query_status = athena_client.get_query_execution(
+            QueryExecutionId=query_execution_id
+        )
+        status = query_status["QueryExecution"]["Status"]["State"]
+        if status in ["SUCCEEDED", "FAILED", "CANCELLED"]:
+            break
+        time.sleep(1)  # Wait before checking the status again
+
+    if status == "SUCCEEDED":
+        result_response = athena_client.get_query_results(
+            QueryExecutionId=query_execution_id
+        )
+        return [
+            row["Data"][0]["VarCharValue"]
+            for row in result_response["ResultSet"]["Rows"][1:]
+        ]
+    else:
+        raise Exception(f"Query failed with status: {status}")
 
 
 def process_stock_feed(
@@ -150,7 +175,6 @@ def process_stock_feed(
 ):
     config_data = config[config_key]
     code_column_index = config_data["code_column_number"] - 1
-    stock_column_index = config_data["stock_column_number"] - 1
 
     if config_key == "RTG":
         custom_labels = fetch_rtg_custom_labels()
@@ -162,6 +186,7 @@ def process_stock_feed(
             processed_date,
         )
     else:
+        stock_column_index = config_data["stock_column_number"] - 1
         return process_other_stock_feed(
             stock_feed_data,
             config_data,
@@ -180,13 +205,15 @@ def process_rtg_stock_feed(
     processed_date: str,
 ) -> list[dict]:
     output = []
-    for row in stock_feed_data:
-        part_number = str(row[list(row.keys())[code_column_index]])
-        quantity = 0 if part_number in custom_labels else 20
+
+    part_numbers = [row[list(row.keys())[code_column_index]] for row in stock_feed_data]
+
+    for custom_label in custom_labels:
+        quantity = 0 if custom_label in part_numbers else 20
 
         output.append(
             {
-                "part_number": part_number,
+                "part_number": custom_label,
                 "supplier": config_key,
                 "quantity": quantity,
                 "updated_date": processed_date,
@@ -231,7 +258,9 @@ def write_to_s3_parquet(
 
     buffer = BytesIO()
     pq.write_table(table, buffer)
-    s3_client = boto3.client("s3")
+    s3_client = boto3.client(
+        "s3", region_name=os.environ["AWS_REGION"]
+    )  # Ensure the region is specified
     buffer.seek(0)
     logger.info(f"Writing to S3 path {bucket_name}/{file_name}")
     s3_client.put_object(Bucket=bucket_name, Key=file_name, Body=buffer.getvalue())
@@ -266,7 +295,9 @@ def create_s3_file_name(supplier, year, month, day):
 
 
 def send_sns_notification(message, AWS_ACCOUNT_ID):
-    sns_client = boto3.client("sns")
+    sns_client = boto3.client(
+        "sns", region_name=os.environ["AWS_REGION"]
+    )  # Ensure the region is specified
     topic_arn = f"arn:aws:sns:eu-west-2:{AWS_ACCOUNT_ID}:rtg-automotive-stock-notifications.fifo"
     sns_client.publish(
         TopicArn=topic_arn,

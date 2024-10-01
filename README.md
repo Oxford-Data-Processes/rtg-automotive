@@ -142,11 +142,13 @@ serverless deploy --stage dev
 
 docker buildx build --platform linux/amd64 --build-arg AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID -t process-stock-feed .
 docker buildx build --build-arg AWS_ACCOUNT_ID=654654324108 -t process-stock-feed .
+docker buildx build --build-arg AWS_ACCOUNT_ID=654654324108 --build-arg AWS_REGION=eu-west-2 -t process-stock-feed .
 
 docker run -p 9000:8080 \
   -e AWS_ACCESS_KEY_ID \
   -e AWS_SECRET_ACCESS_KEY \
   -e AWS_SESSION_TOKEN \
+  -e AWS_REGION=eu-west-2 \
   process-stock-feed
 
 curl -X POST "http://localhost:9000/2015-03-31/functions/function/invocations" -d @test_events/putStockFeed.json

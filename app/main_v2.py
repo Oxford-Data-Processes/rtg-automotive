@@ -90,7 +90,7 @@ def upload_file_to_s3(file, bucket_name, date):
     day = date.split("-")[2]
     s3_client.put_object(
         Bucket=bucket_name,
-        Key=f"stock_feed/year={year}/month={month}/day={day}/{file.name}",
+        Key=f"stock_feed/year={year}/month={month}/day={day}/{file.name.replace(" ","_")}",
         Body=file.getvalue(),
     )
     st.success(f"File {file.name} uploaded successfully to S3.")
