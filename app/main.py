@@ -155,11 +155,10 @@ def load_csv_from_s3(bucket_name, csv_key, s3_client):
 
 
 def main():
+    
     st.title("eBay Store Upload Generator")
 
-# Initialize S3 and SQS clients
     s3_client = boto3.client("s3", region_name="eu-west-2")
-    sqs_client = boto3.client("sqs", region_name="eu-west-2")
     
     access_key_id, secret_access_key, session_token = get_credentials(AWS_ACCOUNT_ID, ROLE, "MySession")
     os.environ["AWS_ACCESS_KEY_ID"] = access_key_id
@@ -195,8 +194,6 @@ def main():
             last_csv_key = get_last_csv_from_s3(project_bucket_name, "athena-results/", s3_client)
             if last_csv_key:
                 df = load_csv_from_s3(project_bucket_name, last_csv_key, s3_client)
-                st.write("Raw eBay Table:")
-                st.dataframe(df)
                 ebay_df = create_ebay_dataframe(df)
                 stores = list(ebay_df["Store"].unique())
                 ebay_dfs = [
