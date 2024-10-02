@@ -9,21 +9,34 @@ import io
 import zipfile
 import re
 
-# Initialize S3 and SQS clients
-s3_client = boto3.client("s3", region_name="eu-west-2")
-sqs_client = boto3.client("sqs", region_name="eu-west-2")
-
-# Login credentials (consider using a more secure method in production)
-LOGIN_CREDENTIALS = {
-    "username": st.secrets["login_credentials"]["username"],
-    "password": st.secrets["login_credentials"]["password"],
-}
-
 AWS_ACCOUNT_ID = "905418370160"
-AWS_ACCESS_KEY_ID = st.secrets["aws_credentials"]["AWS_ACCESS_KEY_ID"]
-AWS_SECRET_ACCESS_KEY = st.secrets["aws_credentials"]["AWS_SECRET_ACCESS_KEY"]
+ROLE = "ProdAdminRole"
 STAGE = "prod"
 PROJECT_NAME = "rtg-automotive"
+USERNAME = st.secrets["login_credentials"]["username"]
+PASSWORD = st.secrets["login_credentials"]["password"]
+
+
+def get_credentials(aws_account_id, role, session_name):
+    role_arn = f"arn:aws:iam::{aws_account_id}:role/{role}"
+    session_name = "MySession"
+
+    sts_client = boto3.client("sts", 
+                              aws_access_key_id=st.secrets["aws_credentials"]["AWS_ACCESS_KEY_ID"], 
+                              aws_secret_access_key=st.secrets["aws_credentials"]["AWS_SECRET_ACCESS_KEY"])
+
+    # Assume the role
+    response = sts_client.assume_role(
+        RoleArn=role_arn,
+        RoleSessionName=session_name
+    )
+    # Extract the credentials
+    credentials = response['Credentials']
+    access_key_id = credentials['AccessKeyId']
+    secret_access_key = credentials['SecretAccessKey']
+    session_token = credentials['SessionToken']
+    
+    return access_key_id, secret_access_key, session_token
 
 
 def zip_dataframes(dataframes: List[Tuple[pd.DataFrame, str]]) -> io.BytesIO:
@@ -66,8 +79,8 @@ def create_ebay_dataframe(ebay_df: pd.DataFrame) -> pd.DataFrame:
     return ebay_df
 
 
-def get_last_csv_from_s3(bucket_name, prefix):
-    response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix, AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY)
+def get_last_csv_from_s3(bucket_name, prefix, s3_client):
+    response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
     csv_files = [
         obj for obj in response.get("Contents", []) if obj["Key"].endswith(".csv")
     ]
@@ -75,11 +88,6 @@ def get_last_csv_from_s3(bucket_name, prefix):
     return csv_files[0]["Key"] if csv_files else None
 
 
-def receive_sqs_messages(queue_url, max_messages=10):
-    response = sqs_client.receive_message(
-        QueueUrl=queue_url, MaxNumberOfMessages=max_messages, WaitTimeSeconds=20, AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY
-    )
-    return response.get("Messages", [])
 
 def extract_datetime_from_sns_message(message):
     # Regular expression to find the datetime in the message
@@ -113,16 +121,14 @@ def get_all_sqs_messages(queue_url):
     return all_messages
 
 
-def upload_file_to_s3(file, bucket_name, date):
+def upload_file_to_s3(file, bucket_name, date, s3_client):
     year = date.split("-")[0]
     month = date.split("-")[1]
     day = date.split("-")[2]
     s3_client.put_object(
         Bucket=bucket_name,
         Key=f"stock_feed/year={year}/month={month}/day={day}/{file.name.replace(" ","_")}",
-        Body=file.getvalue(),
-        AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID,
-        AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY
+        Body=file.getvalue()
     )
     st.success(f"File {file.name} uploaded successfully to S3.")
 
@@ -132,9 +138,7 @@ def trigger_generate_ebay_table_lambda():
     try:
         response = lambda_client.invoke(
             FunctionName=f"arn:aws:lambda:eu-west-2:{AWS_ACCOUNT_ID}:function:rtg-automotive-{STAGE}-generate-ebay-table",
-            InvocationType="RequestResponse",
-            AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID,
-            AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY
+            InvocationType="RequestResponse"
         )
         time.sleep(2)
         return True
@@ -143,8 +147,8 @@ def trigger_generate_ebay_table_lambda():
         return False
 
 
-def load_csv_from_s3(bucket_name, csv_key):
-    csv_object = s3_client.get_object(Bucket=bucket_name, Key=csv_key, AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY)
+def load_csv_from_s3(bucket_name, csv_key, s3_client):
+    csv_object = s3_client.get_object(Bucket=bucket_name, Key=csv_key)
     csv_data = csv_object["Body"].read()
     df = pd.read_csv(BytesIO(csv_data))
     return df
@@ -152,6 +156,17 @@ def load_csv_from_s3(bucket_name, csv_key):
 
 def main():
     st.title("eBay Store Upload Generator")
+
+# Initialize S3 and SQS clients
+    s3_client = boto3.client("s3", region_name="eu-west-2")
+    sqs_client = boto3.client("sqs", region_name="eu-west-2")
+    
+    access_key_id, secret_access_key, session_token = get_credentials(AWS_ACCOUNT_ID, ROLE, "MySession")
+    os.environ["AWS_ACCESS_KEY_ID"] = access_key_id
+    os.environ["AWS_SECRET_ACCESS_KEY"] = secret_access_key
+    os.environ["AWS_SESSION_TOKEN"] = session_token
+
+
     sqs_queue_url = f"https://sqs.eu-west-2.amazonaws.com/{AWS_ACCOUNT_ID}/{PROJECT_NAME}-sqs-queue"
     stock_feed_bucket_name = f"{PROJECT_NAME}-stock-feed-bucket-{AWS_ACCOUNT_ID}"
     project_bucket_name = f"{PROJECT_NAME}-bucket-{AWS_ACCOUNT_ID}"
@@ -167,7 +182,7 @@ def main():
     if st.button("Upload Files to S3") and date:
         if uploaded_files:
             for uploaded_file in uploaded_files:
-                upload_file_to_s3(uploaded_file, stock_feed_bucket_name, date)
+                upload_file_to_s3(uploaded_file, stock_feed_bucket_name, date, s3_client)
             time.sleep(len(uploaded_files) * 4)
             messages = get_all_sqs_messages(sqs_queue_url)[-len(uploaded_files):]
             for message in messages:
@@ -177,9 +192,9 @@ def main():
 
     if st.button("Generate eBay Store Upload Files"):
         if trigger_generate_ebay_table_lambda():
-            last_csv_key = get_last_csv_from_s3(project_bucket_name, "athena-results/")
+            last_csv_key = get_last_csv_from_s3(project_bucket_name, "athena-results/", s3_client)
             if last_csv_key:
-                df = load_csv_from_s3(project_bucket_name, last_csv_key)
+                df = load_csv_from_s3(project_bucket_name, last_csv_key, s3_client)
                 st.write("Raw eBay Table:")
                 st.dataframe(df)
                 ebay_df = create_ebay_dataframe(df)
@@ -212,8 +227,8 @@ def login() -> bool:
         password = st.text_input("Password", type="password")
         if st.button("Login"):
             if (
-                username == LOGIN_CREDENTIALS["username"]
-                and password == LOGIN_CREDENTIALS["password"]
+                username == USERNAME
+                and password == PASSWORD
             ):
                 st.session_state.logged_in = True
                 st.success("Logged in as {}".format(username))
