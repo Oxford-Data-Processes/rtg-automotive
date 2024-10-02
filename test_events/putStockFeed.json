@@ -4,34 +4,34 @@
             "eventVersion": "2.1",
             "eventSource": "aws:s3",
             "awsRegion": "eu-west-2",
-            "eventTime": "2024-10-01T13:23:04.946Z",
+            "eventTime": "2024-10-02T12:26:47.048Z",
             "eventName": "ObjectCreated:Put",
             "userIdentity": {
-                "principalId": "AWS:AROAZQ3DQHWGJFPFB7OXW:chris@speedsheet.co.uk"
+                "principalId": "AWS:AROA5FTZD5RYLFFJYNEMK:MySession"
             },
             "requestParameters": {
-                "sourceIPAddress": "31.111.18.10"
+                "sourceIPAddress": "34.127.0.121"
             },
             "responseElements": {
-                "x-amz-request-id": "WH3P67EAKG2882QV",
-                "x-amz-id-2": "VyX3YLONfangvXo7XzxN0jEadxRTrARisKvGorvqXT70r3ozuneSSxpO9UayJlupNFfZ/AQXl2Hs94OXOeQyxI0mxkXif12cOCTSB788Qak="
+                "x-amz-request-id": "D3KYSPSBKG24HFJ4",
+                "x-amz-id-2": "JVJr9IyC7rOEmeVD6pr16SpG450hGenE4wECahz1HbLoqBnJ1pN7OMk03DIMly3LqeRnFAM2j+LDnZx9En5vnbUkaxgzZKKM"
             },
             "s3": {
                 "s3SchemaVersion": "1.0",
-                "configurationId": "rtg-automotive-dev-process-stock-feed-68a737133cefb25bff959852b8f04754",
+                "configurationId": "rtg-automotive-prod-process-stock-feed-68a737133cefb25bff959852b8f04754",
                 "bucket": {
-                    "name": "rtg-automotive-stock-feed-bucket-654654324108",
+                    "name": "rtg-automotive-stock-feed-bucket-905418370160",
                     "ownerIdentity": {
-                        "principalId": "A9RQVGQX48SLS"
+                        "principalId": "ABLZB6738TIGV"
                     },
-                    "arn": "arn:aws:s3:::rtg-automotive-stock-feed-bucket-654654324108"
+                    "arn": "arn:aws:s3:::rtg-automotive-stock-feed-bucket-905418370160"
                 },
                 "object": {
-                    "key": "stock_feed/year%3D2024/month%3D10/day%3D02/RTG_SF.xlsx",
-                    "size": 26848,
-                    "eTag": "ecf3868a9e1df05b478e292e1e2d0699",
-                    "versionId": "SV3JrPacAPijVL9iV0JttI_tvPWEvoNO",
-                    "sequencer": "0066FBF7B8DBDDB9B5"
+                    "key": "stock_feed/year%3D2024/month%3D10/day%3D01/FAI_SF.xlsx",
+                    "size": 213432,
+                    "eTag": "413fc74de2f835dca1effbcd4205ca00",
+                    "versionId": "EqXYNfoHHO98vjJdDghGC9.LacHbZXaa",
+                    "sequencer": "0066FD3C06D8A7D133"
                 }
             }
         }

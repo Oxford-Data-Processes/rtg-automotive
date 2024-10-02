@@ -216,15 +216,13 @@ def process_rtg_stock_feed(
     processed_date: str,
 ) -> list[dict]:
     output = []
-
+    row_index = list(stock_feed_data[0].keys())[code_column_index]
     part_numbers = [
-        row[list(row.keys())[code_column_index]].upper().strip()
-        for row in stock_feed_data
+        row[row_index].upper().strip() for row in stock_feed_data if row[row_index]
     ]
 
     for custom_label in custom_labels:
         quantity = 0 if custom_label in part_numbers else 20
-
         output.append(
             {
                 "part_number": custom_label,
@@ -245,11 +243,10 @@ def process_other_stock_feed(
     processed_date: str,
 ) -> list[dict]:
     output = []
+    row_index = list(stock_feed_data[0].keys())[stock_column_index]
     for row in stock_feed_data:
         part_number = str(row[list(row.keys())[code_column_index]])
-        quantity = config_data["process_func"](
-            row[list(row.keys())[stock_column_index]]
-        )
+        quantity = config_data["process_func"](row[row_index])
 
         output.append(
             {
@@ -308,9 +305,7 @@ def create_s3_file_name(supplier, year, month, day):
 
 
 def send_sns_notification(message, AWS_ACCOUNT_ID):
-    sns_client = boto3.client(
-        "sns", region_name=os.environ["AWS_REGION"]
-    )  # Ensure the region is specified
+    sns_client = boto3.client("sns", region_name=os.environ["AWS_REGION"])
     topic_arn = (
         f"arn:aws:sns:eu-west-2:{AWS_ACCOUNT_ID}:rtg-automotive-stock-notifications"
     )
@@ -389,4 +384,4 @@ def lambda_handler(event, context):
     except Exception as e:
         logger.error(f"Error processing file: {str(e)}")
         send_failure_notification(supplier, AWS_ACCOUNT_ID)
-        raise
+        raise e
