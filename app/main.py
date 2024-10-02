@@ -20,6 +20,8 @@ LOGIN_CREDENTIALS = {
 }
 
 AWS_ACCOUNT_ID = "905418370160"
+AWS_ACCESS_KEY_ID = st.secrets["aws_credentials"]["AWS_ACCESS_KEY_ID"]
+AWS_SECRET_ACCESS_KEY = st.secrets["aws_credentials"]["AWS_SECRET_ACCESS_KEY"]
 STAGE = "prod"
 PROJECT_NAME = "rtg-automotive"
 
@@ -65,7 +67,7 @@ def create_ebay_dataframe(ebay_df: pd.DataFrame) -> pd.DataFrame:
 
 
 def get_last_csv_from_s3(bucket_name, prefix):
-    response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix)
+    response = s3_client.list_objects_v2(Bucket=bucket_name, Prefix=prefix, AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY)
     csv_files = [
         obj for obj in response.get("Contents", []) if obj["Key"].endswith(".csv")
     ]
@@ -75,7 +77,7 @@ def get_last_csv_from_s3(bucket_name, prefix):
 
 def receive_sqs_messages(queue_url, max_messages=10):
     response = sqs_client.receive_message(
-        QueueUrl=queue_url, MaxNumberOfMessages=max_messages, WaitTimeSeconds=20
+        QueueUrl=queue_url, MaxNumberOfMessages=max_messages, WaitTimeSeconds=20, AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY
     )
     return response.get("Messages", [])
 
@@ -119,6 +121,8 @@ def upload_file_to_s3(file, bucket_name, date):
         Bucket=bucket_name,
         Key=f"stock_feed/year={year}/month={month}/day={day}/{file.name.replace(" ","_")}",
         Body=file.getvalue(),
+        AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID,
+        AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY
     )
     st.success(f"File {file.name} uploaded successfully to S3.")
 
@@ -129,6 +133,8 @@ def trigger_generate_ebay_table_lambda():
         response = lambda_client.invoke(
             FunctionName=f"arn:aws:lambda:eu-west-2:{AWS_ACCOUNT_ID}:function:rtg-automotive-{STAGE}-generate-ebay-table",
             InvocationType="RequestResponse",
+            AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID,
+            AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY
         )
         time.sleep(2)
         return True
@@ -138,7 +144,7 @@ def trigger_generate_ebay_table_lambda():
 
 
 def load_csv_from_s3(bucket_name, csv_key):
-    csv_object = s3_client.get_object(Bucket=bucket_name, Key=csv_key)
+    csv_object = s3_client.get_object(Bucket=bucket_name, Key=csv_key, AWS_ACCESS_KEY_ID=AWS_ACCESS_KEY_ID, AWS_SECRET_ACCESS_KEY=AWS_SECRET_ACCESS_KEY)
     csv_data = csv_object["Body"].read()
     df = pd.read_csv(BytesIO(csv_data))
     return df
