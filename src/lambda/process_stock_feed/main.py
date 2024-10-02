@@ -217,7 +217,10 @@ def process_rtg_stock_feed(
 ) -> list[dict]:
     output = []
 
-    part_numbers = [row[list(row.keys())[code_column_index]] for row in stock_feed_data]
+    part_numbers = [
+        row[list(row.keys())[code_column_index]].upper().strip()
+        for row in stock_feed_data
+    ]
 
     for custom_label in custom_labels:
         quantity = 0 if custom_label in part_numbers else 20

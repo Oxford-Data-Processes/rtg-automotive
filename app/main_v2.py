@@ -7,6 +7,7 @@ import pandas as pd
 from typing import List, Tuple
 import io
 import zipfile
+import re
 
 # Initialize S3 and SQS clients
 s3_client = boto3.client("s3", region_name="eu-west-2")
@@ -73,25 +74,36 @@ def receive_sqs_messages(queue_url, max_messages=10):
     )
     return response.get("Messages", [])
 
+def extract_datetime_from_sns_message(message):
+    # Regular expression to find the datetime in the message
+    match = re.search(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", message)
+    return match.group(0) if match else None
 
-def get_last_n_sqs_messages(queue_url, max_messages=10):
+def get_all_sqs_messages(queue_url):
     sqs_client = boto3.client("sqs", region_name="eu-west-2")
-    messages = []
+    all_messages = []
+    while True:
+        # Receive messages from the SQS queue
+        response = sqs_client.receive_message(
+            QueueUrl=queue_url,
+            MaxNumberOfMessages=10,
+            WaitTimeSeconds=5,
+            MessageAttributeNames=["All"],
+        )
 
-    # Receive messages from the SQS queue
-    response = sqs_client.receive_message(
-        QueueUrl=queue_url,
-        MaxNumberOfMessages=max_messages,
-        WaitTimeSeconds=20,
-        MessageAttributeNames=["All"],
-    )
+        # Check if there are any messages
+        messages = response.get("Messages", [])
+        if not messages:
+            break  # Exit the loop if no more messages
 
-    for message in response.get("Messages", []):
-        # Check if 'Attributes' exists in the message
-        timestamp = message.get("Attributes", {}).get("SentTimestamp", None)
-        messages.append(message["Body"])
+        for message in messages:
+            timestamp = extract_datetime_from_sns_message(message["Body"])
+            message_body = message["Body"]
+            all_messages.append({"timestamp": timestamp, "message": message_body})
 
-    return messages
+    all_messages.sort(key=lambda x: x["timestamp"])
+
+    return all_messages
 
 
 def upload_file_to_s3(file, bucket_name, date):
@@ -145,9 +157,8 @@ def main():
         if uploaded_files:
             for uploaded_file in uploaded_files:
                 upload_file_to_s3(uploaded_file, stock_feed_bucket_name, date)
-            time.sleep(len(uploaded_files) * 10)
-            messages = get_last_n_sqs_messages(sqs_queue_url, len(uploaded_files))
-            print(messages)
+            time.sleep(len(uploaded_files) * 4)
+            messages = get_all_sqs_messages(sqs_queue_url)[-len(uploaded_files):]
             for message in messages:
                 st.write(message)
         else:
@@ -161,8 +172,6 @@ def main():
                 st.write("Raw eBay Table:")
                 st.dataframe(df)
                 ebay_df = create_ebay_dataframe(df)
-                st.write("Processed eBay Table:")
-                st.dataframe(ebay_df)
                 stores = list(ebay_df["Store"].unique())
                 ebay_dfs = [
                     (ebay_df[ebay_df["Store"] == store].drop(columns=["Store"]), store)
