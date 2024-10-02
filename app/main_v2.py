@@ -160,7 +160,7 @@ def main():
             time.sleep(len(uploaded_files) * 4)
             messages = get_all_sqs_messages(sqs_queue_url)[-len(uploaded_files):]
             for message in messages:
-                st.write(message)
+                st.write(message["message"])
         else:
             st.warning("Please upload at least one file first.")
 
