@@ -28,14 +28,17 @@ def read_excel_sheets(file_path, sheet_names):
 def process_dataframe(df):
     df = df.iloc[:, :4]
     df.columns = ["custom_label", "part_number", "supplier", "quantity"]
-    df.dropna(subset=["part_number", "supplier", "supplier", "quantity"], inplace=True)
+    df.dropna(subset=["part_number", "supplier", "quantity"], inplace=True)
     df["part_number"] = df["part_number"].astype(str)
     df["quantity"] = df["quantity"].astype(int)
     return df
 
 
 def main():
-    excel_file = Path("data/supplier_stock/Stock Feed Master.xlsx")
+    NEXT_DATE = "2024_10_08"
+    excel_file = Path(
+        f"/Users/chrislittle/Dropbox/#Speedsheet/stock_master/{NEXT_DATE}/Stock Feed Master.xlsx"
+    )
     sheet_names = ["Direct", "FPS"]
 
     dfs = read_excel_sheets(excel_file, sheet_names)
@@ -54,12 +57,6 @@ def main():
     )
 
     df_stock["custom_label"] = df_stock["custom_label"].str.upper().str.strip()
-
-    remove_labels = pd.read_csv("data/tables/remove_custom_labels.csv")[
-        "custom_label"
-    ].tolist()
-    remove_labels = [label.upper().strip() for label in remove_labels]
-    df_stock = df_stock[~df_stock["custom_label"].isin(remove_labels)]
     df_stock.dropna(subset=["supplier"], inplace=True)
 
     aws_account_id = os.environ["AWS_ACCOUNT_ID"]

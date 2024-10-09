@@ -155,8 +155,6 @@ def load_csv_from_s3(bucket_name, csv_key, s3_client):
     csv_data = csv_object["Body"].read()
     df = pd.read_csv(BytesIO(csv_data))
     return df
-
-
 def main():
     
     st.title("eBay Store Upload Generator")
@@ -168,6 +166,13 @@ def main():
     os.environ["AWS_SECRET_ACCESS_KEY"] = secret_access_key
     os.environ["AWS_SESSION_TOKEN"] = session_token
 
+    # Button to refresh AWS credentials
+    if st.button("Refresh AWS Credentials"):
+        access_key_id, secret_access_key, session_token = get_credentials(AWS_ACCOUNT_ID, ROLE, "MySession")
+        os.environ["AWS_ACCESS_KEY_ID"] = access_key_id
+        os.environ["AWS_SECRET_ACCESS_KEY"] = secret_access_key
+        os.environ["AWS_SESSION_TOKEN"] = session_token
+        st.success("AWS credentials refreshed successfully.")
 
     sqs_queue_url = f"https://sqs.eu-west-2.amazonaws.com/{AWS_ACCOUNT_ID}/{PROJECT_NAME}-sqs-queue"
     stock_feed_bucket_name = f"{PROJECT_NAME}-stock-feed-bucket-{AWS_ACCOUNT_ID}"
