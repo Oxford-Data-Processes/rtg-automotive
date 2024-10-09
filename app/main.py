@@ -163,6 +163,9 @@ def main():
 
     st.title("eBay Store Upload Generator")
     get_credentials(AWS_ACCOUNT_ID, ROLE)
+    st.write("AWS Access Key ID:", os.environ["AWS_ACCESS_KEY_ID"])
+    st.write("AWS Secret Access Key:", os.environ["AWS_SECRET_ACCESS_KEY"])
+    st.write("AWS Session Token:", os.environ["AWS_SESSION_TOKEN"])
     s3_client = boto3.client("s3", region_name="eu-west-2")
 
     sqs_queue_url = (
