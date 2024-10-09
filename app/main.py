@@ -38,8 +38,11 @@ def get_credentials(aws_account_id, role, session_name):
     access_key_id = credentials['AccessKeyId']
     secret_access_key = credentials['SecretAccessKey']
     session_token = credentials['SessionToken']
-    
-    return access_key_id, secret_access_key, session_token
+
+    os.environ["AWS_ACCESS_KEY_ID"] = access_key_id
+    os.environ["AWS_SECRET_ACCESS_KEY"] = secret_access_key
+    os.environ["AWS_SESSION_TOKEN"] = session_token
+
 
 
 def zip_dataframes(dataframes: List[Tuple[pd.DataFrame, str]]) -> io.BytesIO:
@@ -155,24 +158,13 @@ def load_csv_from_s3(bucket_name, csv_key, s3_client):
     csv_data = csv_object["Body"].read()
     df = pd.read_csv(BytesIO(csv_data))
     return df
+
 def main():
     
     st.title("eBay Store Upload Generator")
-
+    get_credentials(AWS_ACCOUNT_ID, ROLE, "MySession")
     s3_client = boto3.client("s3", region_name="eu-west-2")
-    
-    access_key_id, secret_access_key, session_token = get_credentials(AWS_ACCOUNT_ID, ROLE, "MySession")
-    os.environ["AWS_ACCESS_KEY_ID"] = access_key_id
-    os.environ["AWS_SECRET_ACCESS_KEY"] = secret_access_key
-    os.environ["AWS_SESSION_TOKEN"] = session_token
 
-    # Button to refresh AWS credentials
-    if st.button("Refresh AWS Credentials"):
-        access_key_id, secret_access_key, session_token = get_credentials(AWS_ACCOUNT_ID, ROLE, "MySession")
-        os.environ["AWS_ACCESS_KEY_ID"] = access_key_id
-        os.environ["AWS_SECRET_ACCESS_KEY"] = secret_access_key
-        os.environ["AWS_SESSION_TOKEN"] = session_token
-        st.success("AWS credentials refreshed successfully.")
 
     sqs_queue_url = f"https://sqs.eu-west-2.amazonaws.com/{AWS_ACCOUNT_ID}/{PROJECT_NAME}-sqs-queue"
     stock_feed_bucket_name = f"{PROJECT_NAME}-stock-feed-bucket-{AWS_ACCOUNT_ID}"
@@ -187,6 +179,7 @@ def main():
     )
 
     if st.button("Upload Files") and date:
+        get_credentials(AWS_ACCOUNT_ID, ROLE, "MySession")
         if uploaded_files:
             for uploaded_file in uploaded_files:
                 upload_file_to_s3(uploaded_file, stock_feed_bucket_name, date, s3_client)
@@ -198,6 +191,7 @@ def main():
             st.warning("Please upload at least one file first.")
 
     if st.button("Generate eBay Store Upload Files"):
+        get_credentials(AWS_ACCOUNT_ID, ROLE, "MySession")
         if trigger_generate_ebay_table_lambda():
             last_csv_key = get_last_csv_from_s3(project_bucket_name, "athena-results/", s3_client)
             if last_csv_key:
