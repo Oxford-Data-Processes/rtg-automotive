@@ -200,9 +200,6 @@ def main():
 
     if st.button("Upload Files") and date:
         get_credentials(AWS_ACCOUNT_ID, ROLE)
-        st.write("AWS Access Key ID:", os.environ["AWS_ACCESS_KEY_ID"])
-        st.write("AWS Secret Access Key:", os.environ["AWS_SECRET_ACCESS_KEY"])
-        st.write("AWS Session Token:", os.environ["AWS_SESSION_TOKEN"])
         if uploaded_files:
             for uploaded_file in uploaded_files:
                 upload_file_to_s3(
