@@ -20,9 +20,9 @@ if STAGE == "prod":
 else:
     ROLE = "DevAdminRole"
 
-def get_credentials(aws_account_id, role, session_name):
+def get_credentials(aws_account_id, role):
     role_arn = f"arn:aws:iam::{aws_account_id}:role/{role}"
-    session_name = "MySession"
+    session_name = f"MySession-{int(time.time())}"  # Unique session name using current timestamp
 
     sts_client = boto3.client("sts", 
                               aws_access_key_id=st.secrets["aws_credentials"]["AWS_ACCESS_KEY_ID"], 
@@ -162,7 +162,7 @@ def load_csv_from_s3(bucket_name, csv_key, s3_client):
 def main():
     
     st.title("eBay Store Upload Generator")
-    get_credentials(AWS_ACCOUNT_ID, ROLE, "MySession")
+    get_credentials(AWS_ACCOUNT_ID, ROLE)
     s3_client = boto3.client("s3", region_name="eu-west-2")
 
 
@@ -179,7 +179,7 @@ def main():
     )
 
     if st.button("Upload Files") and date:
-        get_credentials(AWS_ACCOUNT_ID, ROLE, "MySession")
+        get_credentials(AWS_ACCOUNT_ID, ROLE)
         if uploaded_files:
             for uploaded_file in uploaded_files:
                 upload_file_to_s3(uploaded_file, stock_feed_bucket_name, date, s3_client)
@@ -191,7 +191,7 @@ def main():
             st.warning("Please upload at least one file first.")
 
     if st.button("Generate eBay Store Upload Files"):
-        get_credentials(AWS_ACCOUNT_ID, ROLE, "MySession")
+        get_credentials(AWS_ACCOUNT_ID, ROLE)
         if trigger_generate_ebay_table_lambda():
             last_csv_key = get_last_csv_from_s3(project_bucket_name, "athena-results/", s3_client)
             if last_csv_key:
