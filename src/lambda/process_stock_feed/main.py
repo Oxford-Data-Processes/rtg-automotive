@@ -31,90 +31,109 @@ CONFIG = {
     "APE": {
         "code_column_number": 1,
         "stock_column_number": 2,
+        "header_row_number": 1,
         "process_func": lambda x: 0 if x == "No" else (10 if x == "YES" else 0),
     },
     "BET": {
         "code_column_number": 1,
         "stock_column_number": 2,
+        "header_row_number": 1,
         "process_func": process_numerical,
     },
     "BGA": {
         "code_column_number": 1,
         "stock_column_number": 2,
+        "header_row_number": 1,
         "process_func": process_numerical,
     },
     "COM": {
         "code_column_number": 1,
         "stock_column_number": 3,
+        "header_row_number": 1,
         "process_func": process_numerical,
     },
     "FAI": {
         "code_column_number": 1,
         "stock_column_number": 2,
+        "header_row_number": 5,
         "process_func": process_numerical,
     },
     "FEB": {
         "code_column_number": 1,
         "stock_column_number": 3,
+        "header_row_number": 1,
         "process_func": process_numerical,
     },
     "FIR": {
         "code_column_number": 1,
         "stock_column_number": 2,
+        "header_row_number": 1,
         "process_func": lambda x: 10 if x == "Y" else 0,
     },
     "FPS": {
         "code_column_number": 1,
         "stock_column_number": 4,
+        "header_row_number": 1,
         "process_func": process_numerical,
     },
     "JUR": {
         "code_column_number": 1,
         "stock_column_number": 2,
+        "header_row_number": 1,
         "process_func": process_numerical,
     },
     "KLA": {
         "code_column_number": 1,
         "stock_column_number": 2,
+        "header_row_number": 1,
         "process_func": lambda x: x,
     },
     "KYB": {
         "code_column_number": 1,
         "stock_column_number": 2,
+        "header_row_number": 1,
         "process_func": lambda x: 10 if x == "Y" else 0,
     },
     "MOT": {
         "code_column_number": 1,
         "stock_column_number": 3,
+        "header_row_number": 1,
         "process_func": process_numerical,
     },
     "RFX": {
         "code_column_number": 1,
         "stock_column_number": 4,
+        "header_row_number": 1,
         "process_func": process_numerical,
     },
     "ROL": {
         "code_column_number": 1,
         "stock_column_number": 3,
+        "header_row_number": 1,
         "process_func": lambda x: 10 if x == "In Stock" else 0,
     },
     "RTG": {
         "code_column_number": 1,
+        "header_row_number": 1,
     },
     "SMP": {
         "code_column_number": 1,
         "stock_column_number": 1,
+        "header_row_number": 1,
         "process_func": lambda _: 10,
     },
     "ELR": {
         "code_column_number": 1,
         "stock_column_number": 4,
+        "header_row_number": 1,
         "process_func": process_numerical,
     },
 }
 
 
-def read_excel_from_s3(bucket_name: str, object_key: str) -> list[dict]:
+def read_excel_from_s3(
+    bucket_name: str, object_key: str, header_row_number: int
+) -> list[dict]:
     s3_client = boto3.client(
         "s3",
         aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
@@ -128,9 +147,9 @@ def read_excel_from_s3(bucket_name: str, object_key: str) -> list[dict]:
     sheet = workbook.active
 
     data = []
-    headers = [cell.value for cell in sheet[1]]
+    headers = [cell.value for cell in sheet[header_row_number]]
 
-    for row in sheet.iter_rows(min_row=2, values_only=True):
+    for row in sheet.iter_rows(min_row=header_row_number + 1, values_only=True):
         row_data = {headers[i]: row[i] for i in range(len(headers))}
         data.append(row_data)
 
@@ -316,9 +335,9 @@ def send_sns_notification(message, AWS_ACCOUNT_ID):
     )
 
 
-def read_excel_data(bucket_name, object_key):
+def read_excel_data(bucket_name, object_key, header_row_number):
     logger.info(f"Reading file from path {object_key}")
-    excel_data = read_excel_from_s3(bucket_name, object_key)
+    excel_data = read_excel_from_s3(bucket_name, object_key, header_row_number)
     logger.info(f"First 5 rows of Excel data: {excel_data[:5]}")
     return excel_data
 
@@ -371,7 +390,9 @@ def lambda_handler(event, context):
 
     try:
         logger.info(f"Object key: {object_key}")
-        excel_data = read_excel_data(bucket_name, object_key)
+        excel_data = read_excel_data(
+            bucket_name, object_key, CONFIG[supplier]["header_row_number"]
+        )
 
         output = process_stock_data(
             excel_data, supplier, current_date, rtg_automotive_bucket

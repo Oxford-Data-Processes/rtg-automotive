@@ -10,12 +10,15 @@ import zipfile
 import re
 
 AWS_ACCOUNT_ID = "905418370160"
-ROLE = "ProdAdminRole"
 STAGE = "prod"
 PROJECT_NAME = "rtg-automotive"
 USERNAME = st.secrets["login_credentials"]["username"]
 PASSWORD = st.secrets["login_credentials"]["password"]
 
+if STAGE == "prod":
+    ROLE = "ProdAdminRole"
+else:
+    ROLE = "DevAdminRole"
 
 def get_credentials(aws_account_id, role, session_name):
     role_arn = f"arn:aws:iam::{aws_account_id}:role/{role}"
