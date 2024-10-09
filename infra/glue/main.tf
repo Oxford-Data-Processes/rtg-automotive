@@ -50,17 +50,17 @@ resource "aws_glue_catalog_table" "supplier_stock" {
 
   partition_keys {
     name = "year"
-    type = "int"
+    type = "string"
   }
 
   partition_keys {
     name = "month"
-    type = "int"
+    type = "string"
   }
 
   partition_keys {
     name = "day"
-    type = "int"
+    type = "string"
   }
 }
 

@@ -23,11 +23,11 @@ module "s3_bucket" {
   source         = "./s3_bucket"
 }
 
-module "athena" {
+module "glue" {
   aws_account_id = var.aws_account_id
   project        = var.project
   stage          = var.stage
-  source         = "./athena"
+  source         = "./glue"
 }
 
 module "add_partition" {
