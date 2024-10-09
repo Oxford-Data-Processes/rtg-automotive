@@ -100,7 +100,13 @@ def extract_datetime_from_sns_message(message):
 
 
 def get_all_sqs_messages(queue_url):
-    sqs_client = boto3.client("sqs", region_name="eu-west-2")
+    sqs_client = boto3.client(
+        "sqs",
+        region_name="eu-west-2",
+        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+        aws_session_token=os.environ["AWS_SESSION_TOKEN"],
+    )
     all_messages = []
     while True:
         # Receive messages from the SQS queue
@@ -139,7 +145,13 @@ def upload_file_to_s3(file, bucket_name, date, s3_client):
 
 
 def trigger_generate_ebay_table_lambda():
-    lambda_client = boto3.client("lambda", region_name="eu-west-2")
+    lambda_client = boto3.client(
+        "lambda",
+        region_name="eu-west-2",
+        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+        aws_session_token=os.environ["AWS_SESSION_TOKEN"],
+    )
     try:
         response = lambda_client.invoke(
             FunctionName=f"arn:aws:lambda:eu-west-2:{AWS_ACCOUNT_ID}:function:rtg-automotive-{STAGE}-generate-ebay-table",
@@ -163,10 +175,14 @@ def main():
 
     st.title("eBay Store Upload Generator")
     get_credentials(AWS_ACCOUNT_ID, ROLE)
-    st.write("AWS Access Key ID:", os.environ["AWS_ACCESS_KEY_ID"])
-    st.write("AWS Secret Access Key:", os.environ["AWS_SECRET_ACCESS_KEY"])
-    st.write("AWS Session Token:", os.environ["AWS_SESSION_TOKEN"])
-    s3_client = boto3.client("s3", region_name="eu-west-2")
+
+    s3_client = boto3.client(
+        "s3",
+        region_name="eu-west-2",
+        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+        aws_session_token=os.environ["AWS_SESSION_TOKEN"],
+    )
 
     sqs_queue_url = (
         f"https://sqs.eu-west-2.amazonaws.com/{AWS_ACCOUNT_ID}/{PROJECT_NAME}-sqs-queue"
@@ -184,6 +200,9 @@ def main():
 
     if st.button("Upload Files") and date:
         get_credentials(AWS_ACCOUNT_ID, ROLE)
+        st.write("AWS Access Key ID:", os.environ["AWS_ACCESS_KEY_ID"])
+        st.write("AWS Secret Access Key:", os.environ["AWS_SECRET_ACCESS_KEY"])
+        st.write("AWS Session Token:", os.environ["AWS_SESSION_TOKEN"])
         if uploaded_files:
             for uploaded_file in uploaded_files:
                 upload_file_to_s3(
