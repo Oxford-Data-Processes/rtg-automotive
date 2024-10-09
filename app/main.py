@@ -20,29 +20,28 @@ if STAGE == "prod":
 else:
     ROLE = "DevAdminRole"
 
+
 def get_credentials(aws_account_id, role):
     role_arn = f"arn:aws:iam::{aws_account_id}:role/{role}"
-    session_name = f"MySession-{int(time.time())}"  # Unique session name using current timestamp
+    session_name = f"MySession-{int(time.time())}"
 
-    sts_client = boto3.client("sts", 
-                              aws_access_key_id=st.secrets["aws_credentials"]["AWS_ACCESS_KEY_ID"], 
-                              aws_secret_access_key=st.secrets["aws_credentials"]["AWS_SECRET_ACCESS_KEY"])
+    sts_client = boto3.client(
+        "sts",
+        aws_access_key_id=st.secrets["aws_credentials"]["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=st.secrets["aws_credentials"]["AWS_SECRET_ACCESS_KEY"],
+    )
 
     # Assume the role
-    response = sts_client.assume_role(
-        RoleArn=role_arn,
-        RoleSessionName=session_name
-    )
+    response = sts_client.assume_role(RoleArn=role_arn, RoleSessionName=session_name)
     # Extract the credentials
-    credentials = response['Credentials']
-    access_key_id = credentials['AccessKeyId']
-    secret_access_key = credentials['SecretAccessKey']
-    session_token = credentials['SessionToken']
+    credentials = response["Credentials"]
+    access_key_id = credentials["AccessKeyId"]
+    secret_access_key = credentials["SecretAccessKey"]
+    session_token = credentials["SessionToken"]
 
     os.environ["AWS_ACCESS_KEY_ID"] = access_key_id
     os.environ["AWS_SECRET_ACCESS_KEY"] = secret_access_key
     os.environ["AWS_SESSION_TOKEN"] = session_token
-
 
 
 def zip_dataframes(dataframes: List[Tuple[pd.DataFrame, str]]) -> io.BytesIO:
@@ -94,11 +93,11 @@ def get_last_csv_from_s3(bucket_name, prefix, s3_client):
     return csv_files[0]["Key"] if csv_files else None
 
 
-
 def extract_datetime_from_sns_message(message):
     # Regular expression to find the datetime in the message
     match = re.search(r"\d{4}-\d{2}-\d{2} \d{2}:\d{2}:\d{2}", message)
     return match.group(0) if match else None
+
 
 def get_all_sqs_messages(queue_url):
     sqs_client = boto3.client("sqs", region_name="eu-west-2")
@@ -133,8 +132,8 @@ def upload_file_to_s3(file, bucket_name, date, s3_client):
     day = date.split("-")[2]
     s3_client.put_object(
         Bucket=bucket_name,
-        Key=f"stock_feed/year={year}/month={month}/day={day}/{file.name.replace(" ","_")}",
-        Body=file.getvalue()
+        Key=f"stock_feed/year={year}/month={month}/day={day}/{file.name.replace(' ','_')}",
+        Body=file.getvalue(),
     )
     st.success(f"File {file.name} uploaded successfully, processing...")
 
@@ -144,7 +143,7 @@ def trigger_generate_ebay_table_lambda():
     try:
         response = lambda_client.invoke(
             FunctionName=f"arn:aws:lambda:eu-west-2:{AWS_ACCOUNT_ID}:function:rtg-automotive-{STAGE}-generate-ebay-table",
-            InvocationType="RequestResponse"
+            InvocationType="RequestResponse",
         )
         time.sleep(2)
         return True
@@ -159,14 +158,16 @@ def load_csv_from_s3(bucket_name, csv_key, s3_client):
     df = pd.read_csv(BytesIO(csv_data))
     return df
 
+
 def main():
-    
+
     st.title("eBay Store Upload Generator")
     get_credentials(AWS_ACCOUNT_ID, ROLE)
     s3_client = boto3.client("s3", region_name="eu-west-2")
 
-
-    sqs_queue_url = f"https://sqs.eu-west-2.amazonaws.com/{AWS_ACCOUNT_ID}/{PROJECT_NAME}-sqs-queue"
+    sqs_queue_url = (
+        f"https://sqs.eu-west-2.amazonaws.com/{AWS_ACCOUNT_ID}/{PROJECT_NAME}-sqs-queue"
+    )
     stock_feed_bucket_name = f"{PROJECT_NAME}-stock-feed-bucket-{AWS_ACCOUNT_ID}"
     project_bucket_name = f"{PROJECT_NAME}-bucket-{AWS_ACCOUNT_ID}"
 
@@ -182,9 +183,11 @@ def main():
         get_credentials(AWS_ACCOUNT_ID, ROLE)
         if uploaded_files:
             for uploaded_file in uploaded_files:
-                upload_file_to_s3(uploaded_file, stock_feed_bucket_name, date, s3_client)
+                upload_file_to_s3(
+                    uploaded_file, stock_feed_bucket_name, date, s3_client
+                )
             time.sleep(len(uploaded_files) * 4)
-            messages = get_all_sqs_messages(sqs_queue_url)[-len(uploaded_files):]
+            messages = get_all_sqs_messages(sqs_queue_url)[-len(uploaded_files) :]
             for message in messages:
                 st.write(message["message"])
         else:
@@ -193,7 +196,9 @@ def main():
     if st.button("Generate eBay Store Upload Files"):
         get_credentials(AWS_ACCOUNT_ID, ROLE)
         if trigger_generate_ebay_table_lambda():
-            last_csv_key = get_last_csv_from_s3(project_bucket_name, "athena-results/", s3_client)
+            last_csv_key = get_last_csv_from_s3(
+                project_bucket_name, "athena-results/", s3_client
+            )
             if last_csv_key:
                 df = load_csv_from_s3(project_bucket_name, last_csv_key, s3_client)
                 ebay_df = create_ebay_dataframe(df)
@@ -225,10 +230,7 @@ def login() -> bool:
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
         if st.button("Login"):
-            if (
-                username == USERNAME
-                and password == PASSWORD
-            ):
+            if username == USERNAME and password == PASSWORD:
                 st.session_state.logged_in = True
                 st.success("Logged in as {}".format(username))
                 st.rerun()

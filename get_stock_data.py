@@ -35,9 +35,9 @@ def process_dataframe(df):
 
 
 def main():
-    NEXT_DATE = "2024_10_08"
+    BASELINE_DATE = "2024-10-07"
     excel_file = Path(
-        f"/Users/chrislittle/Dropbox/#Speedsheet/stock_master/{NEXT_DATE}/Stock Feed Master.xlsx"
+        f"/Users/chrislittle/Dropbox/#Speedsheet/stock_master/{BASELINE_DATE.replace('-','_')}/Stock Feed Master.xlsx"
     )
     sheet_names = ["Direct", "FPS"]
 
@@ -45,12 +45,11 @@ def main():
 
     processed_dfs = [process_dataframe(df) for df in dfs.values()]
     df_stock = pd.concat(processed_dfs)
-    updated_date = datetime.datetime.now() - datetime.timedelta(days=1)
-    updated_date_string = updated_date.strftime("%Y-%m-%d")
-    year = updated_date_string.split("-")[0]
-    month = updated_date_string.split("-")[1]
-    day = updated_date_string.split("-")[2]
-    df_stock["updated_date"] = updated_date.strftime("%Y-%m-%d")
+
+    year = BASELINE_DATE.split("-")[0]
+    month = BASELINE_DATE.split("-")[1]
+    day = BASELINE_DATE.split("-")[2]
+    df_stock["updated_date"] = BASELINE_DATE
 
     df_stock.drop_duplicates(
         subset=["part_number", "supplier"], keep="first", inplace=True
@@ -66,9 +65,7 @@ def main():
         supplier_df = df_stock.copy()[df_stock["supplier"] == supplier]
         key = f"supplier_stock/supplier={supplier}/year={year}/month={month}/day={day}/data.parquet"
         supplier_df.drop(columns=["supplier"], inplace=True)
-        supplier_df["updated_date"] = updated_date.strftime(
-            "%Y-%m-%d"
-        )  # Add updated_date to supplier_df
+        supplier_df["updated_date"] = BASELINE_DATE
         write_parquet_to_s3(supplier_df, bucket_name, key)
 
     df_product = df_stock.copy()[["custom_label", "part_number", "supplier"]]
