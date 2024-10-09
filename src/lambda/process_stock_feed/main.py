@@ -139,7 +139,7 @@ def read_excel_from_s3(
         aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
         aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
         aws_session_token=os.environ["AWS_SESSION_TOKEN"],
-        region_name=os.environ["AWS_REGION"],  # Ensure the region is specified
+        region_name=os.environ["AWS_REGION"],
     )
     response = s3_client.get_object(Bucket=bucket_name, Key=object_key)
     excel_data = response["Body"].read()

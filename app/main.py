@@ -133,7 +133,7 @@ def upload_file_to_s3(file, bucket_name, date, s3_client):
         Key=f"stock_feed/year={year}/month={month}/day={day}/{file.name.replace(" ","_")}",
         Body=file.getvalue()
     )
-    st.success(f"File {file.name} uploaded successfully to S3.")
+    st.success(f"File {file.name} uploaded successfully, processing...")
 
 
 def trigger_generate_ebay_table_lambda():
@@ -146,7 +146,7 @@ def trigger_generate_ebay_table_lambda():
         time.sleep(2)
         return True
     except Exception as e:
-        st.error(f"Error triggering Lambda: {str(e)}")
+        st.error(f"Error: {str(e)}")
         return False
 
 
@@ -181,7 +181,7 @@ def main():
         "%Y-%m-%d"
     )
 
-    if st.button("Upload Files to S3") and date:
+    if st.button("Upload Files") and date:
         if uploaded_files:
             for uploaded_file in uploaded_files:
                 upload_file_to_s3(uploaded_file, stock_feed_bucket_name, date, s3_client)
