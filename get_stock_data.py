@@ -35,7 +35,7 @@ def process_dataframe(df):
 
 
 def main():
-    BASELINE_DATE = "2024-10-07"
+    BASELINE_DATE = "2024-10-08"
     excel_file = Path(
         f"/Users/chrislittle/Dropbox/#Speedsheet/stock_master/{BASELINE_DATE.replace('-','_')}/Stock Feed Master.xlsx"
     )
