@@ -9,8 +9,8 @@ import io
 import zipfile
 import re
 
-AWS_ACCOUNT_ID = "905418370160"
-STAGE = "prod"
+AWS_ACCOUNT_ID = "654654324108"
+STAGE = "dev"
 PROJECT_NAME = "rtg-automotive"
 USERNAME = st.secrets["login_credentials"]["username"]
 PASSWORD = st.secrets["login_credentials"]["password"]
