@@ -256,8 +256,8 @@ def process_rtg_stock_feed(
     part_numbers = [
         row[row_index].upper().strip() for row in stock_feed_data if row[row_index]
     ]
-    logger.info(f"Is ETC20 in part_numbers: {'ETC20' in part_numbers}")
-    logger.info(f"Is ETC20 in custom_labels: {'ETC20' in custom_labels}")
+    logger.info(f"Is PS56 in part_numbers: {'PS56' in part_numbers}")
+    logger.info(f"Is PS56 in custom_labels: {'PS56' in custom_labels}")
     for custom_label in custom_labels:
         quantity = 0 if custom_label in part_numbers else 20
         output.append(
