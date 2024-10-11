@@ -20,14 +20,14 @@
                 "s3SchemaVersion": "1.0",
                 "configurationId": "rtg-automotive-prod-process-stock-feed-68a737133cefb25bff959852b8f04754",
                 "bucket": {
-                    "name": "rtg-automotive-stock-feed-bucket-905418370160",
+                    "name": "rtg-automotive-stock-feed-bucket-654654324108",
                     "ownerIdentity": {
                         "principalId": "ABLZB6738TIGV"
                     },
-                    "arn": "arn:aws:s3:::rtg-automotive-stock-feed-bucket-905418370160"
+                    "arn": "arn:aws:s3:::rtg-automotive-stock-feed-bucket-654654324108"
                 },
                 "object": {
-                    "key": "stock_feed/year%3D2024/month%3D10/day%3D01/FAI_SF.xlsx",
+                    "key": "stock_feed/year%3D2024/month%3D10/day%3D08/RTG_SF.xlsx",
                     "size": 213432,
                     "eTag": "413fc74de2f835dca1effbcd4205ca00",
                     "versionId": "EqXYNfoHHO98vjJdDghGC9.LacHbZXaa",

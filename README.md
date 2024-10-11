@@ -129,6 +129,8 @@ serverless deploy --stage dev
 # Docker local run
 
 docker buildx build --platform linux/amd64 --build-arg AWS_ACCOUNT_ID=$AWS_ACCOUNT_ID -t process-stock-feed .
+
+
 docker buildx build --build-arg AWS_ACCOUNT_ID=654654324108 -t process-stock-feed .
 docker buildx build --build-arg AWS_ACCOUNT_ID=654654324108 --build-arg AWS_REGION=eu-west-2 -t process-stock-feed .
 

@@ -208,6 +208,7 @@ def process_stock_feed(
 
     if config_key == "RTG":
         custom_labels = fetch_rtg_custom_labels(rtg_automotive_bucket)
+        logger.info(f"Custom labels length: {len(custom_labels)}")
         return process_rtg_stock_feed(
             stock_feed_data,
             custom_labels,
@@ -239,8 +240,9 @@ def process_rtg_stock_feed(
     part_numbers = [
         row[row_index].upper().strip() for row in stock_feed_data if row[row_index]
     ]
-
+    logger.info(f"Part numbers length: {len(part_numbers)}")
     for custom_label in custom_labels:
+        logger.info(f"Custom label: {custom_label}")
         quantity = 0 if custom_label in part_numbers else 20
         output.append(
             {
@@ -378,7 +380,7 @@ def send_failure_notification(supplier, AWS_ACCOUNT_ID):
 
 
 def lambda_handler(event, context):
-    AWS_ACCOUNT_ID = os.environ["AWS_ACCOUNT_ID"]
+    AWS_ACCOUNT_ID = "654654324108"
     rtg_automotive_bucket = f"rtg-automotive-bucket-{AWS_ACCOUNT_ID}"
     logger.info(f"RTG Automotive bucket: {rtg_automotive_bucket}")
     logger.info(f"Received event: {json.dumps(event)}")
@@ -388,21 +390,21 @@ def lambda_handler(event, context):
     year, month, day, supplier = process_current_date_and_supplier(object_key)
     current_date = f"{year}-{month}-{day}"
 
-    try:
-        logger.info(f"Object key: {object_key}")
-        excel_data = read_excel_data(
-            bucket_name, object_key, CONFIG[supplier]["header_row_number"]
-        )
+    # try:
+    logger.info(f"Object key: {object_key}")
+    excel_data = read_excel_data(
+        bucket_name, object_key, CONFIG[supplier]["header_row_number"]
+    )
 
-        output = process_stock_data(
-            excel_data, supplier, current_date, rtg_automotive_bucket
-        )
-        file_name = create_s3_file_name(supplier, year, month, day)
-        write_output_to_s3(output, rtg_automotive_bucket, file_name)
+    output = process_stock_data(
+        excel_data, supplier, current_date, rtg_automotive_bucket
+    )
+    file_name = create_s3_file_name(supplier, year, month, day)
+    write_output_to_s3(output, rtg_automotive_bucket, file_name)
 
-        send_success_notification(supplier, AWS_ACCOUNT_ID)
-        return create_success_response()
-    except Exception as e:
-        logger.error(f"Error processing file: {str(e)}")
-        send_failure_notification(supplier, AWS_ACCOUNT_ID)
-        raise e
+    send_success_notification(supplier, AWS_ACCOUNT_ID)
+    return create_success_response()
+    # except Exception as e:
+    #     logger.error(f"Error processing file: {str(e)}")
+    #     send_failure_notification(supplier, AWS_ACCOUNT_ID)
+    #     raise e
