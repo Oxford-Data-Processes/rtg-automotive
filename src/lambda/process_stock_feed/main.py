@@ -186,11 +186,27 @@ def fetch_rtg_custom_labels(rtg_automotive_bucket) -> list:
 
     # If the query succeeded, get the results
     if status == "SUCCEEDED":
-        results = athena_client.get_query_results(QueryExecutionId=query_execution_id)
-        # Extract the custom labels from the results
-        custom_labels = [
-            row["Data"][0]["VarCharValue"] for row in results["ResultSet"]["Rows"][1:]
-        ]  # Skip header row
+        custom_labels = []
+        next_token = None
+
+        # Paginate through results
+        while True:
+            # Prepare the parameters for get_query_results
+            params = {"QueryExecutionId": query_execution_id}
+            if next_token:
+                params["NextToken"] = next_token
+
+            results = athena_client.get_query_results(**params)
+            # Extract the custom labels from the results
+            custom_labels.extend(
+                row["Data"][0]["VarCharValue"]
+                for row in results["ResultSet"]["Rows"][1:]
+            )  # Skip header row
+
+            next_token = results.get("NextToken")
+            if not next_token:
+                break
+
         return custom_labels
     else:
         raise Exception(f"Query failed with status: {status}")
@@ -240,9 +256,9 @@ def process_rtg_stock_feed(
     part_numbers = [
         row[row_index].upper().strip() for row in stock_feed_data if row[row_index]
     ]
-    logger.info(f"Part numbers length: {len(part_numbers)}")
+    logger.info(f"Is ETC20 in part_numbers: {'ETC20' in part_numbers}")
+    logger.info(f"Is ETC20 in custom_labels: {'ETC20' in custom_labels}")
     for custom_label in custom_labels:
-        logger.info(f"Custom label: {custom_label}")
         quantity = 0 if custom_label in part_numbers else 20
         output.append(
             {
