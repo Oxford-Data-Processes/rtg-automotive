@@ -10,14 +10,6 @@ resource "aws_s3_bucket" "project_bucket" {
     enabled = true
   }
 
-  lifecycle_rule {
-    id      = "delete-old-objects"
-    enabled = true
-
-    expiration {
-      days = 30
-    }
-  }
 }
 
 data "aws_iam_policy_document" "project_bucket_policy" {
