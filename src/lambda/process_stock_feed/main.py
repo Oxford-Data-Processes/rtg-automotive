@@ -2,14 +2,14 @@ import json
 import boto3
 import logging
 import openpyxl
-import pyarrow as pa
-import pyarrow.parquet as pq
-from io import BytesIO
 import os
 import urllib.parse
-from datetime import datetime
 import time
 import pytz
+import pyarrow as pa
+import pyarrow.parquet as pq
+from datetime import datetime
+from io import BytesIO
 
 # Set up logging
 logger = logging.getLogger()
@@ -17,118 +17,29 @@ logger.setLevel(logging.INFO)
 
 
 def process_numerical(x):
-    if not isinstance(x, (int, float)):
-        return 0
-    elif x <= 0:
-        return 0
-    elif x > 10:
-        return 10
-    else:
-        return x
+    return max(0, min(x, 10)) if isinstance(x, (int, float)) and x > 0 else 0
 
 
-CONFIG = {
-    "APE": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "header_row_number": 1,
-        "process_func": lambda x: 0 if x == "No" else (10 if x == "YES" else 0),
-    },
-    "BET": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "header_row_number": 1,
-        "process_func": process_numerical,
-    },
-    "BGA": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "header_row_number": 1,
-        "process_func": process_numerical,
-    },
-    "COM": {
-        "code_column_number": 1,
-        "stock_column_number": 3,
-        "header_row_number": 1,
-        "process_func": process_numerical,
-    },
-    "FAI": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "header_row_number": 5,
-        "process_func": process_numerical,
-    },
-    "FEB": {
-        "code_column_number": 1,
-        "stock_column_number": 3,
-        "header_row_number": 1,
-        "process_func": process_numerical,
-    },
-    "FIR": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "header_row_number": 1,
-        "process_func": lambda x: 10 if x == "Y" else 0,
-    },
-    "FPS": {
-        "code_column_number": 1,
-        "stock_column_number": 4,
-        "header_row_number": 1,
-        "process_func": process_numerical,
-    },
-    "JUR": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "header_row_number": 1,
-        "process_func": process_numerical,
-    },
-    "KLA": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "header_row_number": 1,
-        "process_func": lambda x: x,
-    },
-    "KYB": {
-        "code_column_number": 1,
-        "stock_column_number": 2,
-        "header_row_number": 1,
-        "process_func": lambda x: 10 if x == "Y" else 0,
-    },
-    "MOT": {
-        "code_column_number": 1,
-        "stock_column_number": 3,
-        "header_row_number": 1,
-        "process_func": process_numerical,
-    },
-    "RFX": {
-        "code_column_number": 1,
-        "stock_column_number": 4,
-        "header_row_number": 1,
-        "process_func": process_numerical,
-    },
-    "ROL": {
-        "code_column_number": 1,
-        "stock_column_number": 3,
-        "header_row_number": 1,
-        "process_func": lambda x: 10 if x == "In Stock" else 0,
-    },
-    "RTG": {
-        "code_column_number": 1,
-        "header_row_number": 1,
-    },
-    "SMP": {
-        "code_column_number": 1,
-        "stock_column_number": 1,
-        "header_row_number": 1,
-        "process_func": lambda _: 10,
-    },
-    "ELR": {
-        "code_column_number": 1,
-        "stock_column_number": 4,
-        "header_row_number": 1,
-        "process_func": process_numerical,
-    },
-}
+def create_function(func_str):
+    return eval(func_str) if func_str.startswith("lambda") else globals().get(func_str)
+
+
+def get_config_from_s3(bucket_name, object_key):
+    s3_client = boto3.client(
+        "s3",
+        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+        aws_session_token=os.environ["AWS_SESSION_TOKEN"],
+        region_name=os.environ["AWS_REGION"],
+    )
+    response = s3_client.get_object(Bucket=bucket_name, Key=object_key)
+    config = json.load(response["Body"])
+
+    for key, value in config.items():
+        if "process_func" in value:
+            value["process_func"] = create_function(value["process_func"])
+
+    return config
 
 
 def read_excel_from_s3(
@@ -360,9 +271,11 @@ def read_excel_data(bucket_name, object_key, header_row_number):
     return excel_data
 
 
-def process_stock_data(excel_data, supplier, current_date, rtg_automotive_bucket):
+def process_stock_data(
+    excel_data, supplier, current_date, rtg_automotive_bucket, config
+):
     output = process_stock_feed(
-        excel_data, supplier, CONFIG, current_date, rtg_automotive_bucket
+        excel_data, supplier, config, current_date, rtg_automotive_bucket
     )
     logger.info(f"First 5 rows of output data: {output[:5]}")
     return output
@@ -396,8 +309,12 @@ def send_failure_notification(supplier, AWS_ACCOUNT_ID):
 
 
 def lambda_handler(event, context):
-    AWS_ACCOUNT_ID = os.environ["AWS_ACCOUNT_ID"]
+    AWS_ACCOUNT_ID = "654654324108"
     rtg_automotive_bucket = f"rtg-automotive-bucket-{AWS_ACCOUNT_ID}"
+    config = get_config_from_s3(
+        rtg_automotive_bucket, "config/process_stock_feed_config.json"
+    )
+
     logger.info(f"RTG Automotive bucket: {rtg_automotive_bucket}")
     logger.info(f"Received event: {json.dumps(event)}")
 
@@ -406,21 +323,21 @@ def lambda_handler(event, context):
     year, month, day, supplier = process_current_date_and_supplier(object_key)
     current_date = f"{year}-{month}-{day}"
 
-    # try:
-    logger.info(f"Object key: {object_key}")
-    excel_data = read_excel_data(
-        bucket_name, object_key, CONFIG[supplier]["header_row_number"]
-    )
+    try:
+        logger.info(f"Object key: {object_key}")
+        excel_data = read_excel_data(
+            bucket_name, object_key, config[supplier]["header_row_number"]
+        )
 
-    output = process_stock_data(
-        excel_data, supplier, current_date, rtg_automotive_bucket
-    )
-    file_name = create_s3_file_name(supplier, year, month, day)
-    write_output_to_s3(output, rtg_automotive_bucket, file_name)
+        output = process_stock_data(
+            excel_data, supplier, current_date, rtg_automotive_bucket, config
+        )
+        file_name = create_s3_file_name(supplier, year, month, day)
+        write_output_to_s3(output, rtg_automotive_bucket, file_name)
 
-    send_success_notification(supplier, AWS_ACCOUNT_ID)
-    return create_success_response()
-    # except Exception as e:
-    #     logger.error(f"Error processing file: {str(e)}")
-    #     send_failure_notification(supplier, AWS_ACCOUNT_ID)
-    #     raise e
+        send_success_notification(supplier, AWS_ACCOUNT_ID)
+        return create_success_response()
+    except Exception as e:
+        logger.error(f"Error processing file: {str(e)}")
+        send_failure_notification(supplier, AWS_ACCOUNT_ID)
+        raise e
