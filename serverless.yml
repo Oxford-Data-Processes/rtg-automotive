@@ -54,6 +54,9 @@ functions:
       - { Ref: PythonRequirementsLambdaLayer }
     environment:
       AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}
+      AWS_ACCESS_KEY_ID_ADMIN: ${env:AWS_ACCESS_KEY_ID_ADMIN}
+      AWS_SECRET_ACCESS_KEY_ADMIN: ${env:AWS_SECRET_ACCESS_KEY_ADMIN} 
+      STAGE: ${self:custom.stage}
     events:
       - s3:
           bucket: ${self:custom.bucketName}
@@ -80,6 +83,9 @@ functions:
       - { Ref: PythonRequirementsLambdaLayer }
     environment:  
       AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}
+      AWS_ACCESS_KEY_ID_ADMIN: ${env:AWS_ACCESS_KEY_ID_ADMIN}
+      AWS_SECRET_ACCESS_KEY_ADMIN: ${env:AWS_SECRET_ACCESS_KEY_ADMIN} 
+      STAGE: ${self:custom.stage}
 
   process-stock-feed:
     description: "Process stock feed"
@@ -90,6 +96,7 @@ functions:
       AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}
       AWS_ACCESS_KEY_ID_ADMIN: ${env:AWS_ACCESS_KEY_ID_ADMIN}
       AWS_SECRET_ACCESS_KEY_ADMIN: ${env:AWS_SECRET_ACCESS_KEY_ADMIN} 
+      STAGE: ${self:custom.stage}
     events:
       - s3:
           bucket: ${self:custom.stockFeedBucketName}
