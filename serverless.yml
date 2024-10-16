@@ -38,7 +38,6 @@ functions:
     description: "Add partitions to tables"
     role: ${ssm:/${self:service}/add-partition/lambda-iam-role/arn}
     handler: src.lambda.add_partition.main.lambda_handler
-    module: src/lambda/add_partition
     package:
       patterns:
         - "!node_modules/**"
@@ -61,24 +60,10 @@ functions:
           event: s3:ObjectCreated:*
           existing: true
 
-  process-stock-feed:
-    description: "Process stock feed"
-    role: ${ssm:/${self:service}/process-stock-feed/lambda-iam-role/arn}
-    image:
-      uri: ${self:custom.environment.awsAccountId}.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
-    environment:
-      AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}
-    events:
-      - s3:
-          bucket: ${self:custom.stockFeedBucketName}
-          event: s3:ObjectCreated:*
-          existing: true
-
   generate-ebay-table:
     description: "Generate ebay table"
     role: ${ssm:/${self:service}/generate-ebay-table/lambda-iam-role/arn}
     handler: src.lambda.generate_ebay_table.main.lambda_handler
-    module: src/lambda/generate_ebay_table
     package:
       patterns:
         - "!node_modules/**"
@@ -95,3 +80,16 @@ functions:
       - { Ref: PythonRequirementsLambdaLayer }
     environment:  
       AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}
+
+  process-stock-feed:
+    description: "Process stock feed"
+    role: ${ssm:/${self:service}/process-stock-feed/lambda-iam-role/arn}
+    image:
+      uri: ${self:custom.environment.awsAccountId}.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
+    environment:
+      AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}
+    events:
+      - s3:
+          bucket: ${self:custom.stockFeedBucketName}
+          event: s3:ObjectCreated:*
+          existing: true
