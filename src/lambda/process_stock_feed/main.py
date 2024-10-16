@@ -11,7 +11,6 @@ from datetime import datetime
 from io import BytesIO
 from aws_utils import athena, sns, iam, s3
 
-# Set up logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 

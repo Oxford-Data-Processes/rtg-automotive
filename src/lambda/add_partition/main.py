@@ -1,7 +1,18 @@
 import json
 import logging
-from datetime import datetime
-from aws_utils import glue
+import os
+from aws_utils import glue, iam
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+aws_credentials = iam.AWSCredentials(
+    aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID_ADMIN"],
+    aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY_ADMIN"],
+    stage="dev",
+)
+
+aws_credentials.get_aws_credentials()
 
 
 def extract_partition_values(object_key):
@@ -23,8 +34,6 @@ def get_table_name(object_key):
 
 
 def lambda_handler(event, context):
-    logger = logging.getLogger()
-    logger.setLevel(logging.INFO)
 
     glue_handler = glue.GlueHandler()
     logger.info(f"Received event: {json.dumps(event)}")
