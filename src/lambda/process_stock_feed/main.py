@@ -38,7 +38,7 @@ def get_config_from_s3(bucket_name, object_key):
         os.environ["AWS_ACCESS_KEY_ID"],
         os.environ["AWS_SECRET_ACCESS_KEY"],
         os.environ["AWS_SESSION_TOKEN"],
-        "eu-west-2",
+        os.environ["AWS_REGION"],
     )
     config = s3_handler.load_json_from_s3(bucket_name, object_key)
 
@@ -56,7 +56,7 @@ def read_excel_from_s3(
         os.environ["AWS_ACCESS_KEY_ID"],
         os.environ["AWS_SECRET_ACCESS_KEY"],
         os.environ["AWS_SESSION_TOKEN"],
-        "eu-west-2",
+        os.environ["AWS_REGION"],
     )
     excel_data = s3_handler.load_excel_from_s3(bucket_name, object_key)
     workbook = openpyxl.load_workbook(BytesIO(excel_data))
