@@ -39,7 +39,6 @@ functions:
     role: ${ssm:/${self:service}/add-partition/lambda-iam-role/arn}
     handler: src.lambda.add_partition.main.lambda_handler
     package:
-      requirements: src/lambda/add_partition/requirements.txt
       patterns:
         - "!node_modules/**"
         - "!yarn.lock"
@@ -49,6 +48,7 @@ functions:
         - "src/lambda/add_partition/**"
         - "src/shared/**"
         - "src/__init__.py"
+    requirements: src/lambda/add_partition/requirements.txt
     timeout: 900
     memorySize: 2048
     layers:
@@ -79,7 +79,6 @@ functions:
     role: ${ssm:/${self:service}/generate-ebay-table/lambda-iam-role/arn}
     handler: src.lambda.generate_ebay_table.main.lambda_handler
     package:
-      requirements: src/lambda/generate_ebay_table/requirements.txt
       patterns:
         - "!node_modules/**"
         - "!yarn.lock"
@@ -89,6 +88,7 @@ functions:
         - "src/lambda/generate_ebay_table/**"
         - "src/shared/**"
         - "src/__init__.py"
+    requirements: src/lambda/generate_ebay_table/requirements.txt
     timeout: 900
     memorySize: 2048
     layers:
