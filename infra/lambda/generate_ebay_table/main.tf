@@ -6,7 +6,6 @@ resource "aws_iam_role" "lambda_iam" {
   force_detach_policies = true
   name                  = "${var.project}-${local.service_name}-lambda-role"
   assume_role_policy    = data.aws_iam_policy_document.assume_role_lambda.json
-  path                  = "/${var.project}/${local.service_name}/"
 }
 
 resource "aws_iam_policy" "inline_policy" {
