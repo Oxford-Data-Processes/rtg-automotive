@@ -1,8 +1,6 @@
 import json
-import boto3
 import logging
 from datetime import datetime
-import os
 from aws_utils import glue
 
 

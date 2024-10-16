@@ -39,6 +39,7 @@ functions:
     role: ${ssm:/${self:service}/add-partition/lambda-iam-role/arn}
     handler: src.lambda.add_partition.main.lambda_handler
     package:
+      requirements: src/lambda/add_partition/requirements.txt
       patterns:
         - "!node_modules/**"
         - "!yarn.lock"
@@ -78,6 +79,7 @@ functions:
     role: ${ssm:/${self:service}/generate-ebay-table/lambda-iam-role/arn}
     handler: src.lambda.generate_ebay_table.main.lambda_handler
     package:
+      requirements: src/lambda/generate_ebay_table/requirements.txt
       patterns:
         - "!node_modules/**"
         - "!yarn.lock"
