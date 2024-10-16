@@ -36,7 +36,7 @@ package:
 functions:
   add-partition:
     description: "Add partitions to tables"
-    role: "arn:aws:iam::${self:custom.environment.awsAccountId}:role/${self:service}/add-partition/${self:service}-add-partition-lambda-role"
+    role: arn:aws:iam::${self:custom.environment.awsAccountId}:role/${self:service}/add-partition/${self:service}-add-partition-lambda-role
     handler: src.lambda.add_partition.main.lambda_handler
     package:
       patterns:
@@ -62,7 +62,7 @@ functions:
 
   generate-ebay-table:
     description: "Generate ebay table"
-    role: "arn:aws:iam::${self:custom.environment.awsAccountId}:role/${self:service}/generate-ebay-tables/${self:service}-generate-ebay-table-lambda-role"
+    role: arn:aws:iam::${self:custom.environment.awsAccountId}:role/${self:service}/generate-ebay-tables/${self:service}-generate-ebay-table-lambda-role
     handler: src.lambda.generate_ebay_table.main.lambda_handler
     package:
       patterns:
@@ -83,7 +83,7 @@ functions:
 
   process-stock-feed:
     description: "Process stock feed"
-    role: "arn:aws:iam::${self:custom.environment.awsAccountId}:role/${self:service}/process-stock-feed/${self:service}-process-stock-feed-lambda-role"
+    role: arn:aws:iam::${self:custom.environment.awsAccountId}:role/${self:service}/process-stock-feed/${self:service}-process-stock-feed-lambda-role
     image:
       uri: ${self:custom.environment.awsAccountId}.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
     environment:
