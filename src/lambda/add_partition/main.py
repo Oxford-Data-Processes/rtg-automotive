@@ -51,7 +51,7 @@ def lambda_handler(event, context):
 
     if table_name in ["supplier_stock", "store"]:
         try:
-            glue_handler.add_partition(
+            glue_handler.add_partition_to_glue(
                 database_name,
                 table_name,
                 bucket_name,
