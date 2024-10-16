@@ -32,13 +32,9 @@ def lambda_handler(event, context):
     logger.info(f"Query: {query}")
     results = athena_handler.run_query(query)
 
-    if results["ResultSet"]["Rows"]:
-        logger.info(f"Query results: {results['ResultSet']['Rows'][:5]}")
+    if len(results) > 0:
+        logger.info(f"Query results - columns: {results[0]} values: {results[1:6]}")
     else:
-        logger.error(
-            f"Query failed with status: {results['ResultSet']['Status']['State']}"
-        )
-        raise Exception(
-            f"Query failed with status: {results['ResultSet']['Status']['State']}"
-        )
+        logger.error(f"Query failed: {query}")
+        raise Exception(f"Query failed: {query}")
     return {"statusCode": 200, "body": json.dumps("Query executed successfully!")}
