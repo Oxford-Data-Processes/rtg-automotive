@@ -132,9 +132,8 @@ docker buildx build --no-cache --build-arg AWS_ACCOUNT_ID=654654324108 --build-a
 docker buildx build --build-arg AWS_ACCOUNT_ID=654654324108 --build-arg AWS_REGION=eu-west-2 -t process-stock-feed src/lambda/process_stock_feed
 
 docker run -p 9000:8080 \
-  -e AWS_ACCESS_KEY_ID \
-  -e AWS_SECRET_ACCESS_KEY \
-  -e AWS_SESSION_TOKEN \
+  -e AWS_ACCESS_KEY_ID_ADMIN \
+  -e AWS_SECRET_ACCESS_KEY_ADMIN \
   -e AWS_REGION=eu-west-2 \
   process-stock-feed
 
