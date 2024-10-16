@@ -88,6 +88,8 @@ functions:
       uri: ${self:custom.environment.awsAccountId}.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
     environment:
       AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}
+      AWS_ACCESS_KEY_ID_ADMIN: ${env:AWS_ACCESS_KEY_ID_ADMIN}
+      AWS_SECRET_ACCESS_KEY_ADMIN: ${env:AWS_SECRET_ACCESS_KEY_ADMIN} 
     events:
       - s3:
           bucket: ${self:custom.stockFeedBucketName}
