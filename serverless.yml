@@ -4,7 +4,6 @@ service: rtg-automotive
 
 custom:
   stage: ${opt:stage}
-  environment: ${file(./${self:custom.stage}.yml)}
   pythonRequirements:
     zip: true
     slim: true
@@ -53,7 +52,6 @@ functions:
     layers:
       - { Ref: PythonRequirementsLambdaLayer }
     environment:
-      AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}
       AWS_ACCESS_KEY_ID_ADMIN: ${env:AWS_ACCESS_KEY_ID_ADMIN}
       AWS_SECRET_ACCESS_KEY_ADMIN: ${env:AWS_SECRET_ACCESS_KEY_ADMIN} 
       STAGE: ${self:custom.stage}
@@ -82,7 +80,6 @@ functions:
     layers:
       - { Ref: PythonRequirementsLambdaLayer }
     environment:  
-      AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}
       AWS_ACCESS_KEY_ID_ADMIN: ${env:AWS_ACCESS_KEY_ID_ADMIN}
       AWS_SECRET_ACCESS_KEY_ADMIN: ${env:AWS_SECRET_ACCESS_KEY_ADMIN} 
       STAGE: ${self:custom.stage}
@@ -93,9 +90,9 @@ functions:
     image:
       uri: ${self:custom.environment.awsAccountId}.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
     environment:
-      AWS_ACCOUNT_ID: ${self:custom.environment.awsAccountId}
       AWS_ACCESS_KEY_ID_ADMIN: ${env:AWS_ACCESS_KEY_ID_ADMIN}
       AWS_SECRET_ACCESS_KEY_ADMIN: ${env:AWS_SECRET_ACCESS_KEY_ADMIN} 
+      AWS_REGION: ${self:provider.region}
       STAGE: ${self:custom.stage}
     events:
       - s3:
