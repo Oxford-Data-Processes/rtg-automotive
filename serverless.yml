@@ -93,7 +93,6 @@ functions:
     environment:
       AWS_ACCESS_KEY_ID_ADMIN: ${env:AWS_ACCESS_KEY_ID_ADMIN}
       AWS_SECRET_ACCESS_KEY_ADMIN: ${env:AWS_SECRET_ACCESS_KEY_ADMIN} 
-      AWS_REGION: ${self:provider.region}
       STAGE: ${self:custom.stage}
     events:
       - s3:
