@@ -1,5 +1,4 @@
 import json
-import boto3
 import logging
 import openpyxl
 import os
@@ -10,10 +9,22 @@ import pyarrow as pa
 import pyarrow.parquet as pq
 from datetime import datetime
 from io import BytesIO
+from aws_utils import athena, sns, iam, s3
 
 # Set up logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+logger.info(f"AWS_ACCESS_KEY_ID: {os.environ['AWS_ACCESS_KEY_ID']}")
+logger.info(f"AWS_SECRET_ACCESS_KEY: {os.environ['AWS_SECRET_ACCESS_KEY']}")
+
+aws_credentials = iam.AWSCredentials(
+    aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
+    aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
+    stage="dev",
+)
+
+aws_credentials.get_aws_credentials()
 
 
 def process_numerical(x):
@@ -25,15 +36,14 @@ def create_function(func_str):
 
 
 def get_config_from_s3(bucket_name, object_key):
-    s3_client = boto3.client(
-        "s3",
-        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
-        aws_session_token=os.environ["AWS_SESSION_TOKEN"],
-        region_name=os.environ["AWS_REGION"],
+
+    s3_handler = s3.S3Handler(
+        os.environ["AWS_ACCESS_KEY_ID"],
+        os.environ["AWS_SECRET_ACCESS_KEY"],
+        os.environ["AWS_SESSION_TOKEN"],
+        "eu-west-2",
     )
-    response = s3_client.get_object(Bucket=bucket_name, Key=object_key)
-    config = json.load(response["Body"])
+    config = s3_handler.load_json_from_s3(bucket_name, object_key)
 
     for key, value in config.items():
         if "process_func" in value:
@@ -45,15 +55,13 @@ def get_config_from_s3(bucket_name, object_key):
 def read_excel_from_s3(
     bucket_name: str, object_key: str, header_row_number: int
 ) -> list[dict]:
-    s3_client = boto3.client(
-        "s3",
-        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
-        aws_session_token=os.environ["AWS_SESSION_TOKEN"],
-        region_name=os.environ["AWS_REGION"],
+    s3_handler = s3.S3Handler(
+        os.environ["AWS_ACCESS_KEY_ID"],
+        os.environ["AWS_SECRET_ACCESS_KEY"],
+        os.environ["AWS_SESSION_TOKEN"],
+        "eu-west-2",
     )
-    response = s3_client.get_object(Bucket=bucket_name, Key=object_key)
-    excel_data = response["Body"].read()
+    excel_data = s3_handler.load_excel_from_s3(bucket_name, object_key)
     workbook = openpyxl.load_workbook(BytesIO(excel_data))
     sheet = workbook.active
 
@@ -69,58 +77,14 @@ def read_excel_from_s3(
 
 def fetch_rtg_custom_labels(rtg_automotive_bucket) -> list:
     query = """SELECT DISTINCT(custom_label) FROM "rtg_automotive"."store" WHERE ebay_store = 'RTG' AND supplier = 'RTG';"""
-    athena_client = boto3.client("athena", region_name=os.environ["AWS_REGION"])
-
-    # Start the query execution
-    response = athena_client.start_query_execution(
-        QueryString=query,
-        QueryExecutionContext={"Database": "rtg_automotive"},
-        ResultConfiguration={
-            "OutputLocation": f"s3://{rtg_automotive_bucket}/athena-results/"  # Temporary output location
-        },
-        WorkGroup="rtg-automotive-workgroup",
+    athena_handler = athena.AthenaHandler(
+        database="rtg_automotive",
+        workgroup="rtg-automotive-workgroup",
+        output_bucket=rtg_automotive_bucket,
     )
-
-    query_execution_id = response["QueryExecutionId"]
-
-    # Wait for the query to complete
-    while True:
-        query_status = athena_client.get_query_execution(
-            QueryExecutionId=query_execution_id
-        )
-        status = query_status["QueryExecution"]["Status"]["State"]
-
-        if status in ["SUCCEEDED", "FAILED", "CANCELLED"]:
-            break
-
-        time.sleep(1)  # Wait before checking the status again
-
-    # If the query succeeded, get the results
-    if status == "SUCCEEDED":
-        custom_labels = []
-        next_token = None
-
-        # Paginate through results
-        while True:
-            # Prepare the parameters for get_query_results
-            params = {"QueryExecutionId": query_execution_id}
-            if next_token:
-                params["NextToken"] = next_token
-
-            results = athena_client.get_query_results(**params)
-            # Extract the custom labels from the results
-            custom_labels.extend(
-                row["Data"][0]["VarCharValue"]
-                for row in results["ResultSet"]["Rows"][1:]
-            )  # Skip header row
-
-            next_token = results.get("NextToken")
-            if not next_token:
-                break
-
-        return custom_labels
-    else:
-        raise Exception(f"Query failed with status: {status}")
+    csv_data = athena_handler.run_query(query)
+    custom_labels = csv_data[1:]
+    return custom_labels
 
 
 def process_stock_feed(
@@ -167,8 +131,6 @@ def process_rtg_stock_feed(
     part_numbers = [
         row[row_index].upper().strip() for row in stock_feed_data if row[row_index]
     ]
-    logger.info(f"Is PS56 in part_numbers: {'PS56' in part_numbers}")
-    logger.info(f"Is PS56 in custom_labels: {'PS56' in custom_labels}")
     for custom_label in custom_labels:
         quantity = 0 if custom_label in part_numbers else 20
         output.append(
@@ -213,16 +175,31 @@ def write_to_s3_parquet(
     file_name: str,
     schema: list[tuple[str, pa.DataType]],
 ) -> None:
-    table = pa.Table.from_pylist(data, schema=pa.schema(schema))
+    s3_handler = s3.S3Handler(
+        os.environ["AWS_ACCESS_KEY_ID"],
+        os.environ["AWS_SECRET_ACCESS_KEY"],
+        os.environ["AWS_SESSION_TOKEN"],
+        os.environ["AWS_REGION"],
+    )
+
+    transformed_data = []
+    for item in data:
+        transformed_item = item.copy()
+        if (
+            isinstance(transformed_item["part_number"], list)
+            and transformed_item["part_number"]
+        ):
+            transformed_item["part_number"] = transformed_item["part_number"][0]
+        transformed_data.append(transformed_item)
+
+    table = pa.Table.from_pylist(transformed_data, schema=pa.schema(schema))
 
     buffer = BytesIO()
     pq.write_table(table, buffer)
-    s3_client = boto3.client(
-        "s3", region_name=os.environ["AWS_REGION"]
-    )  # Ensure the region is specified
+
     buffer.seek(0)
     logger.info(f"Writing to S3 path {bucket_name}/{file_name}")
-    s3_client.put_object(Bucket=bucket_name, Key=file_name, Body=buffer.getvalue())
+    s3_handler.upload_parquet_to_s3(bucket_name, file_name, buffer.getvalue())
 
 
 def get_stock_feed_schema():
@@ -252,16 +229,10 @@ def create_s3_file_name(supplier, year, month, day):
     return f"supplier_stock/supplier={supplier}/year={year}/month={month}/day={day}/data.parquet"
 
 
-def send_sns_notification(message, AWS_ACCOUNT_ID):
-    sns_client = boto3.client("sns", region_name=os.environ["AWS_REGION"])
-    topic_arn = (
-        f"arn:aws:sns:eu-west-2:{AWS_ACCOUNT_ID}:rtg-automotive-stock-notifications"
-    )
-    sns_client.publish(
-        TopicArn=topic_arn,
-        Message=message,
-        Subject="Stock Feed Processed",
-    )
+def send_sns_notification(message):
+    topic_name = "rtg-automotive-stock-notifications"
+    sns_handler = sns.SNSHandler(topic_name)
+    sns_handler.send_notification(message, "Stock Feed Processed")
 
 
 def read_excel_data(bucket_name, object_key, header_row_number):
@@ -286,12 +257,12 @@ def write_output_to_s3(output, bucket_name, file_name):
     write_to_s3_parquet(output, bucket_name, file_name, stock_feed_schema)
 
 
-def send_success_notification(supplier, AWS_ACCOUNT_ID):
+def send_success_notification(supplier):
     time_stamp = datetime.now(pytz.timezone("Europe/London")).strftime(
         "%Y-%m-%dT%H:%M:%S"
     )
     message = f"Stock feed processed successfully for {supplier} at {time_stamp}"
-    send_sns_notification(message, AWS_ACCOUNT_ID)
+    send_sns_notification(message)
     logger.info(message)
 
 
@@ -299,17 +270,18 @@ def create_success_response():
     return {"statusCode": 200, "body": json.dumps("File processed successfully!")}
 
 
-def send_failure_notification(supplier, AWS_ACCOUNT_ID):
+def send_failure_notification(supplier):
     time_stamp = datetime.now(pytz.timezone("Europe/London")).strftime(
-        "%Y-%m-%d %H:%M:%S"
+        "%Y-%m-%dT%H:%M:%S"
     )
     message = f"Stock feed processing failed for {supplier} at {time_stamp}"
-    send_sns_notification(message, AWS_ACCOUNT_ID)
+    send_sns_notification(message)
     logger.info(message)
 
 
 def lambda_handler(event, context):
     AWS_ACCOUNT_ID = "654654324108"
+
     rtg_automotive_bucket = f"rtg-automotive-bucket-{AWS_ACCOUNT_ID}"
     config = get_config_from_s3(
         rtg_automotive_bucket, "config/process_stock_feed_config.json"
@@ -335,9 +307,9 @@ def lambda_handler(event, context):
         file_name = create_s3_file_name(supplier, year, month, day)
         write_output_to_s3(output, rtg_automotive_bucket, file_name)
 
-        send_success_notification(supplier, AWS_ACCOUNT_ID)
+        send_success_notification(supplier)
         return create_success_response()
     except Exception as e:
         logger.error(f"Error processing file: {str(e)}")
-        send_failure_notification(supplier, AWS_ACCOUNT_ID)
+        send_failure_notification(supplier)
         raise e

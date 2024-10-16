@@ -4,6 +4,9 @@ FROM public.ecr.aws/lambda/python:3.11
 # Set environment variable
 ENV AWS_ACCOUNT_ID=${AWS_ACCOUNT_ID}
 
+# Install git
+RUN yum install -y git
+
 # Copy the requirements file
 COPY requirements.txt ./
 
