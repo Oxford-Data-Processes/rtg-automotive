@@ -279,7 +279,7 @@ def send_failure_notification(supplier):
 
 
 def lambda_handler(event, context):
-    AWS_ACCOUNT_ID = "654654324108"
+    AWS_ACCOUNT_ID = os.environ["AWS_ACCOUNT_ID"]
 
     rtg_automotive_bucket = f"rtg-automotive-bucket-{AWS_ACCOUNT_ID}"
     config = get_config_from_s3(
