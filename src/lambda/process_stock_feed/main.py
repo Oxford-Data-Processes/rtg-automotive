@@ -23,6 +23,8 @@ aws_credentials = iam.AWSCredentials(
 
 aws_credentials.get_aws_credentials()
 
+AWS_REGION = "eu-west-2"
+
 
 def process_numerical(x):
     return max(0, min(x, 10)) if isinstance(x, (int, float)) and x > 0 else 0
@@ -38,7 +40,7 @@ def get_config_from_s3(bucket_name, object_key):
         os.environ["AWS_ACCESS_KEY_ID"],
         os.environ["AWS_SECRET_ACCESS_KEY"],
         os.environ["AWS_SESSION_TOKEN"],
-        os.environ["AWS_REGION"],
+        AWS_REGION,
     )
     config = s3_handler.load_json_from_s3(bucket_name, object_key)
 
@@ -56,7 +58,7 @@ def read_excel_from_s3(
         os.environ["AWS_ACCESS_KEY_ID"],
         os.environ["AWS_SECRET_ACCESS_KEY"],
         os.environ["AWS_SESSION_TOKEN"],
-        os.environ["AWS_REGION"],
+        AWS_REGION,
     )
     excel_data = s3_handler.load_excel_from_s3(bucket_name, object_key)
     workbook = openpyxl.load_workbook(BytesIO(excel_data))
@@ -176,7 +178,7 @@ def write_to_s3_parquet(
         os.environ["AWS_ACCESS_KEY_ID"],
         os.environ["AWS_SECRET_ACCESS_KEY"],
         os.environ["AWS_SESSION_TOKEN"],
-        os.environ["AWS_REGION"],
+        AWS_REGION,
     )
 
     transformed_data = []
