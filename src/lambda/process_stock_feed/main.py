@@ -15,9 +15,6 @@ from aws_utils import athena, sns, iam, s3
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-logger.info(f"AWS_ACCESS_KEY_ID: {os.environ['AWS_ACCESS_KEY_ID']}")
-logger.info(f"AWS_SECRET_ACCESS_KEY: {os.environ['AWS_SECRET_ACCESS_KEY']}")
-
 aws_credentials = iam.AWSCredentials(
     aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
     aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
