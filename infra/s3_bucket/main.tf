@@ -39,7 +39,7 @@ data "aws_iam_policy_document" "project_bucket_policy" {
     effect = "Allow"
     principals {
       type = "AWS"
-      identifiers = ["arn:aws:iam::${var.aws_account_id}:role/${var.project}/generate-ebay-table/${var.project}-generate-ebay-table-lambda-role"]
+      identifiers = ["arn:aws:iam::${var.aws_account_id}:role/${var.project}-generate-ebay-table-lambda-role"]
     }
     actions = ["s3:*"]
     resources = [
@@ -51,7 +51,7 @@ data "aws_iam_policy_document" "project_bucket_policy" {
     effect = "Allow"
     principals {
       type = "AWS"
-      identifiers = ["arn:aws:iam::${var.aws_account_id}:role/${var.project}/process-stock-feed/${var.project}-process-stock-feed-lambda-role"]
+      identifiers = ["arn:aws:iam::${var.aws_account_id}:role/${var.project}-process-stock-feed-lambda-role"]
     }
     actions = ["s3:*"]
     resources = [
@@ -121,7 +121,7 @@ data "aws_iam_policy_document" "stock_feed_bucket_policy" {
     effect = "Allow"
     principals {
       type = "AWS"
-      identifiers = ["arn:aws:iam::${var.aws_account_id}:role/${var.project}/process-stock-feed/${var.project}-process-stock-feed-lambda-role"]
+      identifiers = ["arn:aws:iam::${var.aws_account_id}:role/${var.project}-process-stock-feed-lambda-role"]
     }
     actions = ["s3:*"]
     resources = [
