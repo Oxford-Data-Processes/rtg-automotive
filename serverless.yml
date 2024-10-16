@@ -4,6 +4,7 @@ service: rtg-automotive
 
 custom:
   stage: ${opt:stage}
+  environment: ${file(./${self:custom.stage}.yml)} 
   pythonRequirements:
     zip: true
     slim: true
