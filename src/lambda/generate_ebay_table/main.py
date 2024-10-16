@@ -9,7 +9,13 @@ logger.setLevel(logging.INFO)
 
 
 def lambda_handler(event, context):
-    athena_handler = athena.AthenaHandler()
+    AWS_ACCOUNT_ID = os.environ["AWS_ACCOUNT_ID"]
+    rtg_automotive_bucket = f"rtg-automotive-{AWS_ACCOUNT_ID}"
+    athena_handler = athena.AthenaHandler(
+        database="rtg_automotive",
+        workgroup="rtg-automotive-workgroup",
+        output_bucket=rtg_automotive_bucket,
+    )
 
     current_directory = os.path.dirname(os.path.abspath(__file__))
 
