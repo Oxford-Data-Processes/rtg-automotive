@@ -288,7 +288,7 @@ def write_output_to_s3(output, bucket_name, file_name):
 
 def send_success_notification(supplier, AWS_ACCOUNT_ID):
     time_stamp = datetime.now(pytz.timezone("Europe/London")).strftime(
-        "%Y-%m-%d %H:%M:%S"
+        "%Y-%m-%dT%H:%M:%S"
     )
     message = f"Stock feed processed successfully for {supplier} at {time_stamp}"
     send_sns_notification(message, AWS_ACCOUNT_ID)
