@@ -1,7 +1,7 @@
 import json
 import logging
 import os
-from aws_utils import glue, iam
+from aws_utils import glue, iam, s3
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
@@ -12,24 +12,6 @@ iam.AWSCredentials.get_aws_credentials(
     aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY_ADMIN"],
     iam_instance=iam_instance,
 )
-
-
-def extract_partition_values(object_key):
-    partition_values = {}
-    parts = object_key.split("/")
-
-    for part in parts:
-        if "%" in part:
-            part = part.replace("%3D", "=")
-        if "=" in part:
-            key, value = part.split("=")
-            partition_values[key] = value
-
-    return partition_values
-
-
-def get_table_name(object_key):
-    return object_key.split("/")[0]
 
 
 def lambda_handler(event, context):
@@ -43,10 +25,10 @@ def lambda_handler(event, context):
 
     if records:
         object_key = records[0]["s3"]["object"]["key"]
-        partition_values = extract_partition_values(object_key)
+        partition_values, paths = s3.S3Utils.extract_partition_values(object_key)
 
     database_name = "rtg_automotive"
-    table_name = get_table_name(object_key)
+    table_name = paths[0]
 
     if table_name in ["supplier_stock", "store"]:
         try:

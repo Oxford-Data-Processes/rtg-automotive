@@ -3,7 +3,6 @@ import logging
 import openpyxl
 import os
 import urllib.parse
-import time
 import pytz
 import pyarrow as pa
 import pyarrow.parquet as pq
