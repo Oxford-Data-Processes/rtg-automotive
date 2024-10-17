@@ -14,13 +14,12 @@ from aws_utils import athena, sns, iam, s3
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-aws_credentials = iam.AWSCredentials(
+iam_instance = iam.IAM(stage=os.environ["STAGE"])
+iam.AWSCredentials.get_aws_credentials(
     aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID_ADMIN"],
     aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY_ADMIN"],
-    stage=os.environ["STAGE"],
+    iam_instance=iam_instance,
 )
-
-aws_credentials.get_aws_credentials()
 
 
 def process_numerical(x):
@@ -228,7 +227,7 @@ def create_s3_file_name(supplier, year, month, day):
 def send_sns_notification(message):
     topic_name = "rtg-automotive-stock-notifications"
     sns_handler = sns.SNSHandler(topic_name)
-    sns_handler.send_notification(message, "Stock Feed Processed")
+    sns_handler.send_notification(message, "PROCESS_FINISHED")
 
 
 def read_excel_data(bucket_name, object_key, header_row_number):
@@ -276,9 +275,8 @@ def send_failure_notification(supplier):
 
 
 def lambda_handler(event, context):
-    AWS_ACCOUNT_ID = os.environ["AWS_ACCOUNT_ID"]
-
-    rtg_automotive_bucket = f"rtg-automotive-bucket-{AWS_ACCOUNT_ID}"
+    aws_account_id = os.environ["AWS_ACCOUNT_ID"]
+    rtg_automotive_bucket = f"rtg-automotive-bucket-{aws_account_id}"
     config = get_config_from_s3(
         rtg_automotive_bucket, "config/process_stock_feed_config.json"
     )

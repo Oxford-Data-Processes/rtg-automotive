@@ -6,13 +6,12 @@ from aws_utils import glue, iam
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-aws_credentials = iam.AWSCredentials(
+iam_instance = iam.IAM(stage=os.environ["STAGE"])
+iam.AWSCredentials.get_aws_credentials(
     aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID_ADMIN"],
     aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY_ADMIN"],
-    stage=os.environ["STAGE"],
+    iam_instance=iam_instance,
 )
-
-aws_credentials.get_aws_credentials()
 
 
 def extract_partition_values(object_key):
