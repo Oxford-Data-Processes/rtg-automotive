@@ -25,7 +25,7 @@ def lambda_handler(event, context):
 
     if records:
         object_key = records[0]["s3"]["object"]["key"]
-        partition_values, paths = s3.S3Utils.extract_partition_values(object_key)
+        partition_values, paths, _ = s3.S3Utils.extract_partition_values(object_key)
 
     database_name = "rtg_automotive"
     table_name = paths[0]

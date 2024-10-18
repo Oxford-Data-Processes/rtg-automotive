@@ -4,7 +4,7 @@ env:
   STAGE: dev
   ROLE: DevAdminRole
   AWS_ACCOUNT_ID: "654654324108"
-  DOCKER_IMAGE: "process-stock-feed"
+  DOCKER_IMAGE: "rtg-automotive/process-stock-feed"
   DOCKER_BUILD_DIR: "./src/lambda/process_stock_feed"
   AWS_REGION: "eu-west-2"
 on:
