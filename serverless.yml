@@ -89,7 +89,7 @@ functions:
     description: "Process stock feed"
     role: arn:aws:iam::${self:custom.environment.awsAccountId}:role/${self:service}-process-stock-feed-lambda-role
     image:
-      uri: ${self:custom.environment.awsAccountId}.dkr.ecr.eu-west-2.amazonaws.com/process-stock-feed:latest
+      uri: ${self:custom.environment.awsAccountId}.dkr.ecr.eu-west-2.amazonaws.com/rtg-automotive/process-stock-feed:latest
     environment:
       AWS_ACCESS_KEY_ID_ADMIN: ${env:AWS_ACCESS_KEY_ID_ADMIN}
       AWS_SECRET_ACCESS_KEY_ADMIN: ${env:AWS_SECRET_ACCESS_KEY_ADMIN} 
