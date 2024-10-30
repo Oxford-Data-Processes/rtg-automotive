@@ -2,6 +2,8 @@
 
 TO DO:
 
+Create RDS database which is a replica of the S3 data, but with ACID transactions. Use RDS as app backend.
+
 Add feature lets user upload an Excel (list ) of custom_labels to update or inspect
 
 Updating pricing, when they end, lots of edits of data
