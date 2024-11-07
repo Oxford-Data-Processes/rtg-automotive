@@ -21,6 +21,12 @@ module "s3_bucket" {
   source         = "./s3_bucket"
 }
 
+module "s3_object" {
+  aws_account_id = var.aws_account_id
+  project        = var.project
+  source         = "./s3_object"
+}
+
 module "glue" {
   aws_account_id = var.aws_account_id
   project        = var.project
