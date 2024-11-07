@@ -1,5 +1,17 @@
 # rtg-automotive
 
+Start up:
+
+python -m venv venv
+source venv/bin/activate
+pip install -r requirements_dev.txt
+
+Checks:
+
+pre-commit run --all-files
+
+mypy {path_to_file_or_directory} --explicit-package-bases
+
 TO DO:
 
 Create RDS database which is a replica of the S3 data, but with ACID transactions. Use RDS as app backend.
