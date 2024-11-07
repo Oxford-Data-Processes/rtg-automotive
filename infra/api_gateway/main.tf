@@ -7,5 +7,4 @@ module "api_gateway" {
   aws_access_key_id_admin     = var.aws_access_key_id_admin
   aws_secret_access_key_admin = var.aws_secret_access_key_admin
   version_number              = var.version_number
-  api_resource_path_part      = "items"
 }
