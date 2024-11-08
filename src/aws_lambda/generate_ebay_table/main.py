@@ -2,25 +2,19 @@ import json
 import logging
 import os
 from aws_utils import athena, iam
-
+from aws_lambda.api.models.pydantic_models import PROJECT
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-iam_instance = iam.IAM(stage=os.environ["STAGE"])
-iam.AWSCredentials.get_aws_credentials(
-    aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID_ADMIN"],
-    aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY_ADMIN"],
-    iam_instance=iam_instance,
-)
+iam.get_aws_credentials(os.environ)
 
 
 def lambda_handler(event, context):
-    AWS_ACCOUNT_ID = os.environ["AWS_ACCOUNT_ID"]
-    rtg_automotive_bucket = f"rtg-automotive-{AWS_ACCOUNT_ID}"
+    project_bucket_name = f"{PROJECT}-bucket-{os.environ["AWS_ACCOUNT_ID"]}"
     athena_handler = athena.AthenaHandler(
-        database="rtg_automotive",
-        workgroup="rtg-automotive-workgroup",
-        output_bucket=rtg_automotive_bucket,
+        database=PROJECT,
+        workgroup=f"{PROJECT}-workgroup",
+        output_bucket=project_bucket_name,
     )
 
     current_directory = os.path.dirname(os.path.abspath(__file__))
