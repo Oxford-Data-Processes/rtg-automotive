@@ -1,0 +1,10 @@
+pre-commit
+mypy
+ipykernel
+git+https://github.com/Oxford-Data-Processes/aws-utils.git
+pydantic
+sqlalchemy
+pyathena
+fastapi
+uvicorn
+mangum

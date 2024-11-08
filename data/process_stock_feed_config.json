@@ -1,0 +1,102 @@
+{
+    "APE": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "header_row_number": 1,
+        "process_func": "set_value_to_10_if_labelled_yes"
+    },
+    "BET": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "header_row_number": 1,
+        "process_func": "get_value_if_less_than_10_else_0"
+    },
+    "BGA": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "header_row_number": 1,
+        "process_func": "get_value_if_less_than_10_else_0"
+    },
+    "COM": {
+        "code_column_number": 1,
+        "stock_column_number": 3,
+        "header_row_number": 1,
+        "process_func": "get_value_if_less_than_10_else_0"
+    },
+    "FAI": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "header_row_number": 5,
+        "process_func": "get_value_if_less_than_10_else_0"
+    },
+    "FEB": {
+        "code_column_number": 1,
+        "stock_column_number": 3,
+        "header_row_number": 1,
+        "process_func": "get_value_if_less_than_10_else_0"
+    },
+    "FIR": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "header_row_number": 1,
+        "process_func": "set_value_to_10_if_labelled_yes"
+    },
+    "FPS": {
+        "code_column_number": 1,
+        "stock_column_number": 4,
+        "header_row_number": 1,
+        "process_func": "get_value_if_less_than_10_else_0"
+    },
+    "JUR": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "header_row_number": 1,
+        "process_func": "get_value_if_less_than_10_else_0"
+    },
+    "KLA": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "header_row_number": 1,
+        "process_func": "return_value"
+    },
+    "KYB": {
+        "code_column_number": 1,
+        "stock_column_number": 2,
+        "header_row_number": 1,
+        "process_func": "set_value_to_10_if_labelled_yes"
+    },
+    "MOT": {
+        "code_column_number": 1,
+        "stock_column_number": 3,
+        "header_row_number": 1,
+        "process_func": "get_value_if_less_than_10_else_0"
+    },
+    "RFX": {
+        "code_column_number": 1,
+        "stock_column_number": 4,
+        "header_row_number": 1,
+        "process_func": "get_value_if_less_than_10_else_0"
+    },
+    "ROL": {
+        "code_column_number": 1,
+        "stock_column_number": 3,
+        "header_row_number": 1,
+        "process_func": "set_value_to_10_if_labelled_in_stock"
+    },
+    "RTG": {
+        "code_column_number": 1,
+        "header_row_number": 1
+    },
+    "SMP": {
+        "code_column_number": 1,
+        "stock_column_number": 1,
+        "header_row_number": 1,
+        "process_func": "set_value_to_10_if_product_in_list"
+    },
+    "ELR": {
+        "code_column_number": 1,
+        "stock_column_number": 4,
+        "header_row_number": 1,
+        "process_func": "get_value_if_less_than_10_else_0"
+    }
+}

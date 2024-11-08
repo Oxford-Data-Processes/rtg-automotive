@@ -1,0 +1,106 @@
+{
+    "rtg_automotive_supplier_stock": {
+        "columns": [
+            {
+                "name": "part_number",
+                "type": "string"
+            },
+            {
+                "name": "quantity",
+                "type": "int"
+            },
+            {
+                "name": "updated_date",
+                "type": "string"
+            }
+        ],
+        "partition_keys": [
+            {
+                "name": "supplier",
+                "type": "string"
+            },
+            {
+                "name": "year",
+                "type": "string"
+            },
+            {
+                "name": "month",
+                "type": "string"
+            },
+            {
+                "name": "day",
+                "type": "string"
+            }
+        ]
+    },
+    "rtg_automotive_product": {
+        "columns": [
+            {
+                "name": "custom_label",
+                "type": "string"
+            },
+            {
+                "name": "part_number",
+                "type": "string"
+            },
+            {
+                "name": "supplier",
+                "type": "string"
+            }
+        ],
+        "partition_keys": []
+    },
+    "rtg_automotive_store": {
+        "columns": [
+            {
+                "name": "item_id",
+                "type": "bigint"
+            },
+            {
+                "name": "custom_label",
+                "type": "string"
+            },
+            {
+                "name": "title",
+                "type": "string"
+            },
+            {
+                "name": "current_price",
+                "type": "double"
+            },
+            {
+                "name": "prefix",
+                "type": "string"
+            },
+            {
+                "name": "uk_rtg",
+                "type": "string"
+            },
+            {
+                "name": "fps_wds_dir",
+                "type": "string"
+            },
+            {
+                "name": "payment_profile_name",
+                "type": "string"
+            },
+            {
+                "name": "shipping_profile_name",
+                "type": "string"
+            },
+            {
+                "name": "return_profile_name",
+                "type": "string"
+            },
+            {
+                "name": "supplier",
+                "type": "string"
+            },
+            {
+                "name": "ebay_store",
+                "type": "string"
+            }
+        ],
+        "partition_keys": []
+    }
+}

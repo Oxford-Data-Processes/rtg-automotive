@@ -6,6 +6,48 @@ __pycache__/
 # C extensions
 *.so
 
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+
+# macOS system files
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Icon must end with two \r
+Icon
+
+# Thumbnails
+._*
+
+# Ruff
+.ruff_cache/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.*
+.terraformrc
+terraform.rc
+
+# Files that might appear in the root of a volume
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# Directories potentially created on remote AFP share
+.AppleDB
+.AppleDesktop
+Network Trash Folder
+Temporary Items
+.apdisk
+
 # Distribution / packaging
 .Python
 build/
@@ -25,66 +67,6 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
-
-# data
-data/
-
-# streamlit
-.streamlit/
-
-# Requirements
-.requirements.zip
-
-# Serverless
-.serverless/
-unzip_requirements.py
-
-# Node
-node_modules/
-package-lock.json
-package.json
-
-# Terraform files 
-.terraform/
-.terraform.lock.hcl
-
-# Ignore Terraform files in the infra folder
-infra/.terraform/
-infra/*.tfstate
-infra/*.tfstate.*
-infra/.terraform.lock.hcl
-
-# Crash log files
-crash.log
-crash.*.log
-
-# macOS system files
-.DS_Store
-.AppleDouble
-.LSOverride
-
-# Icon must end with two \r
-Icon
-
-# Thumbnails
-._*
-
-# Files that might appear in the root of a volume
-.DocumentRevisions-V100
-.fseventsd
-.Spotlight-V100
-.TemporaryItems
-.Trashes
-.VolumeIcon.icns
-.com.apple.timemachine.donotpresent
-
-# Directories potentially created on remote AFP share
-.AppleDB
-.AppleDesktop
-Network Trash Folder
-Temporary Items
-.apdisk
-
 
 # PyInstaller
 #  Usually these files are written by a python script from a template
@@ -180,12 +162,6 @@ celerybeat.pid
 
 # SageMath parsed files
 *.sage.py
-
-# Database
-data.db
-
-# file store
-file_store/
 
 # Environments
 .env
