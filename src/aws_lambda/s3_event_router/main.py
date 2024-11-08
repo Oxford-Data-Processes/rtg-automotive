@@ -16,7 +16,7 @@ def lambda_handler(event: dict, context: Any) -> dict:
     config = {
         "process_data": {
             "lambda_name": "rtg-automotive-process-stock-feed-lambda",
-            "prefixes": ["stock_feed"],
+            "prefixes": ["rtg_automotive/stock_feed"],
         },
         "add_partition": {
             "lambda_name": "aws-common-resources-add-partition-lambda",

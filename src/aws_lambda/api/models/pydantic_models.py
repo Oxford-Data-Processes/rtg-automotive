@@ -9,9 +9,9 @@ PROJECT = "rtg-automotive"
 
 def load_schemas() -> dict:
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    glue_schemas_path = os.path.join(current_dir, "glue_schemas.json")
+    table_schemas_path = os.path.join(current_dir, "table_schemas.json")
 
-    with open(glue_schemas_path) as f:
+    with open(table_schemas_path) as f:
         return json.load(f)
 
 
@@ -31,36 +31,13 @@ def map_schema(schema: List[Dict[str, str]]) -> Dict[str, Any]:
 
 schemas = load_schemas()
 
-DoYouSpainRawModel = create_model(
-    "DoYouSpainRawModel", **map_schema(schemas["do_you_spain_raw"])
+RtgAutomotiveSupplierStockModel = create_model(
+    "RtgAutomotiveSupplierStockModel",
+    **map_schema(schemas["rtg_automotive_supplier_stock"]),
 )
-HolidayAutosRawModel = create_model(
-    "HolidayAutosRawModel", **map_schema(schemas["holiday_autos_raw"])
+RtgAutomotiveProductModel = create_model(
+    "RtgAutomotiveProductModel", **map_schema(schemas["rtg_automotive_product"])
 )
-RentalCarsRawModel = create_model(
-    "RentalCarsRawModel", **map_schema(schemas["rental_cars_raw"])
+RtgAutomotiveStoreModel = create_model(
+    "RtgAutomotiveStoreModel", **map_schema(schemas["rtg_automotive_store"])
 )
-
-ProcessedModel = create_model("ProcessedModel", **map_schema(schemas["processed"]))
-
-
-class CarRentalDataItem(BaseModel):
-    make: str
-    model: str
-    transmission: str
-    car_group: str
-    supplier: str
-    total_price: float
-    price_per_day: Optional[float] = None
-    pickup_datetime: str
-    dropoff_datetime: str
-    year: str
-    month: str
-    day: str
-    hour: str
-    rental_period: str
-    source: str
-
-    @classmethod
-    def validate_price_per_day(cls: Any, value: str) -> Optional[str]:
-        return None if value == "" else value

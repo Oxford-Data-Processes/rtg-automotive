@@ -298,10 +298,10 @@ def lambda_handler(event, context):
         )
 
         output = process_stock_data(
-            excel_data, supplier, current_date, rtg_automotive_bucket, config
+            excel_data, supplier, current_date, project_bucket_name, config
         )
         file_name = create_s3_file_name(supplier, year, month, day)
-        write_output_to_s3(output, rtg_automotive_bucket, file_name)
+        write_output_to_s3(output, project_bucket_name, file_name)
 
         send_success_notification(supplier)
         return create_success_response()

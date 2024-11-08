@@ -4,20 +4,6 @@ from sqlalchemy.ext import declarative
 
 Base = declarative.declarative_base(metadata=sqlalchemy.MetaData())
 
-primary_keys = [
-    "year",
-    "month",
-    "day",
-    "hour",
-    "rental_period",
-    "make",
-    "model",
-    "supplier",
-    "transmission",
-    "pickup_datetime",
-    "dropoff_datetime",
-]
-
 
 def create_columns(schema: List[Dict[str, str]]) -> Dict[str, sqlalchemy.Column]:
     columns = {}
@@ -37,7 +23,9 @@ def check_if_table_exists(table_name: str) -> bool:
     return table_name in Base.metadata.tables
 
 
-def create_model_class(table_name: str, schema: List[Dict[str, str]]) -> type:
+def create_model_class(
+    table_name: str, schema: List[Dict[str, str]], primary_keys: list
+) -> type:
     model_class_name = table_name.capitalize()
     if hasattr(Base, model_class_name):
         return getattr(Base, model_class_name)
