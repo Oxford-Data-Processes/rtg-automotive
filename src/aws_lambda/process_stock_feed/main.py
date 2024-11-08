@@ -222,7 +222,7 @@ def process_current_date_and_supplier(object_key):
 
 
 def create_s3_file_name(supplier, year, month, day):
-    return f"supplier_stock/supplier={supplier}/year={year}/month={month}/day={day}/data.parquet"
+    return f"rtg_automotive/supplier_stock/supplier={supplier}/year={year}/month={month}/day={day}/data.parquet"
 
 
 def send_sns_notification(message):
