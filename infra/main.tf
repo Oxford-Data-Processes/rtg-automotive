@@ -27,6 +27,12 @@ module "s3_object" {
   source         = "./s3_object"
 }
 
+module "rds" {
+  aws_account_id = var.aws_account_id
+  project        = var.project
+  source         = "./rds"
+}
+
 module "sqs" {
   project = var.project
   source  = "./sqs"
