@@ -13,12 +13,7 @@ from aws_utils import athena, sns, iam, s3
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
-iam_instance = iam.IAM(stage=os.environ["STAGE"])
-iam.AWSCredentials.get_aws_credentials(
-    aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID_ADMIN"],
-    aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY_ADMIN"],
-    iam_instance=iam_instance,
-)
+iam.get_aws_credentials(os.environ)
 
 
 def get_value_if_less_than_10_else_0(x):
@@ -53,12 +48,7 @@ def create_function(func_str):
 
 def get_config_from_s3(bucket_name, object_key):
 
-    s3_handler = s3.S3Handler(
-        os.environ["AWS_ACCESS_KEY_ID"],
-        os.environ["AWS_SECRET_ACCESS_KEY"],
-        os.environ["AWS_SESSION_TOKEN"],
-        os.environ["AWS_REGION"],
-    )
+    s3_handler = s3.S3Handler()
     config = s3_handler.load_json_from_s3(bucket_name, object_key)
 
     for key, value in config.items():
@@ -71,12 +61,7 @@ def get_config_from_s3(bucket_name, object_key):
 def read_excel_from_s3(
     bucket_name: str, object_key: str, header_row_number: int
 ) -> list[dict]:
-    s3_handler = s3.S3Handler(
-        os.environ["AWS_ACCESS_KEY_ID"],
-        os.environ["AWS_SECRET_ACCESS_KEY"],
-        os.environ["AWS_SESSION_TOKEN"],
-        os.environ["AWS_REGION"],
-    )
+    s3_handler = s3.S3Handler()
     excel_data = s3_handler.load_excel_from_s3(bucket_name, object_key)
     workbook = openpyxl.load_workbook(BytesIO(excel_data))
     sheet = workbook.active
@@ -191,12 +176,7 @@ def write_to_s3_parquet(
     file_name: str,
     schema: list[tuple[str, pa.DataType]],
 ) -> None:
-    s3_handler = s3.S3Handler(
-        os.environ["AWS_ACCESS_KEY_ID"],
-        os.environ["AWS_SECRET_ACCESS_KEY"],
-        os.environ["AWS_SESSION_TOKEN"],
-        os.environ["AWS_REGION"],
-    )
+    s3_handler = s3.S3Handler()
 
     transformed_data = []
     for item in data:
@@ -228,8 +208,8 @@ def get_stock_feed_schema():
 
 
 def extract_s3_info(event):
-    bucket_name = event["Records"][0]["s3"]["bucket"]["name"]
-    object_key = event["Records"][0]["s3"]["object"]["key"]
+    bucket_name = event["detail"]["bucket"]
+    object_key = event["detail"]["object_key"]
     return bucket_name, object_key
 
 
@@ -246,7 +226,7 @@ def create_s3_file_name(supplier, year, month, day):
 
 
 def send_sns_notification(message):
-    topic_name = "rtg-automotive-stock-notifications"
+    topic_name = "rtg-automotive-lambda-notifications"
     sns_handler = sns.SNSHandler(topic_name)
     sns_handler.send_notification(message, "PROCESS_FINISHED")
 
