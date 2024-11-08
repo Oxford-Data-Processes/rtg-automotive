@@ -10,6 +10,8 @@ from datetime import datetime
 from io import BytesIO
 from aws_utils import athena, sns, iam, s3
 
+from aws_lambda.api.models.pydantic_models import PROJECT
+
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
@@ -79,8 +81,8 @@ def read_excel_from_s3(
 def fetch_rtg_custom_labels(rtg_automotive_bucket) -> list:
     query = """SELECT DISTINCT(custom_label) FROM "rtg_automotive"."store" WHERE ebay_store = 'RTG' AND supplier = 'RTG';"""
     athena_handler = athena.AthenaHandler(
-        database="rtg_automotive",
-        workgroup="rtg-automotive-workgroup",
+        database=PROJECT,
+        workgroup=f"{PROJECT}-workgroup",
         output_bucket=rtg_automotive_bucket,
     )
     csv_data = athena_handler.run_query(query)
@@ -276,13 +278,12 @@ def send_failure_notification(supplier):
 
 
 def lambda_handler(event, context):
-    aws_account_id = os.environ["AWS_ACCOUNT_ID"]
-    rtg_automotive_bucket = f"rtg-automotive-bucket-{aws_account_id}"
+    project_bucket_name = f"{PROJECT}-bucket-{os.environ["AWS_ACCOUNT_ID"]}"
     config = get_config_from_s3(
-        rtg_automotive_bucket, "config/process_stock_feed_config.json"
+        project_bucket_name, "config/process_stock_feed_config.json"
     )
 
-    logger.info(f"RTG Automotive bucket: {rtg_automotive_bucket}")
+    logger.info(f"RTG Automotive bucket: {project_bucket_name}")
     logger.info(f"Received event: {json.dumps(event)}")
 
     bucket_name, object_key = extract_s3_info(event)

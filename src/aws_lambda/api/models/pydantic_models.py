@@ -4,7 +4,7 @@ from typing import Any, Dict, List, Optional
 
 from pydantic import BaseModel, create_model
 
-PROJECT = "greenmotion"
+PROJECT = "rtg-automotive"
 
 
 def load_schemas() -> dict:
