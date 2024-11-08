@@ -15,12 +15,12 @@ def lambda_handler(event: dict, context: Any) -> dict:
 
     config = {
         "process_data": {
-            "lambda_name": "greenmotion-process-data-lambda",
-            "prefixes": ["do_you_spain/raw", "holiday_autos/raw", "rental_cars/raw"],
+            "lambda_name": "rtg-automotive-process-stock-feed-lambda",
+            "prefixes": ["stock_feed"],
         },
         "add_partition": {
             "lambda_name": "aws-common-resources-add-partition-lambda",
-            "prefixes": ["do_you_spain", "holiday_autos", "rental_cars"],
+            "prefixes": ["rtg_automotive"],
         },
     }
 
