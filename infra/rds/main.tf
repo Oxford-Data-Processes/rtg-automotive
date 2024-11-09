@@ -10,7 +10,7 @@ resource "aws_db_instance" "project_db" {
   password               = "password"
   db_name                = "rtg_automotive"
   skip_final_snapshot    = true
-  publicly_accessible     = false
+  publicly_accessible     = true
   availability_zone      = "eu-west-2b"
   vpc_security_group_ids  = [aws_security_group.project_db_sg.id]
 }
