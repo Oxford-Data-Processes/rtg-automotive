@@ -1,5 +1,4 @@
-# Start Generation Here
-resource "aws_db_instance" "default" {
+resource "aws_db_instance" "project_db" {
   identifier              = "${var.project}-mysql"
   engine                 = "mysql"
   engine_version         = "8.0"
@@ -16,7 +15,7 @@ resource "aws_db_instance" "default" {
   }
 }
 
-resource "aws_db_subnet_group" "default" {
+resource "aws_db_subnet_group" "project_db_subnet_group" {
   name       = "${var.project}-db-subnet-group"
   subnet_ids = var.subnet_ids
 
@@ -25,7 +24,7 @@ resource "aws_db_subnet_group" "default" {
   }
 }
 
-resource "aws_db_parameter_group" "default" {
+resource "aws_db_parameter_group" "project_db_parameter_group" {
   name   = "${var.project}-db-parameter-group"
   family = "mysql8.0"
 
