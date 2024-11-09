@@ -10,6 +10,7 @@ resource "aws_db_instance" "project_db" {
   db_name                = "${var.project}_db"
   skip_final_snapshot    = true
   publicly_accessible     = false
+  availability_zone      = "eu-west-2b"
   tags = {
     Name = "${var.project}-mysql"
   }
@@ -17,7 +18,11 @@ resource "aws_db_instance" "project_db" {
 
 resource "aws_db_subnet_group" "project_db_subnet_group" {
   name       = "${var.project}-db-subnet-group"
-  subnet_ids = var.subnet_ids
+  subnet_ids = [
+    "subnet-0f2a9c6c74c625597",
+    "subnet-0a935a31921a0ae59",
+    "subnet-0dcbe5315e9a423fb"
+  ]
 
   tags = {
     Name = "${var.project}-db-subnet-group"
