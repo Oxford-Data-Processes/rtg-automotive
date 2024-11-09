@@ -1,3 +1,4 @@
+
 resource "aws_db_instance" "project_db" {
   identifier              = "${var.project}-mysql"
   engine                 = "mysql"
@@ -11,27 +12,28 @@ resource "aws_db_instance" "project_db" {
   skip_final_snapshot    = true
   publicly_accessible     = false
   availability_zone      = "eu-west-2b"
+  vpc_security_group_ids  = [aws_security_group.project_db_sg.id]
 }
 
-resource "aws_db_subnet_group" "project_db_subnet_group" {
-  name       = "${var.project}-db-subnet-group"
-  subnet_ids = [
-    "subnet-0f2a9c6c74c625597",
-    "subnet-0a935a31921a0ae59",
-    "subnet-0dcbe5315e9a423fb"
-  ]
+resource "aws_security_group" "project_db_sg" {
+  name        = "${var.project}-db-sg"
+  vpc_id      = "vpc-00a7294c2ecfc4ffa" 
+
+  ingress {
+    from_port   = 3306
+    to_port     = 3306
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  egress {
+    from_port   = 0
+    to_port     = 0
+    protocol    = "-1"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
 
   tags = {
-    Name = "${var.project}-db-subnet-group"
-  }
-}
-
-resource "aws_db_parameter_group" "project_db_parameter_group" {
-  name   = "${var.project}-db-parameter-group"
-  family = "mysql8.0"
-
-  parameter {
-    name  = "max_connections"
-    value = "150"
+    Name = "${var.project}-db-sg"
   }
 }
