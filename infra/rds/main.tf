@@ -7,13 +7,10 @@ resource "aws_db_instance" "project_db" {
   storage_type           = "gp2"
   username               = "admin"
   password               = "password"
-  db_name                = "${var.project}_db"
+  db_name                = "rtg_automotive"
   skip_final_snapshot    = true
   publicly_accessible     = false
   availability_zone      = "eu-west-2b"
-  tags = {
-    Name = "${var.project}-mysql"
-  }
 }
 
 resource "aws_db_subnet_group" "project_db_subnet_group" {
