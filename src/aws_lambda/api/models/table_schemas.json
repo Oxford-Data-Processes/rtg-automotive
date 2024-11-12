@@ -2,27 +2,6 @@
     "rtg_automotive_supplier_stock": {
         "columns": [
             {
-                "name": "part_number",
-                "type": "string"
-            },
-            {
-                "name": "quantity",
-                "type": "int"
-            },
-            {
-                "name": "updated_date",
-                "type": "string"
-            },
-            {
-                "name": "supplier",
-                "type": "string"
-            }
-        ],
-        "partition_keys": []
-    },
-    "rtg_automotive_product": {
-        "columns": [
-            {
                 "name": "custom_label",
                 "type": "string"
             },
@@ -32,6 +11,14 @@
             },
             {
                 "name": "supplier",
+                "type": "string"
+            },
+            {
+                "name": "quantity",
+                "type": "int"
+            },
+            {
+                "name": "updated_date",
                 "type": "string"
             }
         ],
@@ -44,8 +31,16 @@
                 "type": "bigint"
             },
             {
+                "name": "brand",
+                "type": "string"
+            },
+            {
                 "name": "custom_label",
                 "type": "string"
+            },
+            {
+                "name": "current_quantity",
+                "type": "int"
             },
             {
                 "name": "title",
@@ -101,43 +96,23 @@
                 "type": "string"
             },
             {
-                "name": "title",
-                "type": "string"
+                "name": "quantity",
+                "type": "int"
             },
             {
-                "name": "current_price",
-                "type": "double"
+                "name": "quantity_delta",
+                "type": "int"
             },
             {
-                "name": "prefix",
-                "type": "string"
-            },
-            {
-                "name": "uk_rtg",
-                "type": "string"
-            },
-            {
-                "name": "fps_wds_dir",
-                "type": "string"
-            },
-            {
-                "name": "payment_profile_name",
-                "type": "string"
-            },
-            {
-                "name": "shipping_profile_name",
-                "type": "string"
-            },
-            {
-                "name": "return_profile_name",
-                "type": "string"
-            },
-            {
-                "name": "supplier",
+                "name": "updated_date",
                 "type": "string"
             },
             {
                 "name": "ebay_store",
+                "type": "string"
+            },
+            {
+                "name": "supplier",
                 "type": "string"
             }
         ],

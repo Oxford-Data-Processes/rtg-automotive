@@ -1,23 +1,22 @@
 import pandas as pd
 from pathlib import Path
-import os
-import datetime
-import boto3
-from io import BytesIO
+from sqlalchemy import create_engine
 
 
-def write_parquet_to_s3(df, bucket, key):
-    buffer = BytesIO()
-    df.to_parquet(buffer, engine="pyarrow", index=False)
-    s3 = boto3.client(
-        "s3",
-        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
-        aws_session_token=os.environ["AWS_SESSION_TOKEN"],
-        region_name="eu-west-2",
-    )
-    buffer.seek(0)
-    s3.upload_fileobj(buffer, bucket, key)
+def write_dataframe_to_mysql(df, table_name):
+    try:
+        # Create a SQLAlchemy engine
+        engine = create_engine(
+            "mysql+mysqlconnector://admin:password@rtg-automotive-mysql.c14oos6givty.eu-west-2.rds.amazonaws.com/rtg_automotive"
+        )
+        # Write the dataframe to the MySQL table
+        df.to_sql(
+            table_name, con=engine, if_exists="append", index=False, chunksize=10000
+        )
+        print(f"Data inserted into {table_name} successfully.")
+
+    except Exception as e:
+        print("Error while connecting to MySQL:", e)
 
 
 def read_excel_sheets(file_path, sheet_names):
@@ -45,31 +44,18 @@ def main():
 
     processed_dfs = [process_dataframe(df) for df in dfs.values()]
     df_stock = pd.concat(processed_dfs)
-
-    year = DATE.split("-")[0]
-    month = DATE.split("-")[1]
-    day = DATE.split("-")[2]
     df_stock["updated_date"] = DATE
 
     df_stock.drop_duplicates(
         subset=["part_number", "supplier"], keep="first", inplace=True
     )
 
+    supplier_to_filter = "APE"
+    df_stock = df_stock[df_stock["supplier"] == supplier_to_filter]
     df_stock["custom_label"] = df_stock["custom_label"].str.upper().str.strip()
     df_stock.dropna(subset=["supplier"], inplace=True)
 
-    aws_account_id = os.environ["AWS_ACCOUNT_ID"]
-    bucket_name = f"rtg-automotive-bucket-{aws_account_id}"
-
-    for supplier in df_stock["supplier"].unique():
-        supplier_df = df_stock.copy()[df_stock["supplier"] == supplier]
-        key = f"supplier_stock/supplier={supplier}/year={year}/month={month}/day={day}/data.parquet"
-        supplier_df.drop(columns=["supplier"], inplace=True)
-        supplier_df["updated_date"] = DATE
-        write_parquet_to_s3(supplier_df, bucket_name, key)
-
-    df_product = df_stock.copy()[["custom_label", "part_number", "supplier"]]
-    write_parquet_to_s3(df_product, bucket_name, "product/data.parquet")
+    write_dataframe_to_mysql(df_stock, "supplier_stock")
 
 
 if __name__ == "__main__":

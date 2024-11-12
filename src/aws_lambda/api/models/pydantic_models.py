@@ -35,9 +35,6 @@ RtgAutomotiveSupplierStockModel = create_model(
     "RtgAutomotiveSupplierStockModel",
     **map_schema(schemas["rtg_automotive_supplier_stock"]),
 )
-RtgAutomotiveProductModel = create_model(
-    "RtgAutomotiveProductModel", **map_schema(schemas["rtg_automotive_product"])
-)
 RtgAutomotiveStoreModel = create_model(
     "RtgAutomotiveStoreModel", **map_schema(schemas["rtg_automotive_store"])
 )

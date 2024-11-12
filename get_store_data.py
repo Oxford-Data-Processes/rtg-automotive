@@ -1,22 +1,21 @@
 import pandas as pd
 from pathlib import Path
 import os
-import boto3
-from io import BytesIO
+from sqlalchemy import create_engine
 
 
-def write_parquet_to_s3(df, bucket, key):
-    buffer = BytesIO()
-    df.to_parquet(buffer, engine="pyarrow", index=False)
-    s3 = boto3.client(
-        "s3",
-        aws_access_key_id=os.environ["AWS_ACCESS_KEY_ID"],
-        aws_secret_access_key=os.environ["AWS_SECRET_ACCESS_KEY"],
-        aws_session_token=os.environ["AWS_SESSION_TOKEN"],
-        region_name="eu-west-2",
-    )
-    buffer.seek(0)
-    s3.upload_fileobj(buffer, bucket, key)
+def write_dataframe_to_mysql(df, table_name):
+    try:
+        engine = create_engine(
+            "mysql+mysqlconnector://admin:password@rtg-automotive-mysql.c14oos6givty.eu-west-2.rds.amazonaws.com/rtg_automotive"
+        )
+        df.to_sql(
+            table_name, con=engine, if_exists="append", index=False, chunksize=10000
+        )
+        print(f"Data inserted into {table_name} successfully.")
+
+    except Exception as e:
+        print("Error while connecting to MySQL:", e)
 
 
 def process_dataframe(df):
@@ -65,11 +64,6 @@ def process_excel_file(file, ebay_store):
     return combined_df
 
 
-def get_bucket_name():
-    aws_account_id = os.environ["AWS_ACCOUNT_ID"]
-    return f"rtg-automotive-bucket-{aws_account_id}"
-
-
 def handle_store_selection(store_selection):
     if store_selection == "All":
         data_dir = Path(
@@ -89,14 +83,13 @@ def handle_store_selection(store_selection):
     return df_store
 
 
-def upload_supplier_data(df_store, ebay_stores, bucket_name):
+def upload_supplier_data(df_store, ebay_stores):
     for ebay_store in ebay_stores:
         for supplier in df_store["supplier"].unique():
             supplier_df = df_store[df_store["supplier"] == supplier]
             supplier_ebay_df = supplier_df[supplier_df["ebay_store"] == ebay_store]
             if not supplier_ebay_df.empty:
-                key = f"store/ebay_store={ebay_store}/supplier={supplier}/data.parquet"
-                write_parquet_to_s3(supplier_ebay_df, bucket_name, key)
+                write_dataframe_to_mysql(supplier_ebay_df, "store")
 
 
 def main():
@@ -112,8 +105,7 @@ def main():
         else [store_selection]
     )
 
-    bucket_name = get_bucket_name()
-    upload_supplier_data(df_store, ebay_stores, bucket_name)
+    upload_supplier_data(df_store, ebay_stores)
 
 
 main()
