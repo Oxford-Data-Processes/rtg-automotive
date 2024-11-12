@@ -34,3 +34,6 @@ Daily Pipeline steps:
 Manual update steps:
 
 - Weekly update of store table.
+
+
+curl -X GET "http://localhost:8000/items/?table_name=supplier_stock&filters=%7B%22part_number%22%3A%22ABR101%22%7D&limit=5"
