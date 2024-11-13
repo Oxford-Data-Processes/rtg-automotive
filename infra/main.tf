@@ -22,14 +22,14 @@ module "s3_bucket" {
 }
 
 module "sqs" {
-  project        = var.project
-  source         = "./sqs"
+  project = var.project
+  source  = "./sqs"
 }
 
 module "rds" {
   aws_account_id = var.aws_account_id
   project        = var.project
-  source = "./rds"
+  source         = "./rds"
 }
 
 module "eventbridge" {
