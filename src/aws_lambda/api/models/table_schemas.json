@@ -22,7 +22,8 @@
                 "type": "string"
             }
         ],
-        "partition_keys": []
+        "partition_keys": [],
+        "primary_keys": ["custom_label"]
     },
     "rtg_automotive_store": {
         "columns": [
@@ -83,7 +84,8 @@
                 "type": "string"
             }
         ],
-        "partition_keys": []
+        "partition_keys": [],
+        "primary_keys": ["item_id"]
     },
     "rtg_automotive_ebay": {
         "columns": [
@@ -116,6 +118,7 @@
                 "type": "string"
             }
         ],
-        "partition_keys": []
+        "partition_keys": [],
+        "primary_keys": ["item_id"]
     }
 }

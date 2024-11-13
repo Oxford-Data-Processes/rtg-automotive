@@ -29,10 +29,9 @@ def create_columns(schema: List[Dict[str, str]]) -> Dict[str, Column]:
     return columns
 
 
-def create_model_class(
-    table_name: str, schema: Dict[str, Dict[str, str]], primary_key: str
-):
+def create_model_class(table_name: str, schema: Dict[str, Dict[str, str]]):
+    primary_keys = schema["primary_keys"]
     columns = create_columns(schema["columns"])
     columns["__tablename__"] = table_name
-    columns["__table_args__"] = (PrimaryKeyConstraint(primary_key),)
+    columns["__table_args__"] = (PrimaryKeyConstraint(*primary_keys),)
     return type(table_name, (Base,), columns)
