@@ -1,18 +1,23 @@
+import json
 import logging
 import os
-import json
-from sqlalchemy import create_engine
-from sqlalchemy.orm import sessionmaker
+import sys
+from typing import Optional
+
+from aws_utils import iam  # type: ignore
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from mangum import Mangum
-from src.aws_lambda.api.models.sqlalchemy_models import create_model_class, Base
-from aws_utils import iam  # type: ignore
-from typing import Optional
+from sqlalchemy import create_engine
+from sqlalchemy.orm import sessionmaker
 
 # Initialize logging
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+sys.path.append(os.path.dirname(os.path.abspath(__file__)))
+
+from models.sqlalchemy_models import Base, create_model_class  # type: ignore
 
 
 # Parse filters from string to dictionary

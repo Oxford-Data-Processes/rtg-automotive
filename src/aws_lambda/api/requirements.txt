@@ -3,4 +3,3 @@ fastapi
 sqlalchemy
 mangum
 pydantic
-pyathena
