@@ -30,28 +30,16 @@ module "glue" {
   source         = "./glue"
 }
 
-module "add_partition" {
-  aws_account_id = var.aws_account_id
-  project        = var.project
-  stage          = var.stage
-  aws_region     = var.aws_region
-  source         = "./lambda/add_partition"
-}
 
-module "process_stock_feed" {
-  aws_account_id = var.aws_account_id
-  project        = var.project
-  stage          = var.stage
-  aws_region     = var.aws_region
-  source         = "./lambda/process_stock_feed"
-}
-
-module "generate_ebay_table" {
-  aws_account_id = var.aws_account_id
-  project        = var.project
-  stage          = var.stage
-  aws_region     = var.aws_region
-  source         = "./lambda/generate_ebay_table"
+module "lambda" {
+  aws_account_id              = var.aws_account_id
+  aws_region                  = var.aws_region
+  stage                       = var.stage
+  project                     = var.project
+  aws_access_key_id_admin     = var.aws_access_key_id_admin
+  aws_secret_access_key_admin = var.aws_secret_access_key_admin
+  version_number              = var.version_number
+  source                      = "./lambda"
 }
 
 module "sqs" {
