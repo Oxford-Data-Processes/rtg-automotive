@@ -38,3 +38,6 @@ Manual update steps:
 curl -X GET "http://localhost:8000/items/?table_name=supplier_stock&filters=%7B%22part_number%22%3A%22ABR101%22%7D&limit=5"
 curl -X GET "http://localhost:8000/items/?table_name=supplier_stock&filters=%7B%22custom_label%22%3A%22UKD-APE-ABR101%22%7D&limit=5"
 curl -X GET "http://localhost:8000/items/?table_name=store&limit=5"
+
+
+curl -X GET "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?table_name=supplier_stock&filters=%7B%22part_number%22%3A%22ABR101%22%7D&limit=5"

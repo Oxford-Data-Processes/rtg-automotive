@@ -2,4 +2,5 @@ openpyxl
 pyarrow==12.0.0
 numpy<2.0
 pytz
+requests
 git+https://github.com/Oxford-Data-Processes/aws-utils.git

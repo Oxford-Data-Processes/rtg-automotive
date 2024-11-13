@@ -1,14 +1,17 @@
 import json
 import logging
-import openpyxl
 import os
 import urllib.parse
-import pytz
-import pyarrow as pa
-import pyarrow.parquet as pq
 from datetime import datetime
 from io import BytesIO
-from aws_utils import athena, sns, iam, s3
+
+import openpyxl
+import pyarrow as pa
+import pyarrow.parquet as pq
+import pytz
+import requests
+from aws_utils import iam, s3, sns
+from process_functions import create_function
 
 from aws_lambda.api.models.pydantic_models import PROJECT
 
@@ -18,38 +21,7 @@ logger.setLevel(logging.INFO)
 iam.get_aws_credentials(os.environ)
 
 
-def get_value_if_less_than_10_else_0(x):
-    return max(0, min(x, 10)) if isinstance(x, (int, float)) and x > 0 else 0
-
-
-def set_value_to_10_if_product_in_list():
-    return 10
-
-
-def set_value_to_10_if_labelled_in_stock(x):
-    if x.lower() in ["in stock"]:
-        return 10
-    else:
-        return 0
-
-
-def set_value_to_10_if_labelled_yes(x):
-    if "y" in x.lower():
-        return 10
-    else:
-        return 0
-
-
-def return_value(x):
-    return x
-
-
-def create_function(func_str):
-    return eval(func_str) if func_str.startswith("lambda") else globals().get(func_str)
-
-
 def get_config_from_s3(bucket_name, object_key):
-
     s3_handler = s3.S3Handler()
     config = s3_handler.load_json_from_s3(bucket_name, object_key)
 
@@ -78,15 +50,16 @@ def read_excel_from_s3(
     return data
 
 
-def fetch_rtg_custom_labels(rtg_automotive_bucket) -> list:
-    query = """SELECT DISTINCT(custom_label) FROM "rtg_automotive"."store" WHERE ebay_store = 'RTG' AND supplier = 'RTG';"""
-    athena_handler = athena.AthenaHandler(
-        database=PROJECT,
-        workgroup=f"{PROJECT}-workgroup",
-        output_bucket=rtg_automotive_bucket,
+def run_api_request(url):
+    response = requests.get(url)
+    return response.json()
+
+
+def fetch_rtg_custom_labels() -> list:
+    items = run_api_request(
+        "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?table_name=store&columns=custom_label&limit=10000"
     )
-    csv_data = athena_handler.run_query(query)
-    custom_labels = csv_data[1:]
+    custom_labels = list(set([item["custom_label"] for item in items]))
     return custom_labels
 
 
@@ -278,7 +251,8 @@ def send_failure_notification(supplier):
 
 
 def lambda_handler(event, context):
-    project_bucket_name = f"{PROJECT}-bucket-{os.environ["AWS_ACCOUNT_ID"]}"
+    aws_account_id = os.environ["AWS_ACCOUNT_ID"]
+    project_bucket_name = f"{PROJECT}-bucket-{aws_account_id}"
     config = get_config_from_s3(
         project_bucket_name, "config/process_stock_feed_config.json"
     )

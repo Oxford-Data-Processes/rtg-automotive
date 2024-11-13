@@ -2,7 +2,7 @@ import json
 import logging
 import os
 import sys
-from typing import Optional
+from typing import List, Optional
 
 from aws_utils import iam  # type: ignore
 from fastapi import FastAPI
@@ -35,10 +35,10 @@ def apply_filters(query, model, filters_dict: dict):
     return query
 
 
-# Format results into a list of dictionaries
-def format_results(items, model) -> list:
+# Format results into a list of dictionaries for specified columns
+def format_results(items, model, columns: List[str]) -> list:
     return [
-        {column.name: getattr(item, column.name) for column in model.__table__.columns}
+        {column: getattr(item, column) for column in columns if hasattr(item, column)}
         for item in items
     ]
 
@@ -75,6 +75,7 @@ initialize_iam()
 @app.get("/items/")
 async def read_items(
     table_name: str,
+    columns: Optional[str] = None,
     filters: Optional[str] = None,
     limit: int = 5,
 ) -> JSONResponse:
@@ -97,7 +98,12 @@ async def read_items(
     if not items:
         return JSONResponse(content={"error": "No items found"}, status_code=404)
 
-    results = format_results(items, model)
+    selected_columns = (
+        columns.split(",")
+        if columns
+        else [column.name for column in model.__table__.columns]
+    )
+    results = format_results(items, model, selected_columns)
     logger.info(f"results: {results}")
     Base.metadata.clear()
     return JSONResponse(content=results)
