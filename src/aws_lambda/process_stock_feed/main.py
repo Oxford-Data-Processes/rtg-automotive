@@ -13,10 +13,9 @@ import requests
 from aws_utils import iam, s3, sns
 from process_functions import create_function
 
-from aws_lambda.api.models.pydantic_models import PROJECT
-
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
 
 iam.get_aws_credentials(os.environ)
 
@@ -251,8 +250,9 @@ def send_failure_notification(supplier):
 
 
 def lambda_handler(event, context):
+    project = "rtg-automotive"
     aws_account_id = os.environ["AWS_ACCOUNT_ID"]
-    project_bucket_name = f"{PROJECT}-bucket-{aws_account_id}"
+    project_bucket_name = f"{project}-bucket-{aws_account_id}"
     config = get_config_from_s3(
         project_bucket_name, "config/process_stock_feed_config.json"
     )
