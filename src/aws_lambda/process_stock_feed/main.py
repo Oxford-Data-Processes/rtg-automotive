@@ -73,7 +73,7 @@ def process_stock_feed(
     code_column_index = config_data["code_column_number"] - 1
 
     if config_key == "RTG":
-        custom_labels = fetch_rtg_custom_labels(rtg_automotive_bucket)
+        custom_labels = fetch_rtg_custom_labels()
         logger.info(f"Custom labels length: {len(custom_labels)}")
         return process_rtg_stock_feed(
             stock_feed_data,
