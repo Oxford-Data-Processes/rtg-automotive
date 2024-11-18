@@ -1,23 +1,33 @@
 
+resource "aws_vpc" "project_vpc" {
+  cidr_block           = "10.0.0.0/16"
+  enable_dns_support   = true
+  enable_dns_hostnames = true
+
+  tags = {
+    Name = "${var.project}-vpc"
+  }
+}
+
 resource "aws_db_instance" "project_db" {
-  identifier              = "${var.project}-mysql"
+  identifier             = "${var.project}-mysql"
   engine                 = "mysql"
   engine_version         = "8.0"
   instance_class         = "db.t3.micro"
-  allocated_storage       = 20
+  allocated_storage      = 20
   storage_type           = "gp2"
   username               = "admin"
   password               = "password"
   db_name                = "rtg_automotive"
   skip_final_snapshot    = true
-  publicly_accessible     = true
+  publicly_accessible    = true
   availability_zone      = "eu-west-2b"
-  vpc_security_group_ids  = [aws_security_group.project_db_sg.id]
+  vpc_security_group_ids = [aws_security_group.project_db_sg.id]
 }
 
 resource "aws_security_group" "project_db_sg" {
-  name        = "${var.project}-db-sg"
-  vpc_id      = "vpc-00a7294c2ecfc4ffa" 
+  name   = "${var.project}-db-sg"
+  vpc_id = aws_vpc.project_vpc.id
 
   ingress {
     from_port   = 3306
