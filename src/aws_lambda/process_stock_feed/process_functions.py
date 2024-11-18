@@ -2,7 +2,7 @@ def get_value_if_less_than_10_else_0(x):
     return max(0, min(x, 10)) if isinstance(x, (int, float)) and x > 0 else 0
 
 
-def set_value_to_10_if_product_in_list():
+def set_value_to_10_if_product_in_list(x):
     return 10
 
 
