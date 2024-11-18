@@ -17,6 +17,9 @@ logger.setLevel(logging.INFO)
 
 iam.get_aws_credentials(os.environ)
 
+API_ID = "tsybspea31"
+STAGE_LOWER = os.environ["STAGE"].lower()
+
 
 def get_config_from_s3(bucket_name, object_key):
     s3_handler = s3.S3Handler()
@@ -49,7 +52,7 @@ def read_excel_from_s3(
 
 def fetch_rtg_custom_labels() -> list:
     items = requests.get(
-        "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?table_name=store&columns=custom_label&limit=10000"
+        f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/?table_name=store&columns=custom_label&limit=10000"
     ).json()
     custom_labels = list(set([item["custom_label"] for item in items]))
     return custom_labels
@@ -57,7 +60,7 @@ def fetch_rtg_custom_labels() -> list:
 
 def add_items_to_supplier_stock(items) -> list:
     response = requests.post(
-        "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?table_name=supplier_stock",
+        f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/?table_name=supplier_stock",
         headers={"Content-Type": "application/json"},
         json={"items": items},
     )

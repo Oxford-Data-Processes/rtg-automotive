@@ -71,7 +71,7 @@ curl -X POST "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?
 -d '{
     "items": [
         {
-            "custom_label": "XYZ203",
+            "custom_label": "XYZ204",
             "part_number": "XYZ202",
             "supplier": "SupplierB",
             "quantity": 5,

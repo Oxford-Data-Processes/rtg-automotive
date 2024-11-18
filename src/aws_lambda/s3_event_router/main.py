@@ -17,7 +17,7 @@ def lambda_handler(event: dict, context: Any) -> dict:
     config = {
         "process_data": {
             "lambda_name": "rtg-automotive-process-stock-feed-lambda",
-            "prefixes": ["rtg_automotive/stock_feed"],
+            "prefixes": ["stock_feed"],
         }
     }
 
