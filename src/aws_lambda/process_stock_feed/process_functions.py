@@ -7,6 +7,8 @@ def set_value_to_10_if_product_in_list(x):
 
 
 def set_value_to_10_if_labelled_in_stock(x):
+    if x is None:
+        return 0
     if x.lower() in ["in stock"]:
         return 10
     else:
