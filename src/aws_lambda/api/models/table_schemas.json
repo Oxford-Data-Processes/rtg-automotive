@@ -116,6 +116,10 @@
             {
                 "name": "supplier",
                 "type": "string"
+            },
+            {
+                "name": "last_updated_timestamp",
+                "type": "string"
             }
         ],
         "partition_keys": [],

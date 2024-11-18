@@ -7,7 +7,8 @@ CREATE TABLE ebay (
     quantity_delta INT,
     updated_date VARCHAR(255),
     ebay_store VARCHAR(255),
-    supplier VARCHAR(255)
+    supplier VARCHAR(255),
+    last_updated_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) AS (
 SELECT
     sd.ebay_store,
@@ -20,7 +21,8 @@ SELECT
         MAX(CASE WHEN rn = 1 THEN rd.quantity END)
     ) AS quantity_delta,
     MAX(rd.updated_date) AS updated_date,
-    sd.item_id
+    sd.item_id,
+    NOW() AS last_updated_timestamp
 FROM
     supplier_stock ps
 LEFT JOIN
