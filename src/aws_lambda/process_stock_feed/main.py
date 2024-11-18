@@ -47,15 +47,22 @@ def read_excel_from_s3(
     return data
 
 
-def run_api_request(url):
-    response = requests.get(url)
-    return response.json()
-
-
 def fetch_rtg_custom_labels() -> list:
-    items = run_api_request(
+    items = requests.get(
         "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?table_name=store&columns=custom_label&limit=10000"
+    ).json()
+    custom_labels = list(set([item["custom_label"] for item in items]))
+    return custom_labels
+
+
+def add_items_to_supplier_stock(items) -> list:
+    response = requests.post(
+        "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?table_name=supplier_stock",
+        headers={"Content-Type": "application/json"},
+        json={"items": items},
     )
+    if response.status_code != 200:
+        logger.error(f"Failed to add items: {response.text}")
     custom_labels = list(set([item["custom_label"] for item in items]))
     return custom_labels
 
@@ -65,7 +72,6 @@ def process_stock_feed(
     config_key: str,
     config,
     processed_date: str,
-    rtg_automotive_bucket: str,
 ):
     config_data = config[config_key]
     code_column_index = config_data["code_column_number"] - 1
@@ -213,11 +219,12 @@ def lambda_handler(event, context):
             bucket_name, object_key, config[supplier]["header_row_number"]
         )
 
-        output = process_stock_feed(
-            excel_data, supplier, config, current_date, project_bucket_name
-        )
+        output = process_stock_feed(excel_data, supplier, config, current_date)
 
         logger.info(f"Output: {output[:5]}")
+
+        add_items_to_supplier_stock(output)
+        logger.info(f"Added {len(output)} items to supplier stock")
 
         send_success_notification(supplier)
         return create_success_response()
