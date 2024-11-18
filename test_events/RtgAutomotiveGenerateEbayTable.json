@@ -1,7 +1,7 @@
 {
     "version": "0",
     "id": "4ce1a7df-d29a-2503-25a1-3a7bdb18d1e6",
-    "detail-type": "S3PutObject",
+    "detail-type": "RtgAutomotiveGenerateEbayTable",
     "source": "com.oxforddataprocesses",
     "account": "654654324108",
     "time": "2024-10-29T16:28:35Z",
