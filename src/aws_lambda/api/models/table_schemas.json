@@ -15,7 +15,7 @@
             },
             {
                 "name": "quantity",
-                "type": "int"
+                "type": "integer"
             },
             {
                 "name": "updated_date",
@@ -41,7 +41,7 @@
             },
             {
                 "name": "current_quantity",
-                "type": "int"
+                "type": "integer"
             },
             {
                 "name": "title",
@@ -91,7 +91,7 @@
         "columns": [
             {
                 "name": "item_id",
-                "type": "bigint"
+                "type": "integer"
             },
             {
                 "name": "custom_label",
@@ -99,11 +99,11 @@
             },
             {
                 "name": "quantity",
-                "type": "int"
+                "type": "integer"
             },
             {
                 "name": "quantity_delta",
-                "type": "int"
+                "type": "integer"
             },
             {
                 "name": "updated_date",

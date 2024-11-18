@@ -41,3 +41,26 @@ curl -X GET "http://localhost:8000/items/?table_name=store&limit=5"
 
 
 curl -X GET "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?table_name=supplier_stock&filters=%7B%22part_number%22%3A%22ABR101%22%7D&limit=5"
+
+
+
+curl -X POST "http://localhost:8000/items/?table_name=supplier_stock" \
+-H "Content-Type: application/json" \
+-d '{
+    "items": [
+        {
+            "custom_label": "ABR101",
+            "part_number": "ABR101",
+            "supplier": "SupplierA",
+            "quantity": 10,
+            "updated_date": "2023-10-01"
+        },
+        {
+            "custom_label": "XYZ202",
+            "part_number": "XYZ202",
+            "supplier": "SupplierB",
+            "quantity": 5,
+            "updated_date": "2023-10-01"
+        }
+    ]
+}'

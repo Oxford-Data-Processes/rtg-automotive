@@ -109,4 +109,37 @@ async def read_items(
     return JSONResponse(content=results)
 
 
+@app.post("/items/")
+async def put_items(
+    table_name: str,
+    payload: dict,
+) -> JSONResponse:
+    session = Session()
+    model = create_model_class(table_name, schemas.get(f"rtg_automotive_{table_name}"))
+
+    print(f"Schema for model {table_name}: {model.__table__.columns.keys()}")
+
+    if model is None:
+        return JSONResponse(content={"error": "Invalid table name"}, status_code=400)
+
+    items_data = payload.get("items", [])
+    if not items_data:
+        return JSONResponse(content={"error": "No items provided"}, status_code=400)
+
+    try:
+        for item in items_data:
+            new_item = model(**item)
+            session.add(new_item)
+        session.commit()
+        Base.metadata.clear()
+        return JSONResponse(
+            content={"message": "Items added successfully"}, status_code=201
+        )
+    except Exception as e:
+        session.rollback()
+        Base.metadata.clear()
+        logger.error(f"Error adding items: {str(e)}")
+        return JSONResponse(content={"error": "Failed to add items"}, status_code=500)
+
+
 lambda_handler = Mangum(app)

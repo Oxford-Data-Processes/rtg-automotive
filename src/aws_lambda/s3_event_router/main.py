@@ -2,6 +2,7 @@ import json
 import logging
 import os
 from typing import Any
+
 from aws_utils import iam, s3_router  # type: ignore
 
 logger = logging.getLogger()
@@ -17,11 +18,7 @@ def lambda_handler(event: dict, context: Any) -> dict:
         "process_data": {
             "lambda_name": "rtg-automotive-process-stock-feed-lambda",
             "prefixes": ["rtg_automotive/stock_feed"],
-        },
-        "add_partition": {
-            "lambda_name": "aws-common-resources-add-partition-lambda",
-            "prefixes": ["rtg_automotive"],
-        },
+        }
     }
 
     s3_router.S3Router.handle_s3_event(event, config)

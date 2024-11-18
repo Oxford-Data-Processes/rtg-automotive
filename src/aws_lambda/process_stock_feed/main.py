@@ -6,8 +6,6 @@ from datetime import datetime
 from io import BytesIO
 
 import openpyxl
-import pyarrow as pa
-import pyarrow.parquet as pq
 import pytz
 import requests
 from aws_utils import iam, s3, sns
@@ -144,43 +142,6 @@ def process_other_stock_feed(
     return output
 
 
-def write_to_s3_parquet(
-    data: list[dict],
-    bucket_name: str,
-    file_name: str,
-    schema: list[tuple[str, pa.DataType]],
-) -> None:
-    s3_handler = s3.S3Handler()
-
-    transformed_data = []
-    for item in data:
-        transformed_item = item.copy()
-        if (
-            isinstance(transformed_item["part_number"], list)
-            and transformed_item["part_number"]
-        ):
-            transformed_item["part_number"] = transformed_item["part_number"][0]
-        transformed_data.append(transformed_item)
-
-    table = pa.Table.from_pylist(transformed_data, schema=pa.schema(schema))
-
-    buffer = BytesIO()
-    pq.write_table(table, buffer)
-
-    buffer.seek(0)
-    logger.info(f"Writing to S3 path {bucket_name}/{file_name}")
-    s3_handler.upload_parquet_to_s3(bucket_name, file_name, buffer.getvalue())
-
-
-def get_stock_feed_schema():
-    return [
-        ("part_number", pa.string()),
-        ("supplier", pa.string()),
-        ("quantity", pa.int32()),
-        ("updated_date", pa.string()),
-    ]
-
-
 def extract_s3_info(event):
     bucket_name = event["detail"]["bucket"]
     object_key = event["detail"]["object_key"]
@@ -195,10 +156,6 @@ def process_current_date_and_supplier(object_key):
     return year, month, day, supplier
 
 
-def create_s3_file_name(supplier, year, month, day):
-    return f"rtg_automotive/supplier_stock/supplier={supplier}/year={year}/month={month}/day={day}/data.parquet"
-
-
 def send_sns_notification(message):
     topic_name = "rtg-automotive-lambda-notifications"
     sns_handler = sns.SNSHandler(topic_name)
@@ -210,21 +167,6 @@ def read_excel_data(bucket_name, object_key, header_row_number):
     excel_data = read_excel_from_s3(bucket_name, object_key, header_row_number)
     logger.info(f"First 5 rows of Excel data: {excel_data[:5]}")
     return excel_data
-
-
-def process_stock_data(
-    excel_data, supplier, current_date, rtg_automotive_bucket, config
-):
-    output = process_stock_feed(
-        excel_data, supplier, config, current_date, rtg_automotive_bucket
-    )
-    logger.info(f"First 5 rows of output data: {output[:5]}")
-    return output
-
-
-def write_output_to_s3(output, bucket_name, file_name):
-    stock_feed_schema = get_stock_feed_schema()
-    write_to_s3_parquet(output, bucket_name, file_name, stock_feed_schema)
 
 
 def send_success_notification(supplier):
@@ -271,11 +213,11 @@ def lambda_handler(event, context):
             bucket_name, object_key, config[supplier]["header_row_number"]
         )
 
-        output = process_stock_data(
-            excel_data, supplier, current_date, project_bucket_name, config
+        output = process_stock_feed(
+            excel_data, supplier, config, current_date, project_bucket_name
         )
-        file_name = create_s3_file_name(supplier, year, month, day)
-        write_output_to_s3(output, project_bucket_name, file_name)
+
+        logger.info(f"Output: {output[:5]}")
 
         send_success_notification(supplier)
         return create_success_response()
