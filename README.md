@@ -64,3 +64,18 @@ curl -X POST "http://localhost:8000/items/?table_name=supplier_stock" \
         }
     ]
 }'
+
+
+curl -X POST "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?table_name=supplier_stock" \
+-H "Content-Type: application/json" \
+-d '{
+    "items": [
+        {
+            "custom_label": "XYZ203",
+            "part_number": "XYZ202",
+            "supplier": "SupplierB",
+            "quantity": 5,
+            "updated_date": "2023-10-01"
+        }
+    ]
+}'

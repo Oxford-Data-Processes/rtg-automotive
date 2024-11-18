@@ -23,7 +23,7 @@
             }
         ],
         "partition_keys": [],
-        "primary_keys": ["custom_label"]
+        "primary_keys": ["custom_label", "updated_date"]
     },
     "rtg_automotive_store": {
         "columns": [
