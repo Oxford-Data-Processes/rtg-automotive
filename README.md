@@ -44,7 +44,7 @@ curl -X GET "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?t
 
 
 
-curl -X POST "http://localhost:8000/items/?table_name=supplier_stock" \
+curl -X POST "http://localhost:8000/items/?table_name=supplier_stock&type=append" \
 -H "Content-Type: application/json" \
 -d '{
     "items": [
@@ -66,16 +66,16 @@ curl -X POST "http://localhost:8000/items/?table_name=supplier_stock" \
 }'
 
 
-curl -X POST "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?table_name=supplier_stock" \
+curl -X POST "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?table_name=supplier_stock&type=append" \
 -H "Content-Type: application/json" \
 -d '{
     "items": [
         {
-            "custom_label": "XYZ204",
+            "custom_label": "XYZ205",
             "part_number": "XYZ202",
             "supplier": "SupplierB",
             "quantity": 5,
-            "updated_date": "2023-10-01"
+            "updated_date": "2023-10-20"
         }
     ]
 }'

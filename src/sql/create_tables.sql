@@ -1,9 +1,10 @@
 CREATE TABLE supplier_stock (
-    custom_label VARCHAR(255) PRIMARY KEY,
+    custom_label VARCHAR(255),
     part_number VARCHAR(255),
     supplier VARCHAR(255),
     quantity INT,
-    updated_date VARCHAR(255)
+    updated_date VARCHAR(255),
+    PRIMARY KEY (custom_label, updated_date)
 );
 
 CREATE TABLE store (

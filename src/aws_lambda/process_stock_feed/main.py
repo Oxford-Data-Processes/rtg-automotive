@@ -64,7 +64,7 @@ def add_items_to_supplier_stock(items) -> list:
     for i in range(0, len(items), chunk_size):
         chunk = items[i : i + chunk_size]
         response = requests.post(
-            f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/?table_name=supplier_stock",
+            f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/?table_name=supplier_stock&type=append",
             headers={"Content-Type": "application/json"},
             json={"items": chunk},
         )
