@@ -59,15 +59,17 @@ def fetch_rtg_custom_labels() -> list:
 
 
 def add_items_to_supplier_stock(items) -> list:
-    response = requests.post(
-        f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/?table_name=supplier_stock",
-        headers={"Content-Type": "application/json"},
-        json={"items": items},
-    )
-    if response.status_code != 200:
-        logger.error(f"Failed to add items: {response.text}")
-    custom_labels = list(set([item["custom_label"] for item in items]))
-    return custom_labels
+    chunk_size = 100
+
+    for i in range(0, len(items), chunk_size):
+        chunk = items[i : i + chunk_size]
+        response = requests.post(
+            f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/?table_name=supplier_stock",
+            headers={"Content-Type": "application/json"},
+            json={"items": chunk},
+        )
+        if response.status_code != 200:
+            logger.error(f"Failed to add items: {response.text}")
 
 
 def process_stock_feed(
