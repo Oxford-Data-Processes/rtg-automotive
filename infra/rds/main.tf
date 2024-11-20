@@ -9,22 +9,6 @@ resource "aws_vpc" "project_vpc" {
   }
 }
 
-resource "aws_db_instance" "project_db" {
-  identifier             = "${var.project}-mysql"
-  engine                 = "mysql"
-  engine_version         = "8.0"
-  instance_class         = "db.t3.micro"
-  allocated_storage      = 20
-  storage_type           = "gp2"
-  username               = "admin"
-  password               = "password"
-  db_name                = "rtg_automotive"
-  skip_final_snapshot    = true
-  publicly_accessible    = true
-  availability_zone      = "eu-west-2b"
-  vpc_security_group_ids = [aws_security_group.project_db_sg.id]
-}
-
 resource "aws_security_group" "project_db_sg" {
   name   = "${var.project}-db-sg"
   vpc_id = aws_vpc.project_vpc.id
@@ -46,4 +30,20 @@ resource "aws_security_group" "project_db_sg" {
   tags = {
     Name = "${var.project}-db-sg"
   }
+}
+
+resource "aws_db_instance" "project_db" {
+  identifier             = "${var.project}-mysql"
+  engine                 = "mysql"
+  engine_version         = "8.0"
+  instance_class         = "db.t3.micro"
+  allocated_storage      = 20
+  storage_type           = "gp2"
+  username               = "admin"
+  password               = "password"
+  db_name                = "rtg_automotive"
+  skip_final_snapshot    = true
+  publicly_accessible    = true
+  availability_zone      = "eu-west-2b"
+  vpc_security_group_ids = [aws_security_group.project_db_sg.id]
 }
