@@ -11,7 +11,7 @@ resource "aws_vpc" "project_vpc" {
 resource "aws_subnet" "project_subnet" {
   vpc_id            = aws_vpc.project_vpc.id
   cidr_block        = "10.0.1.0/24"
-  availability_zone = "${var.aws_region}a"
+  availability_zone = "eu-west-2a"
 
   tags = {
     Name = "${var.project}-subnet"
@@ -27,7 +27,7 @@ resource "aws_security_group" "project_db_sg" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"] # Consider restricting this for security
+    cidr_blocks = ["0.0.0.0/0"]
   }
 
   egress {
