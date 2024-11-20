@@ -20,7 +20,7 @@ resource "aws_subnet" "project_subnet_a" {
 
 resource "aws_subnet" "project_subnet_b" {
   vpc_id            = aws_vpc.project_vpc.id
-  cidr_block        = "10.0.2.0/24"
+  cidr_block        = "10.0.3.0/24" // Changed from 10.0.2.0/24 to avoid conflict
   availability_zone = "eu-west-2b"
 
   tags = {
