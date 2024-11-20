@@ -8,16 +8,25 @@ resource "aws_vpc" "project_vpc" {
   }
 }
 
-resource "aws_subnet" "project_subnet" {
+resource "aws_subnet" "project_subnet_a" {
   vpc_id            = aws_vpc.project_vpc.id
   cidr_block        = "10.0.1.0/24"
   availability_zone = "eu-west-2a"
 
   tags = {
-    Name = "${var.project}-subnet"
+    Name = "${var.project}-subnet-a"
   }
 }
 
+resource "aws_subnet" "project_subnet_b" {
+  vpc_id            = aws_vpc.project_vpc.id
+  cidr_block        = "10.0.2.0/24"
+  availability_zone = "eu-west-2b"
+
+  tags = {
+    Name = "${var.project}-subnet-b"
+  }
+}
 
 resource "aws_security_group" "project_db_sg" {
   name   = "${var.project}-db-sg"
@@ -45,7 +54,8 @@ resource "aws_security_group" "project_db_sg" {
 resource "aws_db_subnet_group" "project_db_subnet_group" {
   name = "${var.project}-db-subnet-group"
   subnet_ids = [
-    aws_subnet.project_subnet.id
+    aws_subnet.project_subnet_a.id,
+    aws_subnet.project_subnet_b.id
   ]
 
   tags = {
