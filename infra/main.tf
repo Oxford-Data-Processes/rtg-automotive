@@ -26,11 +26,11 @@ module "sqs" {
   source  = "./sqs"
 }
 
-module "rds" {
-  aws_account_id = var.aws_account_id
-  project        = var.project
-  source         = "./rds"
-}
+# module "rds" {
+#   aws_account_id = var.aws_account_id
+#   project        = var.project
+#   source         = "./rds"
+# }
 
 module "eventbridge" {
   aws_account_id = var.aws_account_id
