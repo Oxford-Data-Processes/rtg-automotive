@@ -1,6 +1,7 @@
+import time
+
 import mysql.connector
 from mysql.connector import Error
-import time
 
 
 def test_connection():
@@ -8,7 +9,7 @@ def test_connection():
         start_time = time.time()
         print(start_time)
         connection = mysql.connector.connect(
-            host="rtg-automotive-mysql.c14oos6givty.eu-west-2.rds.amazonaws.com",
+            host="rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com",
             database="rtg_automotive",
             user="admin",
             password="password",

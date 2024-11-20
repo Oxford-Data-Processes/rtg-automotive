@@ -1,5 +1,7 @@
 CREATE DATABASE rtg_automotive;
 
+USE rtg_automotive;
+
 CREATE TABLE supplier_stock (
     custom_label VARCHAR(255),
     part_number VARCHAR(255),
@@ -22,16 +24,6 @@ CREATE TABLE store (
     payment_profile_name VARCHAR(255),
     shipping_profile_name VARCHAR(255),
     return_profile_name VARCHAR(255),
-    supplier VARCHAR(255),
-    ebay_store VARCHAR(255)
-);
-
-CREATE TABLE ebay (
-    item_id BIGINT PRIMARY KEY,
-    custom_label VARCHAR(255),
-    quantity INT,
-    quantity_delta INT,
-    updated_date VARCHAR(255),
     supplier VARCHAR(255),
     ebay_store VARCHAR(255)
 );

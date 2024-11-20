@@ -49,7 +49,7 @@ curl -X GET "http://localhost:8000/items/?table_name=ebay&limit=5"
 curl -X GET "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?table_name=supplier_stock&filters=%7B%22part_number%22%3A%22ABR101%22%7D&limit=5"
 
 
-jdbc:mysql://rtg-automotive-mysql.c14oos6givty.eu-west-2.rds.amazonaws.com:3306/rtg_automotive
+jdbc:mysql://rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com:3306
 
 curl -X POST "http://localhost:8000/items/?table_name=supplier_stock&type=append" \
 -H "Content-Type: application/json" \

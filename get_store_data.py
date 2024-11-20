@@ -7,7 +7,7 @@ from sqlalchemy import create_engine
 def write_dataframe_to_mysql(df, table_name):
     try:
         engine = create_engine(
-            "mysql+mysqlconnector://admin:password@rtg-automotive-mysql.c14oos6givty.eu-west-2.rds.amazonaws.com/rtg_automotive"
+            "mysql+mysqlconnector://admin:password@rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com/rtg_automotive"
         )
         df.to_sql(
             table_name, con=engine, if_exists="append", index=False, chunksize=10000

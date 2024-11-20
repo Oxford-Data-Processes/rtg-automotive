@@ -1,5 +1,6 @@
-import pandas as pd
 from pathlib import Path
+
+import pandas as pd
 from sqlalchemy import create_engine
 
 
@@ -7,7 +8,7 @@ def write_dataframe_to_mysql(df, table_name):
     try:
         # Create a SQLAlchemy engine
         engine = create_engine(
-            "mysql+mysqlconnector://admin:password@rtg-automotive-mysql.c14oos6givty.eu-west-2.rds.amazonaws.com/rtg_automotive"
+            "mysql+mysqlconnector://admin:password@rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com/rtg_automotive"
         )
         # Write the dataframe to the MySQL table
         df.to_sql(

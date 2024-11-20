@@ -46,7 +46,7 @@ def format_results(items, model, columns: List[str]) -> list:
 # Database engine and session setup
 def create_database_session() -> sessionmaker:
     engine = create_engine(
-        "mysql+mysqlconnector://admin:password@rtg-automotive-mysql.c14oos6givty.eu-west-2.rds.amazonaws.com/rtg_automotive"
+        "mysql+mysqlconnector://admin:password@rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com/rtg_automotive"
     )
     return sessionmaker(bind=engine)
 
