@@ -6,28 +6,28 @@ on:
       - "**dev-deploy-*"
 
 jobs:
-  # docker-lambda:
-  #   uses: Oxford-Data-Processes/github-actions/.github/workflows/docker-lambda.yml@main
-  #   secrets: inherit
-  #   strategy:
-  #     matrix:
-  #       CONFIG:
-  #         - lambda_name: s3-event-router-lambda
-  #           build_directory: ./src/aws_lambda/s3_event_router
-  #         - lambda_name: api-lambda
-  #           build_directory: ./src/aws_lambda/api
-  #         - lambda_name: process-stock-feed-lambda
-  #           build_directory: ./src/aws_lambda/process_stock_feed
-  #         - lambda_name: generate-ebay-table-lambda
-  #           build_directory: ./src/aws_lambda/generate_ebay_table
-  #   with:
-  #     STAGE: dev
-  #     PROJECT: ${{ github.repository }}
-  #     CONFIG: ${{ toJson(matrix.CONFIG) }}
-  #     VERSION_NUMBER: ${{ github.run_number }}
+  docker-lambda:
+    uses: Oxford-Data-Processes/github-actions/.github/workflows/docker-lambda.yml@main
+    secrets: inherit
+    strategy:
+      matrix:
+        CONFIG:
+          - lambda_name: s3-event-router-lambda
+            build_directory: ./src/aws_lambda/s3_event_router
+          - lambda_name: api-lambda
+            build_directory: ./src/aws_lambda/api
+          - lambda_name: process-stock-feed-lambda
+            build_directory: ./src/aws_lambda/process_stock_feed
+          - lambda_name: generate-ebay-table-lambda
+            build_directory: ./src/aws_lambda/generate_ebay_table
+    with:
+      STAGE: dev
+      PROJECT: ${{ github.repository }}
+      CONFIG: ${{ toJson(matrix.CONFIG) }}
+      VERSION_NUMBER: ${{ github.run_number }}
 
   terraform:
-    # needs: docker-lambda
+    needs: docker-lambda
     uses: Oxford-Data-Processes/github-actions/.github/workflows/terraform.yml@main
     secrets: inherit
     with:
