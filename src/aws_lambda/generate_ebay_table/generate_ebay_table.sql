@@ -1,18 +1,14 @@
-DROP TABLE IF EXISTS ebay;
-
-CREATE TABLE ebay (
+CREATE TEMPORARY TABLE ebay (
     item_id BIGINT,
     custom_label VARCHAR(255),
     quantity INT,
     quantity_delta INT,
     updated_date VARCHAR(255),
     ebay_store VARCHAR(255),
-    supplier VARCHAR(255),
-    last_updated_timestamp TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    supplier VARCHAR(255)
 ) AS (
 SELECT
-    sd.ebay_store,
-    rd.supplier,
+    sd.item_id,
     rd.custom_label,
     rd.quantity,
     COALESCE(
@@ -21,8 +17,8 @@ SELECT
         MAX(CASE WHEN rn = 1 THEN rd.quantity END)
     ) AS quantity_delta,
     MAX(rd.updated_date) AS updated_date,
-    sd.item_id,
-    NOW() AS last_updated_timestamp
+    sd.ebay_store,
+    rd.supplier
 FROM
     supplier_stock ps
 LEFT JOIN
@@ -39,6 +35,8 @@ LEFT JOIN
         FROM
             supplier_stock ps
     ) rd ON ps.custom_label = rd.custom_label
+WHERE
+    sd.item_id IS NOT NULL
 GROUP BY
     sd.item_id, rd.supplier, sd.ebay_store, rd.quantity, rd.custom_label
 );

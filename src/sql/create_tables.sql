@@ -1,3 +1,5 @@
+CREATE DATABASE rtg_automotive;
+
 CREATE TABLE supplier_stock (
     custom_label VARCHAR(255),
     part_number VARCHAR(255),

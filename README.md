@@ -18,9 +18,15 @@ mypy {path_to_file_or_directory} --explicit-package-bases
 
 TO DO:
 
-Create RDS database with ACID transactions. Use RDS as app backend.
+********
 
-Create API backend that works with RDS database.
+Recreate rtg_automotive databse.
+Ensure generate ebay table Lambda function works.
+Add functionality to frontend to update the tables (Group by store).
+
+
+
+
 
 Daily Pipeline steps:
 
@@ -38,11 +44,12 @@ Manual update steps:
 curl -X GET "http://localhost:8000/items/?table_name=supplier_stock&filters=%7B%22part_number%22%3A%22ABR101%22%7D&limit=5"
 curl -X GET "http://localhost:8000/items/?table_name=supplier_stock&filters=%7B%22custom_label%22%3A%22UKD-APE-ABR101%22%7D&limit=5"
 curl -X GET "http://localhost:8000/items/?table_name=store&limit=5"
-
+curl -X GET "http://localhost:8000/items/?table_name=ebay&limit=5"
 
 curl -X GET "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?table_name=supplier_stock&filters=%7B%22part_number%22%3A%22ABR101%22%7D&limit=5"
 
 
+jdbc:mysql://rtg-automotive-mysql.c14oos6givty.eu-west-2.rds.amazonaws.com:3306/rtg_automotive
 
 curl -X POST "http://localhost:8000/items/?table_name=supplier_stock&type=append" \
 -H "Content-Type: application/json" \

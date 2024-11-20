@@ -1,6 +1,6 @@
-import pandas as pd
 from pathlib import Path
-import os
+
+import pandas as pd
 from sqlalchemy import create_engine
 
 
@@ -65,14 +65,11 @@ def process_excel_file(file, ebay_store):
 
 
 def handle_store_selection(store_selection):
+    data_dir = Path("/Users/chrislittle/Dropbox/#Speedsheet/store_database/")
     if store_selection == "All":
-        data_dir = Path(
-            f"/Users/chrislittle/Dropbox/#Speedsheet/store_database/Database SpeedSheet.xlsx"
-        )
         dfs = read_excel_files(data_dir)
         df_store = pd.concat(dfs.values(), ignore_index=True)
     else:
-        data_dir = Path(f"/Users/chrislittle/Dropbox/#Speedsheet/store_database/")
         df_store = pd.read_excel(
             data_dir / f"{store_selection} Database SpeedSheet.xlsx"
         )

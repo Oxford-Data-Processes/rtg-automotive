@@ -1,13 +1,22 @@
 import json
 import logging
 import os
+from datetime import datetime
 
-from aws_utils import iam
+import pandas as pd
+import pytz
+from aws_utils import iam, s3, sns
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+
+def send_sns_notification(message):
+    topic_name = "rtg-automotive-lambda-notifications"
+    sns_handler = sns.SNSHandler(topic_name)
+    sns_handler.send_notification(message, "EBAY_TABLE_GENERATED")
 
 
 def create_database_session() -> sessionmaker:
@@ -17,33 +26,71 @@ def create_database_session() -> sessionmaker:
     return sessionmaker(bind=engine)
 
 
-iam.get_aws_credentials(os.environ)
+def execute_query(session, query):
+    logger.info(f"Executing query: {query}")
+    try:
+        if query.strip():  # Check if the query is not empty
+            result = session.execute(text(query))  # Execute the query
+            session.commit()  # Commit the transaction after executing the query
+
+            # Check if the query is a SELECT statement
+            if query.strip().upper().startswith("SELECT"):
+                return (
+                    result.fetchall()
+                )  # Return the fetched results for SELECT queries
+            else:
+                return None  # For non-SELECT queries, return None
+    except Exception as e:
+        logger.error(f"Error executing query: {str(e)}")
+        session.rollback()  # Rollback in case of error
+        raise e
 
 
 def lambda_handler(event, context):
-    session = create_database_session()()
+    iam.get_aws_credentials(os.environ)
     current_directory = os.path.dirname(os.path.abspath(__file__))
 
+    session = create_database_session()()
     with open(os.path.join(current_directory, "generate_ebay_table.sql"), "r") as file:
-        queries = file.read().split(
-            ";"
-        )  # Split the SQL file into individual statements
+        query = file.read()
 
-    logger.info(f"Queries: {queries}")
+    execute_query(session, query)
 
-    try:
-        for query in queries:
-            if query.strip():  # Check if the query is not empty
-                session.execute(text(query))  # Execute each query separately
+    # Fetch data from the ebay table
+    fetch_query = (
+        "SELECT * FROM ebay"  # Query to select all data from the temporary ebay table
+    )
+    result = execute_query(session, fetch_query)
+    print(result)
+    session.close()
 
-        session.commit()  # Commit the transaction after executing all queries
+    df = pd.DataFrame(
+        result,
+        columns=[
+            "item_id",
+            "custom_label",
+            "quantity",
+            "quantity_delta",
+            "updated_date",
+            "ebay_store",
+            "supplier",
+        ],
+    )
+    logger.info(f"Dataframe shape: {df.shape}")
+    logger.info(f"Dataframe head: {df.head()}")
 
-        logger.info("All queries executed successfully.")
-    except Exception as e:
-        logger.error(f"Error executing queries: {str(e)}")
-        session.rollback()  # Rollback in case of error
-        raise e
-    finally:
-        session.close()
+    s3_handler = s3.S3Handler()
 
-    return {"statusCode": 200, "body": json.dumps("Queries executed successfully!")}
+    s3_handler.upload_parquet_to_s3(
+        f"rtg-automotive-bucket-{os.environ['AWS_ACCOUNT_ID']}",
+        "ebay/data.parquet",
+        df.to_parquet(),
+    )
+
+    time_stamp = datetime.now(pytz.timezone("Europe/London")).strftime(
+        "%Y-%m-%dT%H:%M:%S"
+    )
+    message = f"Ebay table generated and data uploaded successfully at {time_stamp}"
+    send_sns_notification(message)
+
+    return {"statusCode": 200, "body": json.dumps("Query executed successfully!")}

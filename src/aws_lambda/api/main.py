@@ -86,6 +86,7 @@ async def read_items(
         return JSONResponse(content={"error": "Invalid table name"}, status_code=400)
 
     query = session.query(model)
+    print(f"query: {query}")
     if filters:
         filters_dict = parse_filters(filters)
         if filters_dict is None:
@@ -94,7 +95,10 @@ async def read_items(
             )
         query = apply_filters(query, model, filters_dict)
 
-    items = query.limit(limit).all()
+    limited_query = query.limit(limit)
+    print(f"limited_query: {limited_query}")
+    items = limited_query.all()
+
     if not items:
         return JSONResponse(content={"error": "No items found"}, status_code=404)
 
