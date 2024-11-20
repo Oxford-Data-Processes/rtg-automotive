@@ -8,6 +8,17 @@ resource "aws_vpc" "project_vpc" {
   }
 }
 
+resource "aws_subnet" "project_subnet" {
+  vpc_id            = aws_vpc.project_vpc.id
+  cidr_block        = "10.0.1.0/24"
+  availability_zone = "${var.aws_region}a"
+
+  tags = {
+    Name = "${var.project}-subnet"
+  }
+}
+
+
 resource "aws_security_group" "project_db_sg" {
   name   = "${var.project}-db-sg"
   vpc_id = aws_vpc.project_vpc.id
@@ -16,7 +27,7 @@ resource "aws_security_group" "project_db_sg" {
     from_port   = 3306
     to_port     = 3306
     protocol    = "tcp"
-    cidr_blocks = ["0.0.0.0/0"]
+    cidr_blocks = ["0.0.0.0/0"] # Consider restricting this for security
   }
 
   egress {
@@ -28,6 +39,17 @@ resource "aws_security_group" "project_db_sg" {
 
   tags = {
     Name = "${var.project}-db-sg"
+  }
+}
+
+resource "aws_db_subnet_group" "project_db_subnet_group" {
+  name = "${var.project}-db-subnet-group"
+  subnet_ids = [
+    aws_subnet.project_subnet.id
+  ]
+
+  tags = {
+    Name = "${var.project}-db-subnet-group"
   }
 }
 
@@ -43,6 +65,10 @@ resource "aws_db_instance" "project_db" {
   db_name                = "rtg_automotive"
   skip_final_snapshot    = true
   publicly_accessible    = true
-  availability_zone      = "eu-west-2b"
   vpc_security_group_ids = [aws_security_group.project_db_sg.id]
+  db_subnet_group_name   = aws_db_subnet_group.project_db_subnet_group.name
+
+  tags = {
+    Name = "${var.project}-db"
+  }
 }
