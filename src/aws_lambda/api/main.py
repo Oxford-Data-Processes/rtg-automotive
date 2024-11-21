@@ -23,15 +23,14 @@ from models.sqlalchemy_models import Base, create_model_class  # type: ignore
 # Parse filters from string to dictionary
 def parse_filters(filters: str) -> Optional[dict]:
     try:
-        parsed_filters = json.loads(filters)
-        if isinstance(parsed_filters, dict):
-            # Ensure all values are lists of strings
-            for key, value in parsed_filters.items():
+        filters = json.loads(filters)
+        if isinstance(filters, dict):
+            for key, value in filters.items():
                 if not isinstance(value, list) or not all(
                     isinstance(v, str) for v in value
                 ):
                     return None
-            return parsed_filters
+            return filters
         return None
     except json.JSONDecodeError:
         return None
@@ -118,7 +117,9 @@ async def read_items(
         return JSONResponse(content={"error": "No items found"}, status_code=404)
 
     selected_columns = (
-        columns if columns else [column.name for column in model.__table__.columns]
+        columns.split(",")
+        if columns
+        else [column.name for column in model.__table__.columns]
     )
     results = format_results(items, model, selected_columns)
     Base.metadata.clear()

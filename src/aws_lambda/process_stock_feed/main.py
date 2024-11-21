@@ -20,16 +20,20 @@ iam.get_aws_credentials(os.environ)
 API_ID = "tsybspea31"
 STAGE_LOWER = os.environ["STAGE"].lower()
 
+LAMBDA_HOST = (
+    f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/"
+)
+
 
 def get_part_number_mapping(supplier: str) -> dict:
     params = {
         "table_name": "supplier_stock",
-        "filters": {"supplier": [supplier]},
-        "columns": ["custom_label", "part_number"],
+        "filters": json.dumps({"supplier": [supplier]}),
+        "columns": ",".join(["custom_label", "part_number"]),
         "limit": 5,
     }
     logger.info(f"Params: {json.dumps(params)}")
-    url = f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/"
+    url = LAMBDA_HOST
     logger.info(f"URL: {url}")
     items = requests.get(url, params=params).json()
 
@@ -75,13 +79,10 @@ def read_excel_from_s3(
 def fetch_rtg_custom_labels() -> list:
     params = {
         "table_name": "store",
-        "columns": ["custom_label"],
+        "columns": ",".join(["custom_label"]),
         "limit": 10000,
     }
-    response = requests.get(
-        f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/",
-        params=params,
-    )
+    response = requests.get(LAMBDA_HOST, params=params)
     items = response.json()
     custom_labels = list(set(item["custom_label"] for item in items))
     return custom_labels
@@ -93,7 +94,7 @@ def add_items_to_supplier_stock(items) -> list:
     for i in range(0, len(items), chunk_size):
         chunk = items[i : i + chunk_size]
         response = requests.post(
-            f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/?table_name=supplier_stock&type=append",
+            f"{LAMBDA_HOST}?table_name=supplier_stock&type=append",
             headers={"Content-Type": "application/json"},
             json={"items": chunk},
         )

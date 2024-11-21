@@ -23,6 +23,7 @@ TO DO:
 Recreate rtg_automotive databse.
 Ensure generate ebay table Lambda function works.
 Add functionality to frontend to update the tables (Group by store).
+Get API ID programmatically, add to AWS utils.
 Use pydantic to validate data coming in and going out of API.
 Clean up code and write any modules/utils that I can re-use for other projects.
 Add unit tests for API, mock the database.
