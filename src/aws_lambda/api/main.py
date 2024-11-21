@@ -83,6 +83,7 @@ async def read_items(
     model = create_model_class(table_name, schemas.get(f"rtg_automotive_{table_name}"))
 
     if model is None:
+        Base.metadata.clear()
         return JSONResponse(content={"error": "Invalid table name"}, status_code=400)
 
     query = session.query(model)
@@ -90,6 +91,7 @@ async def read_items(
     if filters:
         filters_dict = parse_filters(filters)
         if filters_dict is None:
+            Base.metadata.clear()
             return JSONResponse(
                 content={"error": "Invalid filters format"}, status_code=400
             )
@@ -128,12 +130,14 @@ async def put_items(
         print(f"Schema for model {table_name}: {model.__table__.columns.keys()}")
 
         if model is None:
+            Base.metadata.clear()
             return JSONResponse(
                 content={"error": f"Invalid table name: {table_name}"}, status_code=400
             )
 
         items_data = payload.get("items", [])
         if not items_data:
+            Base.metadata.clear()
             return JSONResponse(content={"error": "No items provided"}, status_code=400)
 
         try:
@@ -147,8 +151,8 @@ async def put_items(
             )
         except Exception as e:
             session.rollback()
-            Base.metadata.clear()
             logger.error(f"Error adding items: {str(e)}")
+            Base.metadata.clear()
             return JSONResponse(
                 content={"error": f"Failed to add items: {str(e)}"}, status_code=500
             )
