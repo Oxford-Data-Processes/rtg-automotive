@@ -150,7 +150,7 @@ async def put_items(
             Base.metadata.clear()
             logger.error(f"Error adding items: {str(e)}")
             return JSONResponse(
-                content={"error": "Failed to add items"}, status_code=500
+                content={"error": f"Failed to add items: {str(e)}"}, status_code=500
             )
 
 

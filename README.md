@@ -43,6 +43,7 @@ Manual update steps:
 
 curl -X GET "http://localhost:8000/items/?table_name=supplier_stock&filters=%7B%22part_number%22%3A%22ABR101%22%7D&limit=5"
 curl -X GET "http://localhost:8000/items/?table_name=supplier_stock&filters=%7B%22custom_label%22%3A%22UKD-APE-ABR101%22%7D&limit=5"
+curl -X GET "http://localhost:8000/items/?table_name=supplier_stock&filters=%7B%22updated_date%22%3A%222024-11-21%22%7D&limit=5"
 curl -X GET "http://localhost:8000/items/?table_name=store&limit=5"
 curl -X GET "http://localhost:8000/items/?table_name=ebay&limit=5"
 
