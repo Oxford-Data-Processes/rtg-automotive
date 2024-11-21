@@ -21,6 +21,13 @@ API_ID = "tsybspea31"
 STAGE_LOWER = os.environ["STAGE"].lower()
 
 
+def get_part_number_mapping(supplier: str):
+    url = f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/?table_name=supplier_stock&filters=%7B%22supplier%22%3A%22{supplier}%22%7D&columns=custom_label,part_number&limit=10000"
+    logger.info(f"URL: {url}")
+    items = requests.get(url).json()
+    return {item["part_number"]: item["custom_label"] for item in items}
+
+
 def get_config_from_s3(bucket_name, object_key):
     s3_handler = s3.S3Handler()
     config = s3_handler.load_json_from_s3(bucket_name, object_key)
@@ -225,6 +232,14 @@ def lambda_handler(event, context):
         )
 
         output = process_stock_feed(excel_data, supplier, config, current_date)
+
+        logger.info(f"Output before mapping: {output[:5]}")
+
+        part_number_mapping = get_part_number_mapping(supplier)
+        output = [
+            {**item, "custom_label": part_number_mapping[item["part_number"]]}
+            for item in output
+        ]
 
         logger.info(f"Output: {output[:5]}")
 

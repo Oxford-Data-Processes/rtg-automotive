@@ -10,6 +10,6 @@
     "detail": {
       "event_type": "S3PutObject",
       "bucket": "rtg-automotive-bucket-654654324108",
-      "object_key": "stock_feed/year%3D2024/month%3D11/day%3D19/ROL_SF.xlsx"
+      "object_key": "stock_feed/year%3D2024/month%3D11/day%3D21/BGA_SF.xlsx"
     }
 }

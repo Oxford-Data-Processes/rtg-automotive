@@ -129,7 +129,7 @@ async def put_items(
 
         if model is None:
             return JSONResponse(
-                content={"error": "Invalid table name"}, status_code=400
+                content={"error": f"Invalid table name: {table_name}"}, status_code=400
             )
 
         items_data = payload.get("items", [])
