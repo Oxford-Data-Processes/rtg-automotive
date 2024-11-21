@@ -23,7 +23,16 @@ from models.sqlalchemy_models import Base, create_model_class  # type: ignore
 # Parse filters from string to dictionary
 def parse_filters(filters: str) -> Optional[dict]:
     try:
-        return json.loads(filters)
+        parsed_filters = json.loads(filters)
+        if isinstance(parsed_filters, dict):
+            # Ensure all values are lists of strings
+            for key, value in parsed_filters.items():
+                if not isinstance(value, list) or not all(
+                    isinstance(v, str) for v in value
+                ):
+                    return None
+            return parsed_filters
+        return None
     except json.JSONDecodeError:
         return None
 
@@ -31,7 +40,7 @@ def parse_filters(filters: str) -> Optional[dict]:
 # Apply filters to the query
 def apply_filters(query, model, filters_dict: dict):
     for column_name, filter_value in filters_dict.items():
-        query = query.filter(getattr(model, column_name) == filter_value)
+        query = query.filter(getattr(model, column_name).in_(filter_value))
     return query
 
 
@@ -88,6 +97,9 @@ async def read_items(
 
     query = session.query(model)
     print(f"query: {query}")
+
+    print(f"filters: {filters}")
+
     if filters:
         filters_dict = parse_filters(filters)
         if filters_dict is None:
@@ -106,9 +118,7 @@ async def read_items(
         return JSONResponse(content={"error": "No items found"}, status_code=404)
 
     selected_columns = (
-        columns.split(",")
-        if columns
-        else [column.name for column in model.__table__.columns]
+        columns if columns else [column.name for column in model.__table__.columns]
     )
     results = format_results(items, model, selected_columns)
     Base.metadata.clear()
