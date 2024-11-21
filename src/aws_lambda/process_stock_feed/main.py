@@ -21,10 +21,19 @@ API_ID = "tsybspea31"
 STAGE_LOWER = os.environ["STAGE"].lower()
 
 
-def get_part_number_mapping(supplier: str):
-    url = f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/?table_name=supplier_stock&filters=%7B%22supplier%22%3A%22{supplier}%22%7D&columns=custom_label,part_number&limit=10000"
+def get_part_number_mapping(supplier: str) -> dict:
+    params = {
+        "table_name": "supplier_stock",
+        "filters": {"supplier": [supplier]},
+        "columns": ["custom_label", "part_number"],
+        "limit": 5,
+    }
+    logger.info(f"Params: {json.dumps(params)}")
+    url = f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/"
     logger.info(f"URL: {url}")
-    items = requests.get(url).json()
+    items = requests.get(url, params=params).json()
+
+    logger.info(f"Items: {items}")
 
     unique_items = {(item["custom_label"], item["part_number"]): item for item in items}
 
@@ -64,10 +73,17 @@ def read_excel_from_s3(
 
 
 def fetch_rtg_custom_labels() -> list:
-    items = requests.get(
-        f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/?table_name=store&columns=custom_label&limit=10000"
-    ).json()
-    custom_labels = list(set([item["custom_label"] for item in items]))
+    params = {
+        "table_name": "store",
+        "columns": ["custom_label"],
+        "limit": 10000,
+    }
+    response = requests.get(
+        f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/",
+        params=params,
+    )
+    items = response.json()
+    custom_labels = list(set(item["custom_label"] for item in items))
     return custom_labels
 
 
@@ -242,6 +258,9 @@ def lambda_handler(event, context):
         logger.info(f"Output before mapping: {output[:5]}")
 
         part_number_mapping = get_part_number_mapping(supplier)
+
+        logger.info(f"Part number mapping: {part_number_mapping}")
+
         output = [
             {**item, "custom_label": part_number_mapping[item["part_number"]]}
             for item in output

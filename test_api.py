@@ -4,23 +4,35 @@ LAMBDA = "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/"
 GET_PARAMS = [
     {
         "table_name": "supplier_stock",
-        "filters": '{"part_number": ["ABR101"]}',  # JSON string for filters with "ABR101" in a list
+        "filters": {
+            "part_number": ["ABR101"]
+        },  # JSON string for filters with "ABR101" in a list
         "columns": ["custom_label", "part_number"],
         "limit": 5,
     },
     {
         "table_name": "supplier_stock",
-        "filters": '{"custom_label": ["UKD-APE-ABR101"]}',  # JSON string for filters with "UKD-APE-ABR101" in a list
+        "filters": {
+            "custom_label": ["UKD-APE-ABR101"]
+        },  # JSON string for filters with "UKD-APE-ABR101" in a list
         "columns": ["custom_label", "part_number"],
         "limit": 5,
     },
     {
         "table_name": "supplier_stock",
-        "filters": '{"updated_date": ["2024-11-21"]}',  # JSON string for filters with "2024-11-21" in a list
+        "filters": {
+            "updated_date": ["2024-11-21"]
+        },  # JSON string for filters with "2024-11-21" in a list
         "limit": 5,
     },
     {
         "table_name": "store",
+        "limit": 5,
+    },
+    {
+        "table_name": "supplier_stock",
+        "filters": {"supplier": ["APE"]},
+        "columns": ["custom_label", "part_number"],
         "limit": 5,
     },
 ]
