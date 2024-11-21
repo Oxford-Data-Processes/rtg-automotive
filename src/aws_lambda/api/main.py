@@ -109,7 +109,6 @@ async def read_items(
         else [column.name for column in model.__table__.columns]
     )
     results = format_results(items, model, selected_columns)
-    logger.info(f"results: {results}")
     Base.metadata.clear()
     return JSONResponse(content=results)
 
