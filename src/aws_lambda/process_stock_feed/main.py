@@ -25,7 +25,13 @@ def get_part_number_mapping(supplier: str):
     url = f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/?table_name=supplier_stock&filters=%7B%22supplier%22%3A%22{supplier}%22%7D&columns=custom_label,part_number&limit=10000"
     logger.info(f"URL: {url}")
     items = requests.get(url).json()
-    return {item["part_number"]: item["custom_label"] for item in items}
+
+    unique_items = {(item["custom_label"], item["part_number"]): item for item in items}
+
+    return {
+        part_number: custom_label
+        for (custom_label, part_number), item in unique_items.items()
+    }
 
 
 def get_config_from_s3(bucket_name, object_key):
@@ -239,6 +245,8 @@ def lambda_handler(event, context):
         output = [
             {**item, "custom_label": part_number_mapping[item["part_number"]]}
             for item in output
+            if item.get("part_number") is not None
+            and part_number_mapping.get(item["part_number"]) is not None
         ]
 
         logger.info(f"Output: {output[:5]}")
