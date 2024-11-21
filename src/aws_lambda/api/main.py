@@ -100,6 +100,7 @@ async def read_items(
     items = limited_query.all()
 
     if not items:
+        Base.metadata.clear()
         return JSONResponse(content={"error": "No items found"}, status_code=404)
 
     selected_columns = (

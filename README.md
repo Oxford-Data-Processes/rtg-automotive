@@ -46,6 +46,12 @@ curl -X GET "http://localhost:8000/items/?table_name=supplier_stock&filters=%7B%
 curl -X GET "http://localhost:8000/items/?table_name=supplier_stock&filters=%7B%22updated_date%22%3A%222024-11-21%22%7D&limit=5"
 curl -X GET "http://localhost:8000/items/?table_name=store&limit=5"
 curl -X GET "http://localhost:8000/items/?table_name=ebay&limit=5"
+curl -X GET "http://localhost:8000/items/?table_name=supplier_stock&filters=%7B%22supplier%22%3A%22APE%22%7D&columns=custom_label,part_number&limit=10000"
+
+
+curl -X GET "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?table_name=supplier_stock&filters=%7B%22supplier%22%3A%22APE%22%7D&columns=custom_label,part_number&limit=10000"
+
+
 
 
 curl -X GET "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/?table_name=supplier_stock&filters=%7B%22part_number%22%3A%22ABR101%22%7D&limit=5"
