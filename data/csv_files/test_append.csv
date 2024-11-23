@@ -1,0 +1,6 @@
+part_number,quantity,updated_date,supplier
+ABR101,10,2023-10-01,SupplierA
+XYZ202,5,2023-10-01,SupplierB
+ABR105,15,2023-10-02,SupplierC
+ABC123,20,2023-10-03,SupplierD
+DEF456,8,2023-10-04,SupplierE

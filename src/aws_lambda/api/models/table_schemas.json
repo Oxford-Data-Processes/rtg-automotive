@@ -2,6 +2,10 @@
     "rtg_automotive_supplier_stock": {
         "columns": [
             {
+                "name": "id",
+                "type": "integer"
+            },
+            {
                 "name": "custom_label",
                 "type": "string"
             },
@@ -23,7 +27,7 @@
             }
         ],
         "partition_keys": [],
-        "primary_keys": ["custom_label", "updated_date"]
+        "primary_keys": ["id"]
     },
     "rtg_automotive_store": {
         "columns": [

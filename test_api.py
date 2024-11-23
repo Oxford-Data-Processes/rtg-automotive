@@ -43,14 +43,16 @@ POST_PARAMS = [
         "payload": {
             "items": [
                 {
-                    "custom_label": "ABR104",
+                    "id": 100001,
+                    "custom_label": "ABR105",
                     "part_number": "ABR101",
                     "supplier": "SupplierA",
                     "quantity": 10,
                     "updated_date": "2023-10-01",
                 },
                 {
-                    "custom_label": "XYZ207",
+                    "id": 100002,
+                    "custom_label": "XYZ208",
                     "part_number": "XYZ202",
                     "supplier": "SupplierB",
                     "quantity": 5,
@@ -58,7 +60,37 @@ POST_PARAMS = [
                 },
             ]
         },
-    }
+    },
+    {
+        "table_name": "supplier_stock",
+        "type": "update",
+        "payload": {
+            "items": [
+                {
+                    "id": 100001,
+                    "quantity": 15,
+                },
+                {
+                    "id": 100002,
+                    "quantity": 20,
+                },
+            ]
+        },
+    },
+    {
+        "table_name": "supplier_stock",
+        "type": "delete",
+        "payload": {
+            "items": [
+                {
+                    "id": 100001,
+                },
+                {
+                    "id": 100002,
+                },
+            ]
+        },
+    },
 ]
 
 import requests
@@ -66,14 +98,14 @@ import requests
 url = LOCAL
 print("URL: ", url)
 
-for params in GET_PARAMS:
-    print("GET")
-    print("PARAMS")
-    print(params)
-    response = requests.get(url, params=params)
+# for params in GET_PARAMS:
+#     print("GET")
+#     print("PARAMS")
+#     print(params)
+#     response = requests.get(url, params=params)
 
-    data = response.json()
-    print(data)
+#     data = response.json()
+#     print(data)
 
 for params in POST_PARAMS:
     print("POST")

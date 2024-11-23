@@ -3,12 +3,12 @@ CREATE DATABASE rtg_automotive;
 USE rtg_automotive;
 
 CREATE TABLE supplier_stock (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
     custom_label VARCHAR(255),
     part_number VARCHAR(255),
     supplier VARCHAR(255),
     quantity INT,
-    updated_date VARCHAR(255),
-    PRIMARY KEY (custom_label, updated_date)
+    updated_date VARCHAR(255)
 );
 
 CREATE TABLE store (

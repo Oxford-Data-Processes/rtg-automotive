@@ -20,13 +20,18 @@ TO DO:
 
 ********
 
-Recreate rtg_automotive databse.
-Ensure generate ebay table Lambda function works.
-Add functionality to frontend to update the tables (Group by store).
 Get API ID programmatically, add to AWS utils.
 Use pydantic to validate data coming in and going out of API.
+Add the ability for users to undo database operations based on an ID. For every operation there is an equivalent inverse operation. Delete flag, version number, last_operation_id (linked to logs with operation type and query), log table (parquet in athena) keeps copy of old values (previous versions) and operation_id and operation data.
+Create mechanism for reducing size of tables.
+Implement daily database backups (kept for up to 30 days) with mysqldump.
+
+Add functionality to frontend to update the tables (Group by store).
 Clean up code and write any modules/utils that I can re-use for other projects.
-Add unit tests for API, mock the database.
+Add unit tests for API inside Lambda function, mock the database.
+Add real integration test for API without mocking within dev environment.
+Add frontend tests using mocked API.
+Add end to end tests that work within dev environment only.
 
 Daily Pipeline steps:
 
