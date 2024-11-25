@@ -95,7 +95,7 @@ POST_PARAMS = [
 
 import requests
 
-url = LAMBDA
+url = LOCAL
 print("URL: ", url)
 
 for params in GET_PARAMS:
