@@ -4,7 +4,7 @@ import os
 import sys
 from typing import List, Optional
 
-from aws_utils import iam  # type: ignore
+from aws_utils import iam, rds
 from fastapi import FastAPI
 from fastapi.responses import JSONResponse
 from mangum import Mangum
@@ -19,11 +19,16 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from models.sqlalchemy_models import Base, create_model_class  # type: ignore
 
+iam.get_aws_credentials(os.environ)
+rds_handler = rds.RDSHandler()
+rds_instance = rds_handler.get_rds_instance_by_identifier("rtg-automotive-db")
+rds_endpoint = rds_instance["Endpoint"]
+
 
 # Database engine and session setup
 def create_database_session() -> sessionmaker:
     engine = create_engine(
-        "mysql+mysqlconnector://admin:password@rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com/rtg_automotive"
+        f"mysql+mysqlconnector://admin:password@{rds_endpoint}/rtg_automotive"
     )
     return sessionmaker(bind=engine)
 

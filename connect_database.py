@@ -1,7 +1,15 @@
+import os
 import time
 
 import mysql.connector
+from aws_utils import iam, rds
 from mysql.connector import Error
+
+iam.get_aws_credentials(os.environ)
+
+rds_handler = rds.RDSHandler()
+rds_instance = rds_handler.get_rds_instance_by_identifier("rtg-automotive-db")
+rds_endpoint = rds_instance["Endpoint"]
 
 
 def test_connection():
@@ -9,7 +17,7 @@ def test_connection():
         start_time = time.time()
         print(start_time)
         connection = mysql.connector.connect(
-            host="rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com",
+            host=rds_endpoint,
             database="rtg_automotive",
             user="admin",
             password="password",

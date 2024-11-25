@@ -5,12 +5,17 @@ from datetime import datetime
 
 import pandas as pd
 import pytz
-from aws_utils import iam, s3, sns
+from aws_utils import iam, rds, s3, sns
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker
 
 logger = logging.getLogger()
 logger.setLevel(logging.INFO)
+
+iam.get_aws_credentials(os.environ)
+rds_handler = rds.RDSHandler()
+rds_instance = rds_handler.get_rds_instance_by_identifier("rtg-automotive-db")
+rds_endpoint = rds_instance["Endpoint"]
 
 
 def send_sns_notification(message):
@@ -21,7 +26,7 @@ def send_sns_notification(message):
 
 def create_database_session() -> sessionmaker:
     engine = create_engine(
-        "mysql+mysqlconnector://admin:password@rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com/rtg_automotive"
+        f"mysql+mysqlconnector://admin:password@{rds_endpoint}/rtg_automotive"
     )
     return sessionmaker(bind=engine)
 

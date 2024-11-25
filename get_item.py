@@ -1,7 +1,9 @@
 import json
+import os
 from typing import Dict, List
 
 import sqlalchemy
+from aws_utils import iam, rds
 
 Base = sqlalchemy.orm.declarative_base()
 
@@ -33,8 +35,13 @@ columns["__table_args__"] = (sqlalchemy.PrimaryKeyConstraint("custom_label"),)
 SupplierStock = type("SupplierStock", (Base,), columns)
 
 
+iam.get_aws_credentials(os.environ)
+rds_handler = rds.RDSHandler()
+rds_instance = rds_handler.get_rds_instance_by_identifier("rtg-automotive-db")
+rds_endpoint = rds_instance["Endpoint"]
+
 engine = sqlalchemy.create_engine(
-    "mysql+mysqlconnector://admin:password@rtg-automotive-db.c14oos6givty.eu-west-2.rds.amazonaws.com/rtg_automotive"
+    f"mysql+mysqlconnector://admin:password@{rds_endpoint}/rtg_automotive"
 )
 Session = sqlalchemy.orm.sessionmaker(bind=engine)
 session = Session()

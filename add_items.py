@@ -32,7 +32,6 @@ items = [
 api_gateway_handler = api_gateway.APIGatewayHandler()
 api_id = api_gateway_handler.search_api_by_name("rtg-automotive-api")
 
-
 STAGE_LOWER = os.environ["STAGE"].lower()
 
 
