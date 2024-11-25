@@ -34,20 +34,17 @@ def create_database_session() -> sessionmaker:
 def execute_query(session, query):
     logger.info(f"Executing query: {query}")
     try:
-        if query.strip():  # Check if the query is not empty
-            result = session.execute(text(query))  # Execute the query
-            session.commit()  # Commit the transaction after executing the query
+        if query.strip():
+            result = session.execute(text(query))
+            session.commit()
 
-            # Check if the query is a SELECT statement
             if query.strip().upper().startswith("SELECT"):
-                return (
-                    result.fetchall()
-                )  # Return the fetched results for SELECT queries
+                return result.fetchall()
             else:
-                return None  # For non-SELECT queries, return None
+                return None
     except Exception as e:
         logger.error(f"Error executing query: {str(e)}")
-        session.rollback()  # Rollback in case of error
+        session.rollback()
         raise e
 
 
@@ -60,12 +57,8 @@ def lambda_handler(event, context):
 
     execute_query(session, query)
 
-    # Fetch data from the ebay table
-    fetch_query = (
-        "SELECT * FROM ebay"  # Query to select all data from the temporary ebay table
-    )
+    fetch_query = "SELECT * FROM ebay"
     result = execute_query(session, fetch_query)
-    print(result)
     session.close()
 
     df = pd.DataFrame(
