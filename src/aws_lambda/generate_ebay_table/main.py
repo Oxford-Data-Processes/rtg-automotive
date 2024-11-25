@@ -13,9 +13,6 @@ logger = logging.getLogger()
 logger.setLevel(logging.INFO)
 
 iam.get_aws_credentials(os.environ)
-rds_handler = rds.RDSHandler()
-rds_instance = rds_handler.get_rds_instance_by_identifier("rtg-automotive-db")
-rds_endpoint = rds_instance["Endpoint"]
 
 
 def send_sns_notification(message):
@@ -25,6 +22,9 @@ def send_sns_notification(message):
 
 
 def create_database_session() -> sessionmaker:
+    rds_handler = rds.RDSHandler()
+    rds_instance = rds_handler.get_rds_instance_by_identifier("rtg-automotive-db")
+    rds_endpoint = rds_instance["Endpoint"]
     engine = create_engine(
         f"mysql+mysqlconnector://admin:password@{rds_endpoint}/rtg_automotive"
     )
@@ -52,7 +52,6 @@ def execute_query(session, query):
 
 
 def lambda_handler(event, context):
-    iam.get_aws_credentials(os.environ)
     current_directory = os.path.dirname(os.path.abspath(__file__))
 
     session = create_database_session()()
