@@ -95,17 +95,17 @@ POST_PARAMS = [
 
 import requests
 
-url = LOCAL
+url = LAMBDA
 print("URL: ", url)
 
-# for params in GET_PARAMS:
-#     print("GET")
-#     print("PARAMS")
-#     print(params)
-#     response = requests.get(url, params=params)
+for params in GET_PARAMS:
+    print("GET")
+    print("PARAMS")
+    print(params)
+    response = requests.get(url, params=params)
 
-#     data = response.json()
-#     print(data)
+    data = response.json()
+    print(data)
 
 for params in POST_PARAMS:
     print("POST")
