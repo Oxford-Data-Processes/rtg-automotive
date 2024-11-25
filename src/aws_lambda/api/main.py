@@ -19,14 +19,11 @@ sys.path.append(os.path.dirname(os.path.abspath(__file__)))
 
 from models.sqlalchemy_models import Base, create_model_class  # type: ignore
 
-iam.get_aws_credentials(os.environ)
-rds_handler = rds.RDSHandler()
-rds_instance = rds_handler.get_rds_instance_by_identifier("rtg-automotive-db")
-rds_endpoint = rds_instance["Endpoint"]
 
-
-# Database engine and session setup
 def create_database_session() -> sessionmaker:
+    rds_handler = rds.RDSHandler()
+    rds_instance = rds_handler.get_rds_instance_by_identifier("rtg-automotive-db")
+    rds_endpoint = rds_instance["Endpoint"]
     engine = create_engine(
         f"mysql+mysqlconnector://admin:password@{rds_endpoint}/rtg_automotive"
     )
@@ -41,16 +38,12 @@ def get_table_schemas() -> dict:
         return json.load(f)
 
 
-# Initialize IAM credentials
-def initialize_iam():
-    iam.get_aws_credentials(os.environ)
-
+iam.get_aws_credentials(os.environ)
 
 # Initialize FastAPI app
 app = FastAPI()
 Session = create_database_session()
 schemas = get_table_schemas()
-initialize_iam()
 
 
 # Parse filters from string to dictionary
@@ -89,6 +82,7 @@ async def handle_read_items(
     session, model, filters: Optional[str], limit: int, columns: Optional[str]
 ) -> JSONResponse:
     query = session.query(model)
+    Base.metadata.clear()
 
     if filters:
         filters_dict = parse_filters(filters)
@@ -113,7 +107,6 @@ async def handle_read_items(
     return JSONResponse(content=results)
 
 
-# Handle item modification
 async def handle_edit_items(
     session, model, payload: dict, operation_type: str
 ) -> JSONResponse:
@@ -157,7 +150,9 @@ async def handle_edit_items(
         session.commit()
         Base.metadata.clear()
         return JSONResponse(
-            content={"message": f"Items {operation_type}d successfully"},
+            content={
+                "message": f"{operation_type.capitalize()} operation on items completed successfully"
+            },
             status_code=200,
         )
     except Exception as e:

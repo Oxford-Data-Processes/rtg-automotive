@@ -1,7 +1,17 @@
 import json
+import os
+
+import requests
+from aws_utils import api_gateway, iam
+
+iam.get_aws_credentials(os.environ)
 
 LOCAL = "http://localhost:8000/items/"
-LAMBDA = "https://tsybspea31.execute-api.eu-west-2.amazonaws.com/dev/items/"
+
+api_gateway_handler = api_gateway.APIGatewayHandler()
+api_id = api_gateway_handler.search_api_by_name("rtg-automotive-api")
+STAGE_LOWER = os.environ["STAGE"].lower()
+API_URL = f"https://{api_id}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/"
 
 GET_PARAMS = [
     {
@@ -21,7 +31,7 @@ GET_PARAMS = [
     },
     {
         "table_name": "supplier_stock",
-        "filters": json.dumps({"updated_date": ["2024-11-21"]}),
+        "filters": json.dumps({"updated_date": ["2024-10-08"]}),
         "limit": 5,
     },
     {
@@ -93,7 +103,6 @@ POST_PARAMS = [
     },
 ]
 
-import requests
 
 url = LOCAL
 print("URL: ", url)
