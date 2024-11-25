@@ -32,7 +32,7 @@ def get_part_number_mapping(supplier: str) -> dict:
         "table_name": "supplier_stock",
         "filters": json.dumps({"supplier": [supplier]}),
         "columns": ",".join(["custom_label", "part_number"]),
-        "limit": 5,
+        "limit": 10000,
     }
     logger.info(f"Params: {json.dumps(params)}")
     url = LAMBDA_HOST

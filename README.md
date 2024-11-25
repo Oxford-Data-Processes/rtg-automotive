@@ -24,8 +24,23 @@ Log of files that are being downloaded (Zip folders for daily ebay uploads)
 
 RTG shop - 3 tabs for each Excel download. One for each prefix eg. UKF, UKD, etc.
 
-Get API ID programmatically, add to AWS utils.
+Create mechanism for reducing size of tables. (Write entire database into S3, then reduce supplier_stock table to keep only last 14 days of data. SQL query in a Python script that runs weekly.)
 
-Create mechanism for reducing size of tables.
+THINGS TO TEST IN PRODUCTION:
 
-Clean up code and write any modules/utils that I can re-use for other projects.
+
+Backend:
+
+- Get API
+- Post API
+
+Frontend:
+
+- Stock Manager (RTG + other suppliers)
+- eBay table generation
+- Table Viewer
+    - With and without splits
+- Bulk Edit (append, delete, update)
+    - With and without splits
+- Add new supplier
+- Add new ebay store

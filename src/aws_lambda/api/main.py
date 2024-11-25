@@ -137,7 +137,7 @@ async def handle_edit_items(
             for item in items_data:
                 item_id = item.get("id")
                 if item_id is None:
-                    continue  # Skip if no ID is provided
+                    continue
                 existing_item = session.query(model).filter_by(id=item_id).first()
                 if existing_item:
                     session.delete(existing_item)

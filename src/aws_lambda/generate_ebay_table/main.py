@@ -88,7 +88,7 @@ def lambda_handler(event, context):
 
     s3_handler.upload_parquet_to_s3(
         f"rtg-automotive-bucket-{os.environ['AWS_ACCOUNT_ID']}",
-        "ebay/data.parquet",
+        "ebay/table/data.parquet",
         df.to_parquet(),
     )
 

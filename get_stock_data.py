@@ -58,8 +58,9 @@ def main():
         subset=["part_number", "supplier"], keep="first", inplace=True
     )
 
-    supplier_to_filter = "APE"
-    df_stock = df_stock[df_stock["supplier"] == supplier_to_filter]
+    # supplier_to_filter = "APE"
+    # df_stock = df_stock[df_stock["supplier"] == supplier_to_filter]
+
     df_stock["custom_label"] = df_stock["custom_label"].str.upper().str.strip()
     df_stock.dropna(subset=["supplier"], inplace=True)
 
