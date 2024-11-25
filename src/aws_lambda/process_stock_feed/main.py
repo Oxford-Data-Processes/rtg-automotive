@@ -8,7 +8,7 @@ from io import BytesIO
 import openpyxl
 import pytz
 import requests
-from aws_utils import iam, s3, sns
+from aws_utils import api_gateway, iam, s3, sns
 from process_functions import create_function
 
 logger = logging.getLogger()
@@ -17,11 +17,13 @@ logger.setLevel(logging.INFO)
 
 iam.get_aws_credentials(os.environ)
 
-API_ID = "tsybspea31"
+api_gateway_handler = api_gateway.APIGatewayHandler()
+api_id = api_gateway_handler.search_api_by_name("rtg-automotive-api")
+
 STAGE_LOWER = os.environ["STAGE"].lower()
 
 LAMBDA_HOST = (
-    f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/"
+    f"https://{api_id}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/"
 )
 
 

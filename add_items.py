@@ -1,4 +1,9 @@
+import os
+
 import requests
+from aws_utils import api_gateway, iam
+
+iam.get_aws_credentials(os.environ)
 
 items = [
     {
@@ -24,8 +29,11 @@ items = [
     },
 ]
 
-API_ID = "tsybspea31"
-STAGE_LOWER = "dev"
+api_gateway_handler = api_gateway.APIGatewayHandler()
+api_id = api_gateway_handler.search_api_by_name("rtg-automotive-api")
+
+
+STAGE_LOWER = os.environ["STAGE"].lower()
 
 
 def add_items_to_supplier_stock(items) -> list:
@@ -34,7 +42,7 @@ def add_items_to_supplier_stock(items) -> list:
     for i in range(0, len(items), chunk_size):
         chunk = items[i : i + chunk_size]
         response = requests.post(
-            f"https://{API_ID}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/?table_name=supplier_stock&type=append",
+            f"https://{api_id}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/?table_name=supplier_stock&type=append",
             headers={"Content-Type": "application/json"},
             json={"items": chunk},
         )
