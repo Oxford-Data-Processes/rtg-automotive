@@ -20,7 +20,7 @@ TO DO:
 
 ********
 
-Generate new supplier_stock_ranked table after each supplier stock feed processing.
+Generate new supplier_stock_ranked table after each supplier stock feed processing (triggered from frontend). Create store_filtered table once per day every morning.
 
 Improve generate_ebay_table.sql query performance (using indexes)
 
