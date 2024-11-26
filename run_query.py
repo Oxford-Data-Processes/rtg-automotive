@@ -1,4 +1,5 @@
 import os
+import signal
 import time
 
 import mysql.connector
@@ -12,7 +13,20 @@ rds_instance = rds_handler.get_rds_instance_by_identifier("rtg-automotive-db")
 rds_endpoint = rds_instance["Endpoint"]
 
 
+# Function to handle keyboard interrupt
+def signal_handler(sig, frame):
+    print("Keyboard interrupt received. Exiting...")
+    if connection and connection.is_connected():
+        connection.close()
+        print("MySQL connection is closed.")
+    exit(0)
+
+
+signal.signal(signal.SIGINT, signal_handler)
+
+
 def run_query(query):
+    global connection
     connection = None
     try:
         connection = mysql.connector.connect(
@@ -57,20 +71,20 @@ CREATE TABLE store_filtered AS (
 );
 """
 
-query = """
-CREATE TABLE ebay AS (
-SELECT
-    ts.item_id,
-    ps.custom_label,
-    ps.quantity,
-    ps.quantity_delta,
-    ts.ebay_store,
-    ps.supplier
-FROM
-    supplier_stock_ranked ps
-LEFT JOIN
-    store_filtered ts ON ps.custom_label = ts.custom_label
-);"""
+# query = """
+# CREATE TABLE ebay AS (
+# SELECT
+#     ts.item_id,
+#     ps.custom_label,
+#     ps.quantity,
+#     ps.quantity_delta,
+#     ts.ebay_store,
+#     ps.supplier
+# FROM
+#     supplier_stock_ranked ps
+# LEFT JOIN
+#     store_filtered ts ON ps.custom_label = ts.custom_label
+# );"""
 
 if __name__ == "__main__":
     run_query(query)
