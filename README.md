@@ -20,6 +20,10 @@ TO DO:
 
 ********
 
+Generate new supplier_stock_ranked table after each supplier stock feed processing.
+
+Improve generate_ebay_table.sql query performance (using indexes)
+
 Log of files that are being downloaded (Zip folders for daily ebay uploads)
 
 RTG shop - 3 tabs for each Excel download. One for each prefix eg. UKF, UKD, etc.
