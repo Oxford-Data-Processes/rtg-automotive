@@ -90,4 +90,6 @@ def lambda_handler(event, context):
     message = f"Ebay table generated and data uploaded successfully at {time_stamp}"
     send_sns_notification(message)
 
+    logger.info("Query finished")
+
     return {"statusCode": 200, "body": json.dumps("Query executed successfully!")}
