@@ -20,15 +20,12 @@ TO DO:
 
 ********
 
-Generate new supplier_stock_ranked table after each supplier stock feed processing (triggered from frontend). Create store_filtered table once per day every morning.
-
-Improve generate_ebay_table.sql query performance (using indexes)
-
-Log of files that are being downloaded (Zip folders for daily ebay uploads)
+Fix the queue checking in the frontend.
 
 RTG shop - 3 tabs for each Excel download. One for each prefix eg. UKF, UKD, etc.
 
-Create mechanism for reducing size of tables. (Write entire database into S3, then reduce supplier_stock table to keep only last 14 days of data. SQL query in a Python script that runs weekly.)
+Create mechanism for reducing size of tables. (Write entire database into S3, then reduce supplier_stock table to keep only last 14 days of data. SQL query in a Python script that runs weekly.
+
 
 THINGS TO TEST IN PRODUCTION:
 
