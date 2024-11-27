@@ -69,8 +69,8 @@ def lambda_handler(event, context):
             "quantity",
             "quantity_delta",
             "updated_date",
-            "ebay_store",
-            "supplier",
+            # "ebay_store",
+            # "supplier",
         ],
     )
     logger.info(f"Dataframe shape: {df.shape}")
