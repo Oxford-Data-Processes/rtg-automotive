@@ -42,7 +42,7 @@ def process_dataframe(df):
 
 
 def main():
-    DATE = "2024-10-08"
+    DATE = "2024-11-28"
     excel_file = Path(
         f"/Users/chrislittle/Dropbox/#Speedsheet/stock_master/{DATE.replace('-','_')}/Stock Feed Master.xlsx"
     )
