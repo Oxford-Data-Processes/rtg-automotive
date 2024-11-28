@@ -4,6 +4,7 @@ SELECT
     ps.custom_label,
     ps.quantity,
     ps.quantity_delta,
+    ps.updated_date,
     ts.ebay_store,
     ps.supplier
 FROM
