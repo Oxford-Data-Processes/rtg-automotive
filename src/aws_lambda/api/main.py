@@ -116,6 +116,7 @@ async def handle_edit_items(
     session, model, payload: dict, operation_type: str
 ) -> JSONResponse:
     items_data = payload.get("items", [])
+    Base.metadata.clear()
     if not items_data:
         return JSONResponse(content={"error": "No items provided"}, status_code=400)
 
@@ -130,6 +131,7 @@ async def handle_edit_items(
                 if item_id is None:
                     continue  # Skip if no ID is provided
                 existing_item = session.query(model).filter_by(id=item_id).first()
+                Base.metadata.clear()
                 if existing_item:
                     for key, value in item.items():
                         setattr(existing_item, key, value)
@@ -144,6 +146,7 @@ async def handle_edit_items(
                 if item_id is None:
                     continue
                 existing_item = session.query(model).filter_by(id=item_id).first()
+                Base.metadata.clear()
                 if existing_item:
                     session.delete(existing_item)
                 else:
