@@ -39,8 +39,6 @@ def get_part_number_mapping(supplier: str) -> dict:
     logger.info(f"URL: {url}")
     items = requests.get(url, params=params).json()
 
-    logger.info(f"Items: {items}")
-
     unique_items = {(item["custom_label"], item["part_number"]): item for item in items}
 
     return {
