@@ -83,11 +83,13 @@ async def handle_read_items(
     model,
     filters: Optional[str],
     limit: int,
-    offset: int,
     columns: Optional[str],
 ) -> JSONResponse:
     query = session.query(model)
     Base.metadata.clear()
+
+    print(filters)
+    print(type(filters))
 
     if filters:
         filters_dict = parse_filters(filters)
@@ -97,7 +99,7 @@ async def handle_read_items(
             )
         query = apply_filters(query, model, filters_dict)
 
-    limited_query = query.limit(limit).offset(offset)
+    limited_query = query.limit(limit)
     items = limited_query.all()
 
     if not items:
