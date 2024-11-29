@@ -28,9 +28,8 @@ Create mechanism for reducing size of tables. Write entire database into S3, the
 THINGS TO TEST IN PRODUCTION:
 
 
-Test initially with one small store.
 
-Then test with store and RTG.
+Then test with small store and RTG. Then with all stores.
 
 
 

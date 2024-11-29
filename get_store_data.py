@@ -63,11 +63,16 @@ def read_excel_files(directory):
 
 def process_excel_file(file, ebay_store):
     excel = pd.ExcelFile(file)
-    sheet_dfs = [process_dataframe(excel.parse(sheet)) for sheet in excel.sheet_names]
-    combined_df = pd.concat(sheet_dfs, ignore_index=True)
-    combined_df["ebay_store"] = ebay_store
-    print(f"Ebay store: {ebay_store}")
-    print(combined_df.head())
+    combined_dfs = []
+
+    for sheet in excel.sheet_names:
+        sheet_df = process_dataframe(excel.parse(sheet))
+        sheet_df["ebay_store"] = (
+            ebay_store + "_" + sheet if len(excel.sheet_names) > 1 else ebay_store
+        )
+        combined_dfs.append(sheet_df)
+
+    combined_df = pd.concat(combined_dfs, ignore_index=True)
     return combined_df
 
 
@@ -77,23 +82,18 @@ def handle_store_selection(store_selection):
         dfs = read_excel_files(data_dir)
         df_store = pd.concat(dfs.values(), ignore_index=True)
     else:
-        df_store = pd.read_excel(
-            data_dir / f"{store_selection} Database SpeedSheet.xlsx"
+        df_store = process_excel_file(
+            data_dir / f"{store_selection} Database SpeedSheet.xlsx", store_selection
         )
-        df_store = process_dataframe(df_store)
-        df_store["ebay_store"] = store_selection
-        print(f"Ebay store: {store_selection}")
-        print(df_store.head())
     return df_store
 
 
-def upload_supplier_data(df_store, ebay_stores):
-    for ebay_store in ebay_stores:
-        for supplier in df_store["supplier"].unique():
-            supplier_df = df_store[df_store["supplier"] == supplier]
-            supplier_ebay_df = supplier_df[supplier_df["ebay_store"] == ebay_store]
-            if not supplier_ebay_df.empty:
-                write_dataframe_to_mysql(supplier_ebay_df, "store")
+def upload_data(df_store):
+    chunk_size = 100000
+    for start in range(0, df_store.shape[0], chunk_size):
+        end = start + chunk_size
+        chunk = df_store.iloc[start:end]
+        write_dataframe_to_mysql(chunk, "store")
 
 
 def main():
@@ -103,13 +103,11 @@ def main():
         subset=["item_id", "custom_label", "ebay_store"], inplace=True
     )
     df_store["custom_label"] = df_store["custom_label"].str.upper().str.strip()
-    ebay_stores = (
-        df_store["ebay_store"].unique()
-        if store_selection == "All"
-        else [store_selection]
-    )
 
-    upload_supplier_data(df_store, ebay_stores)
+    print(df_store.head())
+    print(df_store.ebay_store.unique())
+
+    upload_data(df_store)
 
 
 main()
