@@ -44,7 +44,7 @@ def get_helper_table(table_name: str):
     table_dictionary = [
         {col: row[col] for col in df.columns} for _, row in df.iterrows()
     ]
-    logger.info(f"Table dictionary: {table_dictionary[:5]}")
+    logger.info(f"Helper table as dictionary: {table_dictionary[:5]}")
 
     return table_dictionary
 
@@ -269,7 +269,7 @@ def lambda_handler(event, context):
 
         part_number_mapping = get_part_number_mapping(supplier)
 
-        logger.info(f"Part number mapping: {part_number_mapping[:5]}")
+        logger.info("Part number mapping received successfully")
 
         output = [
             {**item, "custom_label": part_number_mapping[item["part_number"]]}
