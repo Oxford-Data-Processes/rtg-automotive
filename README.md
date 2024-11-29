@@ -27,6 +27,8 @@ Create mechanism for reducing size of tables. Write entire database into S3, the
 
 THINGS TO TEST IN PRODUCTION:
 
+Fix table viewer. Add ability to filter, perhaps even simplify/limit this? Need to rethink the table viewer design.
+
 Then test with small store and RTG. Then with all stores.
 
 Backend:
