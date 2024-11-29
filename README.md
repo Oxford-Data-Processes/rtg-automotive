@@ -28,10 +28,13 @@ Create mechanism for reducing size of tables. Write entire database into S3, the
 THINGS TO TEST IN PRODUCTION:
 
 
+Breakthrough: Write all helper tables to S3 parquet files (add this as a button in the UI)
+
+Read from the parquet files instead of the database.
 
 Then test with small store and RTG. Then with all stores.
 
-
+Create a way to get all values from a database without a limit (pagination?)
 
 
 Backend:

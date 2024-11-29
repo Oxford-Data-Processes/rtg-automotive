@@ -6,6 +6,7 @@ from datetime import datetime
 from io import BytesIO
 
 import openpyxl
+import pandas as pd
 import pytz
 import requests
 from aws_utils import api_gateway, iam, s3, sns
@@ -27,17 +28,31 @@ LAMBDA_HOST = (
 )
 
 
+def get_helper_table(table_name: str):
+    s3_handler = s3.S3Handler()
+    bucket_name = f"rtg-automotive-bucket-{os.environ['AWS_ACCOUNT_ID']}"
+
+    folders = s3_handler.list_objects(bucket_name, f"{table_name}/")
+    folder_paths = [
+        (folder["Key"].split("/")[-2], folder["Key"])
+        for folder in folders
+        if folder["Key"].endswith(".parquet")
+    ]
+    latest_file = sorted(folder_paths, key=lambda x: x[0], reverse=True)[0][1]
+    table_data = s3_handler.load_parquet_from_s3(bucket_name, latest_file)
+    df = pd.read_parquet(BytesIO(table_data))
+    table_dictionary = [
+        {col: row[col] for col in df.columns} for _, row in df.iterrows()
+    ]
+    logger.info(f"Table dictionary: {table_dictionary[:5]}")
+
+    return table_dictionary
+
+
 def get_part_number_mapping(supplier: str) -> dict:
-    params = {
-        "table_name": "supplier_stock",
-        "filters": json.dumps({"supplier": [supplier]}),
-        "columns": ",".join(["custom_label", "part_number"]),
-        "limit": 10000,
-    }
-    logger.info(f"Params: {json.dumps(params)}")
-    url = LAMBDA_HOST
-    logger.info(f"URL: {url}")
-    items = requests.get(url, params=params).json()
+    items = get_helper_table("supplier_stock")
+
+    logger.info(f"Items: {items[:5]}")
 
     unique_items = {(item["custom_label"], item["part_number"]): item for item in items}
 
@@ -77,13 +92,7 @@ def read_excel_from_s3(
 
 
 def fetch_rtg_custom_labels() -> list:
-    params = {
-        "table_name": "store",
-        "columns": ",".join(["custom_label"]),
-        "limit": 10000,
-    }
-    response = requests.get(LAMBDA_HOST, params=params)
-    items = response.json()
+    items = get_helper_table("store")
     custom_labels = list(set(item["custom_label"] for item in items))
     return custom_labels
 
@@ -260,7 +269,7 @@ def lambda_handler(event, context):
 
         part_number_mapping = get_part_number_mapping(supplier)
 
-        logger.info(f"Part number mapping: {part_number_mapping}")
+        logger.info(f"Part number mapping: {part_number_mapping[:5]}")
 
         output = [
             {**item, "custom_label": part_number_mapping[item["part_number"]]}

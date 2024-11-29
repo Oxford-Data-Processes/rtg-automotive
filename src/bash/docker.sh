@@ -13,6 +13,6 @@ docker buildx build -t $IMAGE_NAME --file https://raw.githubusercontent.com/Oxfo
 docker run -p 9000:8080 \
   -e AWS_ACCESS_KEY_ID_ADMIN \
   -e AWS_SECRET_ACCESS_KEY_ADMIN \
-  -e STAGE=dev \
+  -e STAGE \
   --env AWS_LAMBDA_FUNCTION_TIMEOUT=900 \
   $IMAGE_NAME

@@ -79,7 +79,12 @@ def format_results(items, model, columns: List[str]) -> list:
 
 # Handle item retrieval
 async def handle_read_items(
-    session, model, filters: Optional[str], limit: int, columns: Optional[str]
+    session,
+    model,
+    filters: Optional[str],
+    limit: int,
+    offset: int,
+    columns: Optional[str],
 ) -> JSONResponse:
     query = session.query(model)
     Base.metadata.clear()
@@ -92,7 +97,7 @@ async def handle_read_items(
             )
         query = apply_filters(query, model, filters_dict)
 
-    limited_query = query.limit(limit)
+    limited_query = query.limit(limit).offset(offset)
     items = limited_query.all()
 
     if not items:
