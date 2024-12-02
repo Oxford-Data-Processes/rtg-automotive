@@ -20,14 +20,9 @@ TO DO:
 
 ********
 
-RTG shop - 3 tabs for each Excel download. One for each prefix eg. UKF, UKD, etc.
-
-Create mechanism for reducing size of tables. Write entire database into S3, then reduce supplier_stock table to keep only last 14 days of data. SQL query in a Python script that runs weekly.
-
+Make helper table script run every day at 14:00 UK time.
 
 THINGS TO TEST IN PRODUCTION:
-
-Fix table viewer. Add ability to filter, perhaps even simplify/limit this? Need to rethink the table viewer design.
 
 Then test with small store and RTG. Then with all stores.
 

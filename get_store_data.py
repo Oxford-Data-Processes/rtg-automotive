@@ -105,7 +105,6 @@ def main():
     df_store["custom_label"] = df_store["custom_label"].str.upper().str.strip()
 
     print(df_store.head())
-    print(df_store.ebay_store.unique())
 
     upload_data(df_store)
 

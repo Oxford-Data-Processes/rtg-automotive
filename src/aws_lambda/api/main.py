@@ -88,9 +88,6 @@ async def handle_read_items(
     query = session.query(model)
     Base.metadata.clear()
 
-    print(filters)
-    print(type(filters))
-
     if filters:
         filters_dict = parse_filters(filters)
         if filters_dict is None:
