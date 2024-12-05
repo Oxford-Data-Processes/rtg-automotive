@@ -14,9 +14,9 @@ logger.setLevel(logging.INFO)
 iam.get_aws_credentials(os.environ)
 
 
-def create_database_session() -> sessionmaker:
+def create_database_session(rds_identifier: str) -> sessionmaker:
     rds_handler = rds.RDSHandler()
-    rds_instance = rds_handler.get_rds_instance_by_identifier("rtg-automotive-db")
+    rds_instance = rds_handler.get_rds_instance_by_identifier(rds_identifier)
     rds_endpoint = rds_instance["Endpoint"]
     engine = create_engine(
         f"mysql+mysqlconnector://admin:password@{rds_endpoint}/rtg_automotive"
@@ -48,8 +48,8 @@ def get_paginated_data(session, table_name: str, batch_size=100000):
         yield query, offset, total_records
 
 
-def create_parquet_files_from_table(table_name: str) -> None:
-    session = create_database_session()()
+def create_parquet_files_from_table(table_name: str, rds_identifier: str) -> None:
+    session = create_database_session(rds_identifier)()
     s3_handler = s3.S3Handler()
     bucket_name = f"rtg-automotive-bucket-{os.environ['AWS_ACCOUNT_ID']}"
     current_timestamp = datetime.now().strftime("%Y-%m-%dT%H:%M:%S")
@@ -72,8 +72,10 @@ def create_parquet_files_from_table(table_name: str) -> None:
 
 
 def lambda_handler(event, context):
-    table_name = event.get("table_name")
-    create_parquet_files_from_table(table_name)
+    event_detail = event["detail"]
+    table_name = event_detail.get("table_name")
+    rds_identifier = event_detail.get("rds_identifier")
+    create_parquet_files_from_table(table_name, rds_identifier)
     logs_handler = logs.LogsHandler()
     logs_handler.log_action(
         f"rtg-automotive-bucket-{os.environ['AWS_ACCOUNT_ID']}",

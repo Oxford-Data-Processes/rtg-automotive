@@ -8,8 +8,9 @@
     "region": "eu-west-2",
     "resources": [],
     "detail": {
-        "bucket": "rtg-automotive-bucket-654654324108",
         "event_type": "RtgAutomotiveCreateParquetSupplierStock",
+        "rds_identifier": "rtg-automotive-db",
+        "bucket": "rtg-automotive-bucket-654654324108",
         "table_name": "supplier_stock"
     }
 }
