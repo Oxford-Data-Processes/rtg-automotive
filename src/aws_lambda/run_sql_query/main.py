@@ -11,9 +11,9 @@ logger.setLevel(logging.INFO)
 iam.get_aws_credentials(os.environ)
 
 
-def create_database_session() -> sessionmaker:
+def create_database_session(rds_identifier: str) -> sessionmaker:
     rds_handler = rds.RDSHandler()
-    rds_instance = rds_handler.get_rds_instance_by_identifier("rtg-automotive-db")
+    rds_instance = rds_handler.get_rds_instance_by_identifier(rds_identifier)
     rds_endpoint = rds_instance["Endpoint"]
     engine = create_engine(
         f"mysql+mysqlconnector://admin:password@{rds_endpoint}/rtg_automotive"
@@ -21,8 +21,8 @@ def create_database_session() -> sessionmaker:
     return sessionmaker(bind=engine)
 
 
-def execute_query(query: str) -> None:
-    session = create_database_session()()
+def execute_query(query: str, rds_identifier: str) -> None:
+    session = create_database_session(rds_identifier)()
     try:
         logger.info(f"Executing query: {query}")
         split_query = query.split(";")
@@ -39,6 +39,8 @@ def execute_query(query: str) -> None:
 
 
 def lambda_handler(event, context):
-    query = event["detail"]["query"]
-    execute_query(query)
+    event_detail = event["detail"]
+    query = event_detail["query"]
+    rds_identifier = event_detail["rds_identifier"]
+    execute_query(query, rds_identifier)
     return {"statusCode": 200, "body": "Query executed successfully"}

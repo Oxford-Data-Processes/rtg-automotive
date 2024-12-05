@@ -80,7 +80,7 @@ def lambda_handler(event, context):
     logs_handler.log_action(
         f"rtg-automotive-bucket-{os.environ['AWS_ACCOUNT_ID']}",
         "frontend",
-        f"TABLE {table_name} GENERATED",
+        f"TABLE {table_name} LOADED",
         "admin",
     )
-    return {"statusCode": 200, "body": "Helper tables generated successfully"}
+    return {"statusCode": 200, "body": f"Table {table_name} loaded successfully"}

@@ -8,8 +8,8 @@
     "region": "eu-west-2",
     "resources": [],
     "detail": {
-        "bucket": "rtg-automotive-bucket-654654324108",
         "event_type": "RtgAutomotiveRunSQLQueryStoreFiltered",
+        "rds_identifier": "rtg-automotive-db",
         "query": "DROP TABLE IF EXISTS store_filtered; CREATE TABLE store_filtered AS (SELECT item_id, custom_label, ebay_store FROM store);"
     }
 }
