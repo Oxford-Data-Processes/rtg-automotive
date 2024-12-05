@@ -1,4 +1,4 @@
-name: Schedule Pipeline Dev
+name: Schedule Pipeline Prod
 
 env:
   STAGE: prod
