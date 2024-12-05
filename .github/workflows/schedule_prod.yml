@@ -1,0 +1,38 @@
+name: Schedule Pipeline Dev
+
+env:
+  STAGE: prod
+
+on:
+  push:
+    tags:
+      - "**prod-schedule-*"
+  schedule:
+    - cron: '0 14 * * *'
+
+jobs:
+  python:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Setup Python (3.11)
+        uses: actions/setup-python@v3
+        with:
+          python-version: 3.11
+
+      - name: Set Environment Variables
+        run: |
+          echo "AWS_ACCESS_KEY_ID_ADMIN=${{ secrets.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY_ADMIN=${{ secrets.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "STAGE=${{ env.STAGE }}" >> $GITHUB_ENV
+
+      - name: Install Dependencies
+        run: |
+          pip install -r src/scripts/requirements.txt
+
+      - name: Run Trigger Lambdas
+        run: |
+          echo "Output from Trigger Lambdas script:"
+          python src/scripts/trigger_lambdas.py

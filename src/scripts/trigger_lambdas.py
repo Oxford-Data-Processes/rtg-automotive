@@ -33,8 +33,8 @@ def trigger_run_sql_query_lambda(query: str, rds_identifier: str) -> None:
     )
 
 
-# trigger_create_parquet_lambda("store", "rtg-automotive-db")
-# trigger_create_parquet_lambda("supplier_stock", "rtg-automotive-db")
+trigger_create_parquet_lambda("store", "rtg-automotive-db")
+trigger_create_parquet_lambda("supplier_stock", "rtg-automotive-db")
 
 # Updated file path to match the correct location of the SQL files
 with open("src/sql/store_filtered.sql", "r") as file:
