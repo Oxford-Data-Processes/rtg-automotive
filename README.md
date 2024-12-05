@@ -20,6 +20,8 @@ TO DO:
 
 ********
 
+Parallelise helper table generation and parquet file generation.
+
 Make helper table script run every day at 14:00 UK time.
 
 THINGS TO TEST IN PRODUCTION:

@@ -1,0 +1,4 @@
+sqlalchemy
+mysql-connector-python
+pandas
+git+https://github.com/Oxford-Data-Processes/aws-utils.git
