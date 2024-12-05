@@ -33,16 +33,21 @@ def trigger_run_sql_query_lambda(query: str, rds_identifier: str) -> None:
     )
 
 
-trigger_create_parquet_lambda("store", "rtg-automotive-db")
-trigger_create_parquet_lambda("supplier_stock", "rtg-automotive-db")
+def main():
+    trigger_create_parquet_lambda("store", "rtg-automotive-db")
+    trigger_create_parquet_lambda("supplier_stock", "rtg-automotive-db")
 
-# Updated file path to match the correct location of the SQL files
-with open("src/sql/store_filtered.sql", "r") as file:
-    query = file.read()
-    print(query)
-    trigger_run_sql_query_lambda(query, "rtg-automotive-db")
+    # Updated file path to match the correct location of the SQL files
+    with open("src/sql/store_filtered.sql", "r") as file:
+        query = file.read()
+        trigger_run_sql_query_lambda(query, "rtg-automotive-db")
 
-with open("src/sql/supplier_stock_ranked.sql", "r") as file:
-    query = file.read()
-    print(query)
-    trigger_run_sql_query_lambda(query, "rtg-automotive-db")
+    with open("src/sql/supplier_stock_ranked.sql", "r") as file:
+        query = file.read()
+        trigger_run_sql_query_lambda(query, "rtg-automotive-db")
+
+    print("All lambdas triggered successfully.")
+
+
+if __name__ == "__main__":
+    main()
