@@ -20,6 +20,10 @@ jobs:
             build_directory: ./src/aws_lambda/process_stock_feed
           - lambda_name: generate-ebay-table-lambda
             build_directory: ./src/aws_lambda/generate_ebay_table
+          - lambda_name: run-sql-query-lambda
+            build_directory: ./src/aws_lambda/run_sql_query
+          - lambda_name: create-parquet-lambda
+            build_directory: ./src/aws_lambda/create_parquet
     with:
       STAGE: prod
       PROJECT: ${{ github.repository }}
