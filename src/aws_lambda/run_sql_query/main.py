@@ -27,7 +27,9 @@ def execute_query(query: str, rds_identifier: str) -> None:
         logger.info(f"Executing query: {query}")
         split_query = query.split(";")
         for statement in split_query:
-            session.execute(text(statement))
+            statement = statement.strip()
+            if len(statement) > 0:
+                session.execute(text(statement))
         session.commit()
         logger.info("Query executed successfully.")
     except Exception as e:

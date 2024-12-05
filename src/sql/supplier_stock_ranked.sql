@@ -1,5 +1,4 @@
 DROP TABLE IF EXISTS supplier_stock_ranked;
-
 CREATE TABLE supplier_stock_ranked AS
 WITH ranked_supplier_stock AS (
     SELECT

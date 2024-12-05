@@ -10,7 +10,6 @@ module "process_stock_feed_lambda_eventbridge" {
   project        = var.project
 }
 
-
 module "generate_ebay_table_lambda_eventbridge" {
   source               = "git::https://github.com/Oxford-Data-Processes/terraform.git//modules/eventbridge"
   lambda_function_name = "generate-ebay-table-lambda"
