@@ -65,10 +65,7 @@ def run_query(query):
 
 
 query = """
-CREATE TABLE store_filtered AS (
-    SELECT item_id, custom_label, ebay_store
-    FROM store
-);
+SELECT DISTINCT(ebay_store) FROM store s ;
 """
 
 # query = """

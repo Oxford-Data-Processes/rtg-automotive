@@ -13,6 +13,7 @@ api_id = api_gateway_handler.search_api_by_name("rtg-automotive-api")
 STAGE_LOWER = os.environ["STAGE"].lower()
 API_URL = f"https://{api_id}.execute-api.eu-west-2.amazonaws.com/{STAGE_LOWER}/items/"
 
+
 GET_PARAMS = [
     {
         "table_name": "supplier_stock",
@@ -95,7 +96,7 @@ POST_PARAMS = [
 ]
 
 
-url = LOCAL_URL
+url = API_URL
 print("URL: ", url)
 
 for params in GET_PARAMS:
