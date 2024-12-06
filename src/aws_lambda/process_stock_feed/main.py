@@ -9,7 +9,7 @@ import openpyxl
 import pandas as pd
 import pytz
 import requests
-from aws_utils import api_gateway, iam, s3, sns
+from aws_utils import api_gateway, iam, logs, s3, sns
 from process_functions import create_function
 
 logger = logging.getLogger()
@@ -282,6 +282,13 @@ def lambda_handler(event, context):
 
         add_items_to_supplier_stock(output)
         logger.info(f"Added {len(output)} items to supplier stock")
+        logs_handler = logs.LogsHandler()
+        logs_handler.log_action(
+            f"rtg-automotive-bucket-{os.environ['AWS_ACCOUNT_ID']}",
+            "frontend",
+            f"PROCESSED | stock_feed_supplier={supplier} | number_of_items={len(output)}",
+            "admin",
+        )
 
         send_success_notification(supplier)
         return create_success_response()
