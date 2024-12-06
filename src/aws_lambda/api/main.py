@@ -52,9 +52,7 @@ def parse_filters(filters: str) -> Optional[dict]:
         filters = json.loads(filters)
         if isinstance(filters, dict):
             for key, value in filters.items():
-                if not isinstance(value, list) or not all(
-                    isinstance(v, str) for v in value
-                ):
+                if not isinstance(value, list):
                     return None
             return filters
         return None
