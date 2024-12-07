@@ -96,7 +96,7 @@ POST_PARAMS = [
 ]
 
 
-url = API_URL
+url = LOCAL_URL
 print("URL: ", url)
 
 for params in GET_PARAMS:

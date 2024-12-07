@@ -64,9 +64,7 @@ def run_query(query):
             print("MySQL connection is closed.")
 
 
-query = """
-SELECT DISTINCT(ebay_store) FROM store s ;
-"""
+query = """SELECT DISTINCT(ebay_store) FROM store s ;"""
 
 # query = """
 # CREATE TABLE ebay AS (
