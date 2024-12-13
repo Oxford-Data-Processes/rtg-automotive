@@ -20,9 +20,9 @@ TO DO:
 
 ********
 
-Parallelise helper table generation and parquet file generation.
 
-Make helper table script run every day at 14:00 UK time.
+Create a Lambda that sends files from a Dropbox location to the S3 bucket automatically.
+
 
 THINGS TO TEST IN PRODUCTION:
 

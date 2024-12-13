@@ -53,6 +53,13 @@ POST_PARAMS = [
                     "updated_date": "2023-10-01",
                 },
                 {
+                    "custom_label": "UKD-APE-ABR1101",
+                    "part_number": "ABR1101",
+                    "supplier": "APE",
+                    "quantity": 10,
+                    "updated_date": "2024-11-28",
+                },
+                {
                     "id": 100002,
                     "custom_label": "XYZ208",
                     "part_number": "XYZ202",
@@ -96,7 +103,7 @@ POST_PARAMS = [
 ]
 
 
-url = LOCAL_URL
+url = API_URL
 print("URL: ", url)
 
 for params in GET_PARAMS:
